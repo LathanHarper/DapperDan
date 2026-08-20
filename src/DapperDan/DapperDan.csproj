@@ -32,7 +32,9 @@
 
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">28.0</SupportedOSPlatformVersion>
-		<RuntimeIdentifiers Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">ios-arm64;iossimulator-arm64</RuntimeIdentifiers>
+		<!-- Keep both RIDs in full restores, but let a command-line RuntimeIdentifier select
+		     device versus simulator before the iOS SDK computes its linker platform. -->
+		<RuntimeIdentifiers Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' And '$(RuntimeIdentifier)' == ''">ios-arm64;iossimulator-arm64</RuntimeIdentifiers>
 	</PropertyGroup>
 
 	<ItemGroup>
