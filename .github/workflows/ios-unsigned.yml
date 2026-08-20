@@ -58,7 +58,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          dotnet workload restore "$PROJECT_PATH" --version "$WORKLOAD_VERSION"
+          dotnet workload restore "$PROJECT_PATH"
           test "$(dotnet workload --version)" = "$WORKLOAD_VERSION"
           dotnet workload list
 
