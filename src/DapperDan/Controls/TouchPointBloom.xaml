@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView x:Name="this"
+    x:Class="CodeCrafty.DapperDan.Controls.TouchPointBloom"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    HeightRequest="72"
+    InputTransparent="True"
+    IsClippedToBounds="False"
+    IsVisible="False"
+    Opacity="0"
+    WidthRequest="96"
+    >
+    <Ellipse
+        InputTransparent="True"
+        >
+        <Ellipse.Fill>
+            <RadialGradientBrush
+                Center="0.5,0.5"
+                Radius="0.5"
+                >
+                <GradientStop Color="#B8FFFFFF" Offset="0" />
+                <GradientStop x:Name="BloomTintStrongStop" Color="#70FFFFFF" Offset="0.34" />
+                <GradientStop x:Name="BloomTintSoftStop" Color="#24FFFFFF" Offset="0.68" />
+                <GradientStop x:Name="BloomTintClearStop" Color="#00FFFFFF" Offset="1" />
+            </RadialGradientBrush>
+        </Ellipse.Fill>
+    </Ellipse>
+</ContentView>

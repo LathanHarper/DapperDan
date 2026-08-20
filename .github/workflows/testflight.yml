@@ -1,0 +1,234 @@
+name: TestFlight canary
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_number:
+        description: Unique numeric CFBundleVersion for this upload
+        required: true
+        type: string
+      confirm_upload:
+        description: Confirm that this trusted main-branch build should be uploaded
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dapperdan-testflight
+  cancel-in-progress: false
+
+env:
+  BUNDLE_ID: net.codecrafty.dapperdan
+  DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_NOLOGO: "1"
+  PROJECT_PATH: src/DapperDan/DapperDan.csproj
+  WORKLOAD_VERSION: 10.0.302.1
+
+jobs:
+  upload:
+    name: Sign and upload trusted main
+    if: ${{ github.ref == 'refs/heads/main' && inputs.confirm_upload }}
+    runs-on: macos-26
+    timeout-minutes: 90
+    environment:
+      # Configure this environment for selected branch `main`, required reviewers,
+      # prevented self-review, and no administrator bypass before adding secrets.
+      name: testflight-canary
+
+    steps:
+      - name: Check out trusted source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          ref: ${{ github.sha }}
+
+      - name: Install pinned .NET SDK
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+
+      - name: Validate dispatch and toolchains
+        shell: bash
+        env:
+          REQUESTED_BUILD_NUMBER: ${{ inputs.build_number }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$REQUESTED_BUILD_NUMBER" =~ ^[1-9][0-9]*$ ]] || [[ ${#REQUESTED_BUILD_NUMBER} -gt 18 ]]; then
+            echo "build_number must be a positive integer of at most 18 digits." >&2
+            exit 1
+          fi
+          test "$GITHUB_REF" = "refs/heads/main"
+          test "$(uname -m)" = "arm64"
+          test -d "$DEVELOPER_DIR"
+          test "$(dotnet --version)" = "10.0.302"
+          echo "BUILD_NUMBER=$REQUESTED_BUILD_NUMBER" >> "$GITHUB_ENV"
+          xcodebuild -version
+          xcrun --sdk iphoneos --show-sdk-version
+          dotnet --info
+
+      - name: Restore pinned MAUI workloads
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet workload restore "$PROJECT_PATH" --version "$WORKLOAD_VERSION"
+          test "$(dotnet workload --version)" = "$WORKLOAD_VERSION"
+          dotnet workload list
+
+      - name: Restore packages before loading credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          lock_file="$(dirname "$PROJECT_PATH")/packages.lock.json"
+          if [[ -f "$lock_file" ]]; then
+            dotnet restore "$PROJECT_PATH" \
+              -p:TargetFramework=net10.0-ios \
+              -r ios-arm64 \
+              --locked-mode
+          else
+            echo "::warning file=$PROJECT_PATH::packages.lock.json is not committed; generating a run-local lock file."
+            dotnet restore "$PROJECT_PATH" \
+              -p:TargetFramework=net10.0-ios \
+              -p:RestorePackagesWithLockFile=true \
+              -r ios-arm64
+          fi
+
+      - name: Import Apple distribution certificate
+        uses: Apple-Actions/import-codesign-certs@5142e029c445c10ffc7149d172e540235a065466 # v7.0.0
+        with:
+          p12-file-base64: ${{ secrets.IOS_DISTRIBUTION_CERT_P12_BASE64 }}
+          p12-password: ${{ secrets.IOS_DISTRIBUTION_CERT_P12_PASSWORD }}
+
+      - name: Install and validate provisioning profile
+        id: profile
+        shell: bash
+        env:
+          PROFILE_BASE64: ${{ secrets.IOS_APPSTORE_PROFILE_BASE64 }}
+        run: |
+          set -euo pipefail
+          test -n "$PROFILE_BASE64"
+
+          temporary_profile="$RUNNER_TEMP/DapperDan.mobileprovision"
+          profile_plist="$RUNNER_TEMP/DapperDan-profile.plist"
+          printf '%s' "$PROFILE_BASE64" | base64 -D > "$temporary_profile"
+          security cms -D -i "$temporary_profile" > "$profile_plist"
+
+          profile_uuid="$(/usr/libexec/PlistBuddy -c 'Print :UUID' "$profile_plist")"
+          profile_name="$(/usr/libexec/PlistBuddy -c 'Print :Name' "$profile_plist")"
+          team_id="$(/usr/libexec/PlistBuddy -c 'Print :TeamIdentifier:0' "$profile_plist")"
+          application_identifier="$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:application-identifier' "$profile_plist")"
+          expected_application_identifier="$team_id.$BUNDLE_ID"
+
+          if [[ "$application_identifier" != "$expected_application_identifier" ]]; then
+            echo "Provisioning profile is for $application_identifier, expected $expected_application_identifier." >&2
+            exit 1
+          fi
+
+          profile_directory="$HOME/Library/MobileDevice/Provisioning Profiles"
+          installed_profile="$profile_directory/$profile_uuid.mobileprovision"
+          mkdir -p "$profile_directory"
+          install -m 600 "$temporary_profile" "$installed_profile"
+
+          echo "profile_name=$profile_name" >> "$GITHUB_OUTPUT"
+          echo "profile_path=$installed_profile" >> "$GITHUB_OUTPUT"
+
+      - name: Verify signing identity
+        shell: bash
+        env:
+          IOS_CODESIGN_IDENTITY: ${{ vars.IOS_CODESIGN_IDENTITY }}
+        run: |
+          set -euo pipefail
+          test -n "$IOS_CODESIGN_IDENTITY"
+          if ! security find-identity -v -p codesigning | grep -F -- "\"$IOS_CODESIGN_IDENTITY\""; then
+            echo "Configured IOS_CODESIGN_IDENTITY was not imported." >&2
+            exit 1
+          fi
+
+      - name: Publish signed App Store IPA
+        shell: bash
+        env:
+          IOS_CODESIGN_IDENTITY: ${{ vars.IOS_CODESIGN_IDENTITY }}
+          PROFILE_NAME: ${{ steps.profile.outputs.profile_name }}
+        run: |
+          set -euo pipefail
+          dotnet publish "$PROJECT_PATH" \
+            -f net10.0-ios \
+            -c Release \
+            -r ios-arm64 \
+            --no-restore \
+            -p:ApplicationId="$BUNDLE_ID" \
+            -p:ApplicationVersion="$BUILD_NUMBER" \
+            -p:ArchiveOnBuild=true \
+            -p:CodesignKey="$IOS_CODESIGN_IDENTITY" \
+            -p:CodesignProvision="$PROFILE_NAME" \
+            -p:ContinuousIntegrationBuild=true \
+            -p:EnableCodeSigning=true
+
+      - name: Verify signed IPA
+        id: ipa
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+
+          project_dir="$(dirname "$PROJECT_PATH")"
+          publish_directory="$project_dir/bin/Release/net10.0-ios/ios-arm64/publish"
+          ipa_files=("$publish_directory"/*.ipa)
+          if [[ ${#ipa_files[@]} -ne 1 ]]; then
+            echo "Expected exactly one IPA under $publish_directory; found ${#ipa_files[@]}." >&2
+            exit 1
+          fi
+
+          verification_directory="$RUNNER_TEMP/DapperDan-ipa-verification"
+          mkdir -p "$verification_directory"
+          unzip -q "${ipa_files[0]}" -d "$verification_directory"
+          app_bundles=("$verification_directory"/Payload/*.app)
+          if [[ ${#app_bundles[@]} -ne 1 ]]; then
+            echo "Expected exactly one app bundle inside the IPA; found ${#app_bundles[@]}." >&2
+            exit 1
+          fi
+
+          app_bundle="${app_bundles[0]}"
+          actual_bundle_id="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app_bundle/Info.plist")"
+          actual_build_number="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$app_bundle/Info.plist")"
+          test "$actual_bundle_id" = "$BUNDLE_ID"
+          test "$actual_build_number" = "$BUILD_NUMBER"
+          codesign --verify --deep --strict --verbose=2 "$app_bundle"
+
+          embedded_profile_plist="$RUNNER_TEMP/DapperDan-embedded-profile.plist"
+          security cms -D -i "$app_bundle/embedded.mobileprovision" > "$embedded_profile_plist"
+          team_id="$(/usr/libexec/PlistBuddy -c 'Print :TeamIdentifier:0' "$embedded_profile_plist")"
+          embedded_application_identifier="$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:application-identifier' "$embedded_profile_plist")"
+          test "$embedded_application_identifier" = "$team_id.$BUNDLE_ID"
+
+          echo "ipa=${ipa_files[0]}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload to TestFlight and wait for processing
+        uses: Apple-Actions/upload-testflight-build@5e75ff58276689011512ba87a381d93dc67dbcf8 # v5.3.0
+        with:
+          app-path: ${{ steps.ipa.outputs.ipa }}
+          issuer-id: ${{ vars.APPSTORE_ISSUER_ID }}
+          api-key-id: ${{ vars.APPSTORE_API_KEY_ID }}
+          api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+          backend: AppStoreAPI
+          wait-for-processing: "true"
+
+      - name: Remove temporary provisioning material
+        if: always()
+        shell: bash
+        env:
+          INSTALLED_PROFILE: ${{ steps.profile.outputs.profile_path }}
+        run: |
+          set -euo pipefail
+          expected_profile_root="$HOME/Library/MobileDevice/Provisioning Profiles/"
+          if [[ -n "${INSTALLED_PROFILE:-}" && "$INSTALLED_PROFILE" == "$expected_profile_root"*.mobileprovision ]]; then
+            rm -f -- "$INSTALLED_PROFILE"
+          fi
+          rm -f -- \
+            "$RUNNER_TEMP/DapperDan.mobileprovision" \
+            "$RUNNER_TEMP/DapperDan-profile.plist" \
+            "$RUNNER_TEMP/DapperDan-embedded-profile.plist"

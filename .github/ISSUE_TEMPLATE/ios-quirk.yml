@@ -1,0 +1,64 @@
+name: iOS quirk reproduction
+description: Report a sanitized iOS behavior difference with an Android baseline.
+title: "[iOS] "
+labels:
+  - ios
+  - reproduction
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This repository is public. Share only neutral, independently authored reproduction material.
+  - type: input
+    id: ios_device
+    attributes:
+      label: iOS/iPadOS device and version
+      placeholder: iPad Air (5th gen), iPadOS 26.5
+    validations:
+      required: true
+  - type: input
+    id: android_baseline
+    attributes:
+      label: Android baseline
+      placeholder: Pixel emulator, Android 16 — behaves as expected
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Minimal reproduction steps
+      description: Use public Dapper Dan controls and neutral data only.
+      placeholder: |
+        1. Open...
+        2. Tap...
+        3. Observe...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual iOS behavior
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Sanitized evidence
+      description: Include public logs or screenshots only when they contain no private identifiers, paths, endpoints, accounts, or tokens.
+  - type: checkboxes
+    id: boundary
+    attributes:
+      label: Public-boundary check
+      options:
+        - label: I did not include private product code, data, routes, schemas, assets, or screenshots.
+          required: true
+        - label: I did not include credentials, signing material, internal endpoints, workstation paths, or private logs.
+          required: true
+        - label: The reproduction is independently authored and minimized around the platform behavior.
+          required: true

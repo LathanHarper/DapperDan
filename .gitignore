@@ -1,0 +1,63 @@
+# IDE and user state
+.vs/
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.csproj.user
+
+# .NET and MAUI output
+**/bin/
+**/obj/
+artifacts/
+TestArtifacts/
+TestResults/
+*.trx
+*.binlog
+*.coverage
+*.coveragexml
+
+# Mobile packages and Apple output
+*.apk
+*.aab
+*.app
+*.ipa
+*.xcarchive
+*.dSYM/
+
+# Signing and credentials
+*.cer
+*.p8
+*.p12
+*.pem
+*.pfx
+*.key
+*.mobileprovision
+*.jks
+*.keystore
+*.env
+*.env.*
+!.env.example
+secrets.*
+
+# Runtime data and diagnostics
+*.db
+*.db3
+*.sqlite
+*.sqlite3
+*.log
+*.dmp
+*.etl
+*.memgraph
+*.trace
+
+# Package caches
+packages/
+.nuget/
+
+# OS metadata
+.DS_Store
+Thumbs.db
+Desktop.ini

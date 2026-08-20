@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Grid
+    x:Name="PanelBossBodyRoot"
+    x:Class="CodeCrafty.DapperDan.PanelBossKit.Views.PanelBossBody_DefaultView"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:pb="clr-namespace:CodeCrafty.DapperDan.PanelBossKit"
+    xmlns:semantics="clr-namespace:CodeCrafty.DapperDan.Semantics"
+    pb:PanelBoss.RichButtonCoordinationEnabled="True"
+    >
+    <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
+
+    <BoxView x:Name="LandscapeStatusStripeView"
+        AutomationId="PanelBoss_LandscapeStatusStripe"
+        Grid.Row="0"
+        HeightRequest="25"
+        HorizontalOptions="Fill"
+        VerticalOptions="Fill"
+        IsVisible="False"
+        InputTransparent="True"
+        />
+
+    <Grid x:Name="BodyBackdropArea" BackgroundColor="Transparent"
+        Grid.Row="1"
+        HorizontalOptions="Fill"
+        VerticalOptions="Fill"
+        ZIndex="1"
+        />
+    <Grid x:Name="NonVisualControlsArea" BackgroundColor="Transparent"
+        Grid.Row="1"
+        IsVisible="False"
+        />
+    <Grid x:Name="TopHeaderPagePanelsArea" BackgroundColor="Transparent"
+        Grid.Row="1"
+        HorizontalOptions="Fill"
+        VerticalOptions="Fill"
+        pb:PanelBoss.PanelAreaLookupMarker="TopHeaderPagePanelsArea"
+        CascadeInputTransparent="False"
+        ZIndex="10"
+        InputTransparent="True"
+        />
+    <Grid x:Name="TopHeaderPanelsArea" BackgroundColor="Transparent"
+        Grid.Row="1"
+        HorizontalOptions="Fill"
+        VerticalOptions="Start"
+        pb:PanelBoss.PanelAreaLookupMarker="TopHeaderPanelsArea"
+        CascadeInputTransparent="False"
+        ZIndex="10"
+        InputTransparent="True"
+        />
+    <Grid x:Name="LeftSelectorPanelsArea" BackgroundColor="Transparent"
+        Grid.Row="1"
+        HorizontalOptions="Fill"
+        VerticalOptions="Fill"
+        pb:PanelBoss.PanelAreaLookupMarker="LeftSelectorPanelsArea"
+        CascadeInputTransparent="False"
+        ZIndex="10"
+        InputTransparent="True"
+        />
+    <Grid x:Name="RightSelectorPanelsArea" BackgroundColor="Transparent"
+        Grid.Row="1"
+        HorizontalOptions="End"
+        VerticalOptions="Fill"
+        pb:PanelBoss.PanelAreaLookupMarker="RightSelectorPanelsArea"
+        CascadeInputTransparent="False"
+        ZIndex="10"
+        InputTransparent="True"
+        />
+    <Grid x:Name="MenuPanelsArea" BackgroundColor="Transparent"
+        Grid.Row="1"
+        HorizontalOptions="Fill"
+        VerticalOptions="Fill"
+        pb:PanelBoss.PanelAreaLookupMarker="MenuPanelsArea"
+        x:FieldModifier="public"
+        CascadeInputTransparent="False"
+        ZIndex="10"
+        InputTransparent="True"
+        />
+    <Grid x:Name="BottomInputPanelsArea" BackgroundColor="Transparent"
+        Grid.Row="1"
+        HorizontalOptions="Fill"
+        VerticalOptions="End"
+        pb:PanelBoss.PanelAreaLookupMarker="BottomInputPanelsArea"
+        x:FieldModifier="public"
+        CascadeInputTransparent="False"
+        ZIndex="30"
+        InputTransparent="True"
+        >
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="{x:Static semantics:PanelMetrics.BottomDrawerClearance}" />
+        </Grid.RowDefinitions>
+
+        <BoxView x:Name="BottomInputPanelsPlatformClearance"
+            AutomationId="PanelBoss_BottomInputPanelsPlatformClearance"
+            Grid.Row="1"
+            HorizontalOptions="Fill"
+            InputTransparent="True"
+            VerticalOptions="Fill"
+            />
+    </Grid>
+    <Grid x:Name="BottomStatusPanelsArea" BackgroundColor="Transparent"
+        Grid.Row="1"
+        HorizontalOptions="Fill"
+        VerticalOptions="End"
+        pb:PanelBoss.PanelAreaLookupMarker="BottomStatusPanelsArea"
+        CascadeInputTransparent="False"
+        ZIndex="10"
+        InputTransparent="True"
+        />
+    <Grid x:Name="FullScreenPopupPanelsArea"
+        Grid.Row="1"
+        HorizontalOptions="Fill"
+        VerticalOptions="Fill"
+        pb:PanelBoss.PanelAreaLookupMarker="FullScreenPopupPanelsArea"
+        x:FieldModifier="public"
+        CascadeInputTransparent="False"
+        ZIndex="40"
+        InputTransparent="True"
+        />
+    <Grid x:Name="ContentPanelsArea" BackgroundColor="Transparent"
+        Grid.Row="1"
+        HorizontalOptions="Fill"
+        VerticalOptions="Fill"
+        pb:PanelBoss.PanelAreaLookupMarker="ContentPanelsArea"
+        x:FieldModifier="public"
+        CascadeInputTransparent="False"
+        ZIndex="2"
+        InputTransparent="True"
+        />
+</Grid>

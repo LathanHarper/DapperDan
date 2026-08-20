@@ -1,0 +1,786 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Name="PageRoot"
+    x:Class="CodeCrafty.DapperDan.Views.DapperDan.DapperDanPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:controls="clr-namespace:CodeCrafty.DapperDan.Controls"
+    xmlns:data="clr-namespace:CodeCrafty.DapperDan.Data.Entities"
+    xmlns:models="clr-namespace:CodeCrafty.DapperDan.Models"
+    xmlns:pb="clr-namespace:CodeCrafty.DapperDan.PanelBossKit"
+    xmlns:panelViews="clr-namespace:CodeCrafty.DapperDan.PanelBossKit.Views"
+    xmlns:vm="clr-namespace:CodeCrafty.DapperDan.ViewModels"
+    AutomationId="DapperDan_Page"
+    BackgroundColor="#EAF2F5"
+    HideSoftInputOnTapped="True"
+    NavigationPage.HasNavigationBar="False"
+    x:DataType="vm:DapperDanViewModel">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Style x:Key="PageTitle" TargetType="Label">
+                <Setter Property="FontAttributes" Value="Bold" />
+                <Setter Property="FontSize" Value="24" />
+                <Setter Property="TextColor" Value="#102A3A" />
+            </Style>
+            <Style x:Key="SectionTitle" TargetType="Label">
+                <Setter Property="FontAttributes" Value="Bold" />
+                <Setter Property="FontSize" Value="18" />
+                <Setter Property="TextColor" Value="#173E52" />
+            </Style>
+            <Style x:Key="BodyCopy" TargetType="Label">
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="LineBreakMode" Value="WordWrap" />
+                <Setter Property="TextColor" Value="#486171" />
+            </Style>
+            <Style x:Key="FieldEntry" TargetType="Entry">
+                <Setter Property="BackgroundColor" Value="#FFFFFF" />
+                <Setter Property="HeightRequest" Value="48" />
+                <Setter Property="Margin" Value="0,4" />
+                <Setter Property="PlaceholderColor" Value="#78909C" />
+                <Setter Property="TextColor" Value="#102A3A" />
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <panelViews:PanelBossBody_DefaultView
+        x:Name="PanelBossRoot"
+        AutomationId="DapperDan_PanelBossRoot"
+        BackgroundColor="#EAF2F5"
+        HorizontalOptions="Fill"
+        PanelBossInstance="{Binding ActivePanelBoss}"
+        VerticalOptions="Fill">
+
+        <panelViews:PanelBossBody_DefaultView.NonVisualControls>
+            <Grid
+                AutomationId="DapperDan_NonVisualLaneWitness"
+                pb:PanelBoss.PanelIsVisible="True"
+                pb:PanelBoss.PanelName="DapperDanNonVisualWitness"
+                pb:PanelBoss.PanelPriority="10">
+                <Label
+                    AutomationId="DapperDan_StatusProbe"
+                    Text="{Binding StatusMessage}" />
+            </Grid>
+        </panelViews:PanelBossBody_DefaultView.NonVisualControls>
+
+        <panelViews:PanelBossBody_DefaultView.TopHeaderPagePanels>
+            <Grid
+                AutomationId="DapperDan_TourPanel"
+                BackgroundColor="#0B3C5D"
+                pb:PanelBoss.PanelIsVisible="False"
+                pb:PanelBoss.PanelName="DapperDanTourPanel"
+                pb:PanelBoss.PanelPriority="0"
+                pb:PanelBoss.PanelTransitionIn="FadeInDownward"
+                pb:PanelBoss.PanelTransitionOut="FadeOutUpward">
+                <ScrollView>
+                    <VerticalStackLayout Padding="28,64,28,36" Spacing="22">
+                        <Label
+                            FontAttributes="Bold"
+                            FontSize="30"
+                            Text="The full PanelBoss tour"
+                            TextColor="White" />
+                        <Label
+                            FontSize="16"
+                            Text="This TopHeaderPage lane can temporarily own the whole viewport while the page and its commands remain alive underneath."
+                            TextColor="#D9EDF7" />
+                        <Border
+                            BackgroundColor="#145374"
+                            Padding="18"
+                            Stroke="#4DA3C7"
+                            StrokeShape="RoundRectangle 18">
+                            <VerticalStackLayout Spacing="8">
+                                <Label FontAttributes="Bold" Text="Mounted lanes" TextColor="White" />
+                                <Label Text="NonVisual · TopHeaderPage · TopHeader · Content · Left · Right · Menu · BottomInput · BottomStatus · FullScreenPopup" TextColor="#D9EDF7" />
+                            </VerticalStackLayout>
+                        </Border>
+                        <controls:RichButton
+                            AutomationId="DapperDan_Tour_Close"
+                            AutoResetIsBusyMilliseconds="700"
+                            Command="{Binding ExecutePanelDemoCommand}"
+                            CommandParameter="Tour"
+                            HeightRequest="56">
+                            <Border
+                                BackgroundColor="#F8C15C"
+                                InputTransparent="True"
+                                Padding="18"
+                                StrokeThickness="0"
+                                StrokeShape="RoundRectangle 16">
+                                <Label
+                                    FontAttributes="Bold"
+                                    HorizontalTextAlignment="Center"
+                                    InputTransparent="True"
+                                    Text="Close the tour"
+                                    TextColor="#102A3A" />
+                            </Border>
+                        </controls:RichButton>
+                    </VerticalStackLayout>
+                </ScrollView>
+            </Grid>
+        </panelViews:PanelBossBody_DefaultView.TopHeaderPagePanels>
+
+        <panelViews:PanelBossBody_DefaultView.TopHeaderPanels>
+            <Grid
+                AutomationId="DapperDan_HeaderPanel"
+                BackgroundColor="#FFFFFF"
+                HeightRequest="72"
+                Padding="14,8"
+                pb:PanelBoss.PanelIsVisible="True"
+                pb:PanelBoss.PanelName="DapperDanHeaderPanel"
+                pb:PanelBoss.PanelPriority="10"
+                pb:PanelBoss.PanelTransitionIn="None"
+                pb:PanelBoss.PanelTransitionOut="None">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="52" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="52" />
+                    <ColumnDefinition Width="52" />
+                </Grid.ColumnDefinitions>
+                <controls:RichButton
+                    AutomationId="DapperDan_Header_Palette"
+                    AutoResetIsBusyMilliseconds="650"
+                    Command="{Binding ExecutePanelDemoCommand}"
+                    CommandParameter="Palette"
+                    HeightRequest="48"
+                    WidthRequest="48">
+                    <Border BackgroundColor="#DDF3F8" InputTransparent="True" StrokeThickness="0" StrokeShape="RoundRectangle 14">
+                        <Label FontAttributes="Bold" FontSize="20" HorizontalTextAlignment="Center" InputTransparent="True" Text="≡" TextColor="#075985" VerticalTextAlignment="Center" />
+                    </Border>
+                </controls:RichButton>
+                <VerticalStackLayout Grid.Column="1" Padding="8,0" Spacing="0" VerticalOptions="Center">
+                    <Label FontAttributes="Bold" FontSize="20" Text="DapperDan" TextColor="#102A3A" />
+                    <Label FontSize="12" Text="PanelBoss + PLOXM expression" TextColor="#607D8B" />
+                </VerticalStackLayout>
+                <controls:RichButton
+                    Grid.Column="2"
+                    AutomationId="DapperDan_Header_Inspector"
+                    AutoResetIsBusyMilliseconds="650"
+                    Command="{Binding ExecutePanelDemoCommand}"
+                    CommandParameter="Inspector"
+                    HeightRequest="48"
+                    WidthRequest="48">
+                    <Border BackgroundColor="#EDF5F8" InputTransparent="True" StrokeThickness="0" StrokeShape="RoundRectangle 14">
+                        <Label FontAttributes="Bold" FontSize="17" HorizontalTextAlignment="Center" InputTransparent="True" Text="i" TextColor="#075985" VerticalTextAlignment="Center" />
+                    </Border>
+                </controls:RichButton>
+                <controls:RichButton
+                    Grid.Column="3"
+                    AutomationId="DapperDan_Header_Menu"
+                    AutoResetIsBusyMilliseconds="650"
+                    Command="{Binding ExecutePanelDemoCommand}"
+                    CommandParameter="Menu"
+                    HeightRequest="48"
+                    WidthRequest="48">
+                    <Border BackgroundColor="#EDF5F8" InputTransparent="True" StrokeThickness="0" StrokeShape="RoundRectangle 14">
+                        <Label FontAttributes="Bold" FontSize="20" HorizontalTextAlignment="Center" InputTransparent="True" Text="•••" TextColor="#075985" VerticalTextAlignment="Center" />
+                    </Border>
+                </controls:RichButton>
+            </Grid>
+        </panelViews:PanelBossBody_DefaultView.TopHeaderPanels>
+
+        <panelViews:PanelBossBody_DefaultView.ContentPanels>
+            <Grid
+                AutomationId="DapperDan_ButtonsPanel"
+                BackgroundColor="#EAF2F5"
+                pb:PanelBoss.PanelIsVisible="True"
+                pb:PanelBoss.PanelName="DapperDanButtonsPanel"
+                pb:PanelBoss.PanelPriority="10"
+                pb:PanelBoss.PanelTransitionIn="None"
+                pb:PanelBoss.PanelTransitionOut="None">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="72" pb:PanelBoss.PanelClearanceFor="DapperDanHeaderPanel" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="116" pb:PanelBoss.PanelClearanceFor="DapperDanPageActions" />
+                </Grid.RowDefinitions>
+                <ScrollView Grid.Row="1" AutomationId="DapperDan_ButtonsScrollView">
+                    <VerticalStackLayout Padding="18,18,18,28" Spacing="20">
+                        <VerticalStackLayout Spacing="5">
+                            <Label Style="{StaticResource PageTitle}" Text="PLOXM RichButton gallery" />
+                            <Label Style="{StaticResource BodyCopy}" Text="Every face below belongs to this page: plain XAML, one RichButton host, and no packaged product widget hiding the composition." />
+                        </VerticalStackLayout>
+
+                        <Grid ColumnSpacing="12" RowSpacing="12">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="72" />
+                                <RowDefinition Height="72" />
+                                <RowDefinition Height="72" />
+                                <RowDefinition Height="72" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <controls:RichButton
+                                AutomationId="DapperDan_Specimen_Primary"
+                                AutoResetIsBusyMilliseconds="650"
+                                Command="{Binding ExecutePanelDemoCommand}"
+                                CommandParameter="Status">
+                                <Border
+                                    BackgroundColor="#075985"
+                                    InputTransparent="True"
+                                    Padding="14"
+                                    StrokeThickness="0"
+                                    StrokeShape="RoundRectangle 16">
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup Name="RichInteractionStates">
+                                            <VisualState Name="WaitingForTouch">
+                                                <VisualState.Setters>
+                                                    <Setter Property="BackgroundColor" Value="#075985" />
+                                                </VisualState.Setters>
+                                            </VisualState>
+                                            <VisualState Name="IsProcessing">
+                                                <VisualState.Setters>
+                                                    <Setter Property="BackgroundColor" Value="#5791A9" />
+                                                    <Setter Property="Opacity" Value="0.78" />
+                                                </VisualState.Setters>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+                                    <Label FontAttributes="Bold" HorizontalTextAlignment="Center" InputTransparent="True" Text="Primary action" TextColor="White" VerticalTextAlignment="Center" />
+                                </Border>
+                            </controls:RichButton>
+
+                            <controls:RichButton
+                                Grid.Column="1"
+                                AutomationId="DapperDan_Specimen_IconOnly"
+                                AutoResetIsBusyMilliseconds="650"
+                                Command="{Binding ExecutePanelDemoCommand}"
+                                CommandParameter="Menu">
+                                <Border BackgroundColor="#FFFFFF" InputTransparent="True" Padding="14" Stroke="#B9CED8" StrokeShape="RoundRectangle 16">
+                                    <Label FontAttributes="Bold" FontSize="24" HorizontalTextAlignment="Center" InputTransparent="True" Text="✦" TextColor="#075985" VerticalTextAlignment="Center" />
+                                </Border>
+                            </controls:RichButton>
+
+                            <controls:RichButton
+                                Grid.Row="1"
+                                AutomationId="DapperDan_Specimen_DetailRow"
+                                AutoResetIsBusyMilliseconds="650"
+                                Command="{Binding ExecutePanelDemoCommand}"
+                                CommandParameter="Inspector">
+                                <Border BackgroundColor="#FFFFFF" InputTransparent="True" Padding="12" Stroke="#B9CED8" StrokeShape="RoundRectangle 16">
+                                    <Grid ColumnSpacing="10" InputTransparent="True">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="40" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border BackgroundColor="#DDF3F8" InputTransparent="True" StrokeThickness="0" StrokeShape="RoundRectangle 12">
+                                            <Label HorizontalTextAlignment="Center" InputTransparent="True" Text="RB" TextColor="#075985" VerticalTextAlignment="Center" />
+                                        </Border>
+                                        <VerticalStackLayout Grid.Column="1" InputTransparent="True" Spacing="1" VerticalOptions="Center">
+                                            <Label FontAttributes="Bold" FontSize="14" InputTransparent="True" Text="Detail row" TextColor="#173E52" />
+                                            <Label FontSize="11" InputTransparent="True" Text="Icon, text, tail" TextColor="#607D8B" />
+                                        </VerticalStackLayout>
+                                        <Label Grid.Column="2" InputTransparent="True" Text="›" TextColor="#075985" VerticalTextAlignment="Center" />
+                                    </Grid>
+                                </Border>
+                            </controls:RichButton>
+
+                            <controls:RichButton
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                AutomationId="DapperDan_Specimen_AvatarBadge"
+                                AutoResetIsBusyMilliseconds="650"
+                                Command="{Binding ExecutePanelDemoCommand}"
+                                CommandParameter="Palette">
+                                <Border BackgroundColor="#FFF8E6" InputTransparent="True" Padding="12" Stroke="#E7C76B" StrokeShape="RoundRectangle 16">
+                                    <Grid ColumnSpacing="8" InputTransparent="True">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="42" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border BackgroundColor="#F8C15C" InputTransparent="True" StrokeThickness="0" StrokeShape="RoundRectangle 21">
+                                            <Label FontAttributes="Bold" HorizontalTextAlignment="Center" InputTransparent="True" Text="K" TextColor="#102A3A" VerticalTextAlignment="Center" />
+                                        </Border>
+                                        <VerticalStackLayout Grid.Column="1" InputTransparent="True" Spacing="1" VerticalOptions="Center">
+                                            <Label FontAttributes="Bold" InputTransparent="True" Text="Avatar + badge" TextColor="#173E52" />
+                                            <Label FontSize="11" InputTransparent="True" Text="3 new memories" TextColor="#7A5B16" />
+                                        </VerticalStackLayout>
+                                    </Grid>
+                                </Border>
+                            </controls:RichButton>
+
+                            <controls:RichButton
+                                Grid.Row="2"
+                                AutomationId="DapperDan_Specimen_SelectedCard"
+                                AutoResetIsBusyMilliseconds="650"
+                                Command="{Binding ExecutePanelDemoCommand}"
+                                CommandParameter="Tour">
+                                <Border BackgroundColor="#E9F8F0" InputTransparent="True" Padding="12" Stroke="#87C9A5" StrokeShape="RoundRectangle 16">
+                                    <VerticalStackLayout InputTransparent="True" Spacing="2" VerticalOptions="Center">
+                                        <Label FontAttributes="Bold" HorizontalTextAlignment="Center" InputTransparent="True" Text="Selected card" TextColor="#17613B" />
+                                        <Label FontSize="10" HorizontalTextAlignment="Center" InputTransparent="True" Text="One core RichButton, page-owned face" TextColor="#3E7A5B" />
+                                    </VerticalStackLayout>
+                                </Border>
+                            </controls:RichButton>
+
+                            <controls:RichButton
+                                Grid.Row="2"
+                                Grid.Column="1"
+                                AutomationId="DapperDan_Specimen_BottomSheet"
+                                AutoResetIsBusyMilliseconds="650"
+                                Command="{Binding ExecutePanelDemoCommand}"
+                                CommandParameter="Sheet">
+                                <Border BackgroundColor="#F4ECFF" InputTransparent="True" Padding="12" Stroke="#BFA4E8" StrokeShape="RoundRectangle 16">
+                                    <VerticalStackLayout InputTransparent="True" Spacing="2" VerticalOptions="Center">
+                                        <Label FontAttributes="Bold" HorizontalTextAlignment="Center" InputTransparent="True" Text="Bottom sheet" TextColor="#5B3486" />
+                                        <Label FontSize="10" HorizontalTextAlignment="Center" InputTransparent="True" Text="Same control, different command" TextColor="#765B94" />
+                                    </VerticalStackLayout>
+                                </Border>
+                            </controls:RichButton>
+
+                            <controls:RichButton
+                                Grid.Row="3"
+                                AutomationId="DapperDan_Specimen_Dialog"
+                                AutoResetIsBusyMilliseconds="650"
+                                Command="{Binding ExecutePanelDemoCommand}"
+                                CommandParameter="Dialog">
+                                <Border BackgroundColor="#FFECE8" InputTransparent="True" Padding="12" Stroke="#E7A496" StrokeShape="RoundRectangle 16">
+                                    <VerticalStackLayout InputTransparent="True" Spacing="2" VerticalOptions="Center">
+                                        <Label FontAttributes="Bold" HorizontalTextAlignment="Center" InputTransparent="True" Text="Dialog" TextColor="#8E3C2C" />
+                                        <Label FontSize="10" HorizontalTextAlignment="Center" InputTransparent="True" Text="Native input into a popup lane" TextColor="#9B6257" />
+                                    </VerticalStackLayout>
+                                </Border>
+                            </controls:RichButton>
+
+                            <controls:RichButton
+                                Grid.Row="3"
+                                Grid.Column="1"
+                                AutomationId="DapperDan_Specimen_AsyncBusy"
+                                Command="{Binding AsyncSpecimenCommand}"
+                                HeightRequest="72"
+                                IsBusy="{Binding IsAsyncSpecimenBusy, Mode=TwoWay}">
+                                <Border BackgroundColor="#173E52" InputTransparent="True" Padding="12" StrokeThickness="0" StrokeShape="RoundRectangle 16">
+                                    <VerticalStackLayout InputTransparent="True" Spacing="2" VerticalOptions="Center">
+                                        <Label FontAttributes="Bold" HorizontalTextAlignment="Center" InputTransparent="True" Text="Async busy" TextColor="White" />
+                                        <Label FontSize="10" HorizontalTextAlignment="Center" InputTransparent="True" Text="Command releases the two-way flag" TextColor="#CDE2EC" />
+                                    </VerticalStackLayout>
+                                </Border>
+                            </controls:RichButton>
+                        </Grid>
+
+                        <Border BackgroundColor="#FFFFFF" Padding="18" Stroke="#B9CED8" StrokeShape="RoundRectangle 18">
+                            <VerticalStackLayout Spacing="12">
+                                <Label Style="{StaticResource SectionTitle}" Text="Keiki EF + SQLite pocket" />
+                                <Label Style="{StaticResource BodyCopy}" Text="A tiny injected repository proves the skeleton can persist its own data without carrying any product domain." />
+                                <Entry AutomationId="DapperDan_Keiki_Name" Placeholder="Name" Style="{StaticResource FieldEntry}" Text="{Binding KeikiName}" />
+                                <Entry AutomationId="DapperDan_Keiki_Break" Placeholder="Favorite break" Style="{StaticResource FieldEntry}" Text="{Binding FavoriteBreak}" />
+                                <Entry AutomationId="DapperDan_Keiki_Memory" Placeholder="Memory" Style="{StaticResource FieldEntry}" Text="{Binding KeikiMemory}" />
+                                <Grid ColumnSpacing="10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <controls:RichButton AutomationId="DapperDan_Keiki_Add" Command="{Binding AddKeikiCommand}" HeightRequest="50" IsBusy="{Binding IsKeikiBusy, Mode=TwoWay}">
+                                        <Border BackgroundColor="#075985" InputTransparent="True" StrokeThickness="0" StrokeShape="RoundRectangle 14">
+                                            <Label FontAttributes="Bold" HorizontalTextAlignment="Center" InputTransparent="True" Text="Add" TextColor="White" VerticalTextAlignment="Center" />
+                                        </Border>
+                                    </controls:RichButton>
+                                    <controls:RichButton Grid.Column="1" AutomationId="DapperDan_Keiki_Load" Command="{Binding LoadKeikiCommand}" HeightRequest="50" IsBusy="{Binding IsKeikiBusy, Mode=TwoWay}">
+                                        <Border BackgroundColor="#DDF3F8" InputTransparent="True" StrokeThickness="0" StrokeShape="RoundRectangle 14">
+                                            <Label FontAttributes="Bold" HorizontalTextAlignment="Center" InputTransparent="True" Text="Load" TextColor="#075985" VerticalTextAlignment="Center" />
+                                        </Border>
+                                    </controls:RichButton>
+                                    <controls:RichButton Grid.Column="2" AutomationId="DapperDan_Keiki_Clear" Command="{Binding ClearKeikiCommand}" HeightRequest="50" IsBusy="{Binding IsKeikiBusy, Mode=TwoWay}">
+                                        <Border BackgroundColor="#FFECE8" InputTransparent="True" StrokeThickness="0" StrokeShape="RoundRectangle 14">
+                                            <Label FontAttributes="Bold" HorizontalTextAlignment="Center" InputTransparent="True" Text="Clear" TextColor="#8E3C2C" VerticalTextAlignment="Center" />
+                                        </Border>
+                                    </controls:RichButton>
+                                </Grid>
+                                <Label FontAttributes="Bold" Text="{Binding KeikiCountText}" TextColor="#173E52" />
+                                <CollectionView AutomationId="DapperDan_Keiki_List" HeightRequest="210" ItemsSource="{Binding Keiki}" SelectionMode="None">
+                                    <CollectionView.ItemTemplate>
+                                        <DataTemplate x:DataType="data:Keiki">
+                                            <Border BackgroundColor="#F5F9FB" Margin="0,4" Padding="12" Stroke="#D4E2E8" StrokeShape="RoundRectangle 12">
+                                                <Grid ColumnSpacing="10">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <VerticalStackLayout Spacing="2">
+                                                        <Label FontAttributes="Bold" Text="{Binding Name}" TextColor="#173E52" />
+                                                        <Label FontSize="12" Text="{Binding FavoriteBreak, StringFormat='Favorite: {0}'}" TextColor="#607D8B" />
+                                                    </VerticalStackLayout>
+                                                    <Label Grid.Column="1" FontSize="11" Text="{Binding Id, StringFormat='#{0}'}" TextColor="#78909C" VerticalTextAlignment="Center" />
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </CollectionView.ItemTemplate>
+                                </CollectionView>
+                            </VerticalStackLayout>
+                        </Border>
+                    </VerticalStackLayout>
+                </ScrollView>
+            </Grid>
+
+            <Grid
+                AutomationId="DapperDan_PanelsPanel"
+                BackgroundColor="#EAF2F5"
+                pb:PanelBoss.PanelIsVisible="False"
+                pb:PanelBoss.PanelName="DapperDanPanelsPanel"
+                pb:PanelBoss.PanelPriority="0"
+                pb:PanelBoss.PanelTransitionIn="FadeInDownward"
+                pb:PanelBoss.PanelTransitionOut="FadeOutUpward">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="72" pb:PanelBoss.PanelClearanceFor="DapperDanHeaderPanel" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="116" pb:PanelBoss.PanelClearanceFor="DapperDanPageActions" />
+                </Grid.RowDefinitions>
+                <ScrollView Grid.Row="1" AutomationId="DapperDan_PanelsScrollView">
+                    <VerticalStackLayout Padding="18" Spacing="16">
+                        <Label Style="{StaticResource PageTitle}" Text="Panel lane tiles" />
+                        <Label Style="{StaticResource BodyCopy}" Text="Each tile drives one named collection through PanelBoss. Open, close, toggle, priority, smoke, viewport sizing, and owned popup presentation all stay visible here." />
+                        <Grid ColumnSpacing="12" RowSpacing="12">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="84" />
+                                <RowDefinition Height="84" />
+                                <RowDefinition Height="84" />
+                                <RowDefinition Height="84" />
+                                <RowDefinition Height="84" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <controls:RichButton AutomationId="DapperDan_Lane_NonVisual" AutoResetIsBusyMilliseconds="600" Command="{Binding ExecutePanelDemoCommand}" CommandParameter="NonVisual">
+                                <Border BackgroundColor="#FFFFFF" InputTransparent="True" Padding="12" Stroke="#B9CED8" StrokeShape="RoundRectangle 16">
+                                    <VerticalStackLayout InputTransparent="True" Spacing="2"><Label FontAttributes="Bold" InputTransparent="True" Text="NonVisualControls" TextColor="#173E52" /><Label FontSize="11" InputTransparent="True" Text="Hidden diagnostics host" TextColor="#607D8B" /></VerticalStackLayout>
+                                </Border>
+                            </controls:RichButton>
+                            <controls:RichButton Grid.Column="1" AutomationId="DapperDan_Lane_TopHeaderPage" AutoResetIsBusyMilliseconds="600" Command="{Binding ExecutePanelDemoCommand}" CommandParameter="Tour">
+                                <Border BackgroundColor="#0B3C5D" InputTransparent="True" Padding="12" StrokeThickness="0" StrokeShape="RoundRectangle 16">
+                                    <VerticalStackLayout InputTransparent="True" Spacing="2"><Label FontAttributes="Bold" InputTransparent="True" Text="TopHeaderPage" TextColor="White" /><Label FontSize="11" InputTransparent="True" Text="Full viewport tour" TextColor="#D9EDF7" /></VerticalStackLayout>
+                                </Border>
+                            </controls:RichButton>
+                            <controls:RichButton Grid.Row="1" AutomationId="DapperDan_Lane_TopHeader" AutoResetIsBusyMilliseconds="600" Command="{Binding ExecutePanelDemoCommand}" CommandParameter="Restore">
+                                <Border BackgroundColor="#DDF3F8" InputTransparent="True" Padding="12" Stroke="#8BC4D9" StrokeShape="RoundRectangle 16">
+                                    <VerticalStackLayout InputTransparent="True" Spacing="2"><Label FontAttributes="Bold" InputTransparent="True" Text="TopHeader" TextColor="#075985" /><Label FontSize="11" InputTransparent="True" Text="Default chrome owner" TextColor="#4F7C8E" /></VerticalStackLayout>
+                                </Border>
+                            </controls:RichButton>
+                            <controls:RichButton Grid.Row="1" Grid.Column="1" AutomationId="DapperDan_Lane_Content" AutoResetIsBusyMilliseconds="600" Command="{Binding SelectPageActionCommand}" CommandParameter="{Binding ButtonsAction}">
+                                <Border BackgroundColor="#FFFFFF" InputTransparent="True" Padding="12" Stroke="#B9CED8" StrokeShape="RoundRectangle 16">
+                                    <VerticalStackLayout InputTransparent="True" Spacing="2"><Label FontAttributes="Bold" InputTransparent="True" Text="Content" TextColor="#173E52" /><Label FontSize="11" InputTransparent="True" Text="Five mutually exclusive pages" TextColor="#607D8B" /></VerticalStackLayout>
+                                </Border>
+                            </controls:RichButton>
+                            <controls:RichButton Grid.Row="2" AutomationId="DapperDan_Lane_Left" AutoResetIsBusyMilliseconds="600" Command="{Binding ExecutePanelDemoCommand}" CommandParameter="Palette">
+                                <Border BackgroundColor="#E9F8F0" InputTransparent="True" Padding="12" Stroke="#87C9A5" StrokeShape="RoundRectangle 16"><VerticalStackLayout InputTransparent="True" Spacing="2"><Label FontAttributes="Bold" InputTransparent="True" Text="LeftSelector" TextColor="#17613B" /><Label FontSize="11" InputTransparent="True" Text="Palette drawer" TextColor="#3E7A5B" /></VerticalStackLayout></Border>
+                            </controls:RichButton>
+                            <controls:RichButton Grid.Row="2" Grid.Column="1" AutomationId="DapperDan_Lane_Right" AutoResetIsBusyMilliseconds="600" Command="{Binding ExecutePanelDemoCommand}" CommandParameter="Inspector">
+                                <Border BackgroundColor="#F4ECFF" InputTransparent="True" Padding="12" Stroke="#BFA4E8" StrokeShape="RoundRectangle 16"><VerticalStackLayout InputTransparent="True" Spacing="2"><Label FontAttributes="Bold" InputTransparent="True" Text="RightSelector" TextColor="#5B3486" /><Label FontSize="11" InputTransparent="True" Text="Inspector drawer" TextColor="#765B94" /></VerticalStackLayout></Border>
+                            </controls:RichButton>
+                            <controls:RichButton Grid.Row="3" AutomationId="DapperDan_Lane_Menu" AutoResetIsBusyMilliseconds="600" Command="{Binding ExecutePanelDemoCommand}" CommandParameter="Menu">
+                                <Border BackgroundColor="#FFF8E6" InputTransparent="True" Padding="12" Stroke="#E7C76B" StrokeShape="RoundRectangle 16"><VerticalStackLayout InputTransparent="True" Spacing="2"><Label FontAttributes="Bold" InputTransparent="True" Text="Menu" TextColor="#7A5B16" /><Label FontSize="11" InputTransparent="True" Text="Smoky floating card" TextColor="#8B7337" /></VerticalStackLayout></Border>
+                            </controls:RichButton>
+                            <controls:RichButton Grid.Row="3" Grid.Column="1" AutomationId="DapperDan_Lane_BottomInput" AutoResetIsBusyMilliseconds="600" Command="{Binding ExecutePanelDemoCommand}" CommandParameter="Sheet">
+                                <Border BackgroundColor="#E6F2FF" InputTransparent="True" Padding="12" Stroke="#92BCE0" StrokeShape="RoundRectangle 16"><VerticalStackLayout InputTransparent="True" Spacing="2"><Label FontAttributes="Bold" InputTransparent="True" Text="BottomInput" TextColor="#245A87" /><Label FontSize="11" InputTransparent="True" Text="Viewport bottom sheet" TextColor="#557B9B" /></VerticalStackLayout></Border>
+                            </controls:RichButton>
+                            <controls:RichButton Grid.Row="4" AutomationId="DapperDan_Lane_BottomStatus" AutoResetIsBusyMilliseconds="600" Command="{Binding ExecutePanelDemoCommand}" CommandParameter="Status">
+                                <Border BackgroundColor="#FFECE8" InputTransparent="True" Padding="12" Stroke="#E7A496" StrokeShape="RoundRectangle 16"><VerticalStackLayout InputTransparent="True" Spacing="2"><Label FontAttributes="Bold" InputTransparent="True" Text="BottomStatus" TextColor="#8E3C2C" /><Label FontSize="11" InputTransparent="True" Text="Transient status ribbon" TextColor="#9B6257" /></VerticalStackLayout></Border>
+                            </controls:RichButton>
+                            <controls:RichButton Grid.Row="4" Grid.Column="1" AutomationId="DapperDan_Lane_FullScreen" Command="{Binding ExecutePanelDemoCommand}" CommandParameter="Loading" IsBusy="{Binding IsLoadingPanelBusy, Mode=TwoWay}">
+                                <Border BackgroundColor="#173E52" InputTransparent="True" Padding="12" StrokeThickness="0" StrokeShape="RoundRectangle 16"><VerticalStackLayout InputTransparent="True" Spacing="2"><Label FontAttributes="Bold" InputTransparent="True" Text="FullScreenPopup" TextColor="White" /><Label FontSize="11" InputTransparent="True" Text="Owned loading fence" TextColor="#CDE2EC" /></VerticalStackLayout></Border>
+                            </controls:RichButton>
+                        </Grid>
+                    </VerticalStackLayout>
+                </ScrollView>
+            </Grid>
+
+            <Grid
+                AutomationId="DapperDan_MotionPanel"
+                BackgroundColor="#EAF2F5"
+                pb:PanelBoss.PanelIsVisible="False"
+                pb:PanelBoss.PanelName="DapperDanMotionPanel"
+                pb:PanelBoss.PanelPriority="0"
+                pb:PanelBoss.PanelTransitionIn="FadeInDownward"
+                pb:PanelBoss.PanelTransitionOut="FadeOutUpward">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="72" pb:PanelBoss.PanelClearanceFor="DapperDanHeaderPanel" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="116" pb:PanelBoss.PanelClearanceFor="DapperDanPageActions" />
+                </Grid.RowDefinitions>
+                <ScrollView Grid.Row="1" AutomationId="DapperDan_MotionScrollView">
+                    <VerticalStackLayout Padding="18" Spacing="16">
+                        <Label Style="{StaticResource PageTitle}" Text="Motion contracts" />
+                        <Label Style="{StaticResource BodyCopy}" Text="Transitions belong to panels, not navigation guesses. These specimens expose the transferred vocabulary as deliberate, named motion." />
+                        <Border BackgroundColor="#FFFFFF" Padding="16" Stroke="#B9CED8" StrokeShape="RoundRectangle 18">
+                            <Grid ColumnSpacing="16" RowSpacing="10">
+                                <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                <Label FontAttributes="Bold" Text="Lane" TextColor="#173E52" /><Label Grid.Column="1" FontAttributes="Bold" Text="In → Out" TextColor="#173E52" />
+                                <Label Grid.Row="1" Text="Left drawer" TextColor="#486171" /><Label Grid.Row="1" Grid.Column="1" Text="SlideInToRight → SlideOutToLeft" TextColor="#486171" />
+                                <Label Grid.Row="2" Text="Right drawer" TextColor="#486171" /><Label Grid.Row="2" Grid.Column="1" Text="SlideInToLeft → SlideOutToRight" TextColor="#486171" />
+                                <Label Grid.Row="3" Text="Bottom sheet" TextColor="#486171" /><Label Grid.Row="3" Grid.Column="1" Text="SlideInUpward → SlideOutDownward" TextColor="#486171" />
+                                <Label Grid.Row="4" Text="Popup / content" TextColor="#486171" /><Label Grid.Row="4" Grid.Column="1" Text="FadeInDownward → FadeOutUpward" TextColor="#486171" />
+                            </Grid>
+                        </Border>
+                        <Grid ColumnSpacing="12" RowSpacing="12">
+                            <Grid.RowDefinitions><RowDefinition Height="64" /><RowDefinition Height="64" /><RowDefinition Height="64" /></Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                            <controls:RichButton AutomationId="DapperDan_Motion_Left" AutoResetIsBusyMilliseconds="700" Command="{Binding ExecutePanelDemoCommand}" CommandParameter="Palette"><Border BackgroundColor="#E9F8F0" InputTransparent="True" Stroke="#87C9A5" StrokeShape="RoundRectangle 16"><Label FontAttributes="Bold" HorizontalTextAlignment="Center" InputTransparent="True" Text="Slide left lane" TextColor="#17613B" VerticalTextAlignment="Center" /></Border></controls:RichButton>
+                            <controls:RichButton Grid.Column="1" AutomationId="DapperDan_Motion_Right" AutoResetIsBusyMilliseconds="700" Command="{Binding ExecutePanelDemoCommand}" CommandParameter="Inspector"><Border BackgroundColor="#F4ECFF" InputTransparent="True" Stroke="#BFA4E8" StrokeShape="RoundRectangle 16"><Label FontAttributes="Bold" HorizontalTextAlignment="Center" InputTransparent="True" Text="Slide right lane" TextColor="#5B3486" VerticalTextAlignment="Center" /></Border></controls:RichButton>
+                            <controls:RichButton Grid.Row="1" AutomationId="DapperDan_Motion_Sheet" AutoResetIsBusyMilliseconds="700" Command="{Binding ExecutePanelDemoCommand}" CommandParameter="Sheet"><Border BackgroundColor="#E6F2FF" InputTransparent="True" Stroke="#92BCE0" StrokeShape="RoundRectangle 16"><Label FontAttributes="Bold" HorizontalTextAlignment="Center" InputTransparent="True" Text="Raise sheet" TextColor="#245A87" VerticalTextAlignment="Center" /></Border></controls:RichButton>
+                            <controls:RichButton Grid.Row="1" Grid.Column="1" AutomationId="DapperDan_Motion_Dialog" AutoResetIsBusyMilliseconds="700" Command="{Binding ExecutePanelDemoCommand}" CommandParameter="Dialog"><Border BackgroundColor="#FFECE8" InputTransparent="True" Stroke="#E7A496" StrokeShape="RoundRectangle 16"><Label FontAttributes="Bold" HorizontalTextAlignment="Center" InputTransparent="True" Text="Fade dialog" TextColor="#8E3C2C" VerticalTextAlignment="Center" /></Border></controls:RichButton>
+                            <controls:RichButton Grid.Row="2" Grid.ColumnSpan="2" AutomationId="DapperDan_Motion_Tour" AutoResetIsBusyMilliseconds="700" Command="{Binding ExecutePanelDemoCommand}" CommandParameter="Tour"><Border BackgroundColor="#0B3C5D" InputTransparent="True" StrokeThickness="0" StrokeShape="RoundRectangle 16"><Label FontAttributes="Bold" HorizontalTextAlignment="Center" InputTransparent="True" Text="Fade full-page tour" TextColor="White" VerticalTextAlignment="Center" /></Border></controls:RichButton>
+                        </Grid>
+                    </VerticalStackLayout>
+                </ScrollView>
+            </Grid>
+
+            <Grid
+                AutomationId="DapperDan_WitnessPanel"
+                BackgroundColor="#EAF2F5"
+                pb:PanelBoss.PanelIsVisible="False"
+                pb:PanelBoss.PanelName="DapperDanWitnessPanel"
+                pb:PanelBoss.PanelPriority="0"
+                pb:PanelBoss.PanelTransitionIn="FadeInDownward"
+                pb:PanelBoss.PanelTransitionOut="FadeOutUpward">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="72" pb:PanelBoss.PanelClearanceFor="DapperDanHeaderPanel" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="116" pb:PanelBoss.PanelClearanceFor="DapperDanPageActions" />
+                </Grid.RowDefinitions>
+                <ScrollView Grid.Row="1" AutomationId="DapperDan_WitnessScrollView">
+                    <VerticalStackLayout Padding="18" Spacing="16">
+                        <Label Style="{StaticResource PageTitle}" Text="iOS canary" />
+                        <Label Style="{StaticResource BodyCopy}" Text="This lean public surface checks the same stringer on Android and iOS: launch, native input, panel motion, and local SQLite persistence." />
+                        <Border BackgroundColor="#FFFFFF" Padding="16" Stroke="#B9CED8" StrokeShape="RoundRectangle 18">
+                            <VerticalStackLayout Spacing="8">
+                                <Label FontAttributes="Bold" Text="1. Launch + XAML" TextColor="#173E52" />
+                                <Label Style="{StaticResource BodyCopy}" Text="If this page renders, MAUI startup, Prism navigation, XAML source generation, and packaged resources made it across." />
+                            </VerticalStackLayout>
+                        </Border>
+                        <Border BackgroundColor="#FFFFFF" Padding="16" Stroke="#B9CED8" StrokeShape="RoundRectangle 18">
+                            <VerticalStackLayout Spacing="8">
+                                <Label FontAttributes="Bold" Text="2. Native input + panels" TextColor="#173E52" />
+                                <Label Style="{StaticResource BodyCopy}" Text="Open the dialog to exercise the core RichButton native bridge and a host-owned full-screen popup." />
+                                <controls:RichButton AutomationId="DapperDan_Canary_Dialog" AutoResetIsBusyMilliseconds="650" Command="{Binding ExecutePanelDemoCommand}" CommandParameter="Dialog" HeightRequest="56">
+                                    <Border BackgroundColor="#075985" InputTransparent="True" StrokeThickness="0" StrokeShape="RoundRectangle 14"><Label FontAttributes="Bold" HorizontalTextAlignment="Center" InputTransparent="True" Text="Open canary dialog" TextColor="White" VerticalTextAlignment="Center" /></Border>
+                                </controls:RichButton>
+                            </VerticalStackLayout>
+                        </Border>
+                        <Border BackgroundColor="#FFFFFF" Padding="16" Stroke="#B9CED8" StrokeShape="RoundRectangle 18">
+                            <VerticalStackLayout Spacing="8">
+                                <Label FontAttributes="Bold" Text="3. SQLite persistence" TextColor="#173E52" />
+                                <Label Style="{StaticResource BodyCopy}" Text="{Binding KeikiCountText}" />
+                                <controls:RichButton AutomationId="DapperDan_Canary_ReloadKeiki" AutoResetIsBusyMilliseconds="650" Command="{Binding LoadKeikiCommand}" HeightRequest="56">
+                                    <Border BackgroundColor="#F8C15C" InputTransparent="True" StrokeThickness="0" StrokeShape="RoundRectangle 14"><Label FontAttributes="Bold" HorizontalTextAlignment="Center" InputTransparent="True" Text="Reload local rows" TextColor="#102A3A" VerticalTextAlignment="Center" /></Border>
+                                </controls:RichButton>
+                            </VerticalStackLayout>
+                        </Border>
+                    </VerticalStackLayout>
+                </ScrollView>
+            </Grid>
+
+            <Grid
+                AutomationId="DapperDan_MorePanel"
+                BackgroundColor="#F4ECFF"
+                pb:PanelBoss.PanelIsVisible="False"
+                pb:PanelBoss.PanelName="DapperDanMorePanel"
+                pb:PanelBoss.PanelPriority="0"
+                pb:PanelBoss.PanelTransitionIn="FadeInDownward"
+                pb:PanelBoss.PanelTransitionOut="FadeOutUpward">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="72" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="116" pb:PanelBoss.PanelClearanceFor="DapperDanPageActions" />
+                </Grid.RowDefinitions>
+                <Grid BackgroundColor="#FFFFFF" Padding="14,8">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="52" /></Grid.ColumnDefinitions>
+                    <VerticalStackLayout Spacing="0" VerticalOptions="Center"><Label FontAttributes="Bold" FontSize="20" Text="More page actions" TextColor="#3D235B" /><Label FontSize="12" Text="Header ownership belongs to this content panel" TextColor="#765B94" /></VerticalStackLayout>
+                    <controls:RichButton Grid.Column="1" AutomationId="DapperDan_More_Close" Command="{Binding SelectPageActionCommand}" CommandParameter="{Binding MoreAction}" HeightRequest="48" IsBusy="{Binding MoreAction.IsBusy, Mode=TwoWay}" WidthRequest="48"><Border BackgroundColor="#F4ECFF" InputTransparent="True" StrokeThickness="0" StrokeShape="RoundRectangle 14"><Label FontAttributes="Bold" FontSize="20" HorizontalTextAlignment="Center" InputTransparent="True" Text="×" TextColor="#5B3486" VerticalTextAlignment="Center" /></Border></controls:RichButton>
+                </Grid>
+                <ScrollView Grid.Row="1" AutomationId="DapperDan_MoreScrollView">
+                    <VerticalStackLayout Padding="18" Spacing="12">
+                        <Label Style="{StaticResource BodyCopy}" Text="More is a normal fifth page action. It closes the shared header, presents its own, keeps the five-cell strip, and restores prior chrome on exit." />
+                        <controls:RichButton AutomationId="DapperDan_More_Tour" AutoResetIsBusyMilliseconds="700" Command="{Binding ExecutePanelDemoCommand}" CommandParameter="Tour" HeightRequest="64"><Border BackgroundColor="#0B3C5D" InputTransparent="True" Padding="14" StrokeThickness="0" StrokeShape="RoundRectangle 16"><Grid ColumnSpacing="12" InputTransparent="True"><Grid.ColumnDefinitions><ColumnDefinition Width="42" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><Label FontAttributes="Bold" HorizontalTextAlignment="Center" InputTransparent="True" Text="TOP" TextColor="#F8C15C" VerticalTextAlignment="Center" /><Label Grid.Column="1" FontAttributes="Bold" InputTransparent="True" Text="Full-page tour" TextColor="White" VerticalTextAlignment="Center" /><Label Grid.Column="2" InputTransparent="True" Text="›" TextColor="White" VerticalTextAlignment="Center" /></Grid></Border></controls:RichButton>
+                        <controls:RichButton AutomationId="DapperDan_More_Drawers" AutoResetIsBusyMilliseconds="700" Command="{Binding ExecutePanelDemoCommand}" CommandParameter="Palette" HeightRequest="64"><Border BackgroundColor="#FFFFFF" InputTransparent="True" Padding="14" Stroke="#BFA4E8" StrokeShape="RoundRectangle 16"><Grid ColumnSpacing="12" InputTransparent="True"><Grid.ColumnDefinitions><ColumnDefinition Width="42" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><Label FontAttributes="Bold" HorizontalTextAlignment="Center" InputTransparent="True" Text="L" TextColor="#5B3486" VerticalTextAlignment="Center" /><Label Grid.Column="1" FontAttributes="Bold" InputTransparent="True" Text="Open selector palette" TextColor="#3D235B" VerticalTextAlignment="Center" /><Label Grid.Column="2" InputTransparent="True" Text="›" TextColor="#5B3486" VerticalTextAlignment="Center" /></Grid></Border></controls:RichButton>
+                        <controls:RichButton AutomationId="DapperDan_More_Menu" AutoResetIsBusyMilliseconds="700" Command="{Binding ExecutePanelDemoCommand}" CommandParameter="Menu" HeightRequest="64"><Border BackgroundColor="#FFF8E6" InputTransparent="True" Padding="14" Stroke="#E7C76B" StrokeShape="RoundRectangle 16"><Grid ColumnSpacing="12" InputTransparent="True"><Grid.ColumnDefinitions><ColumnDefinition Width="42" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><Label FontAttributes="Bold" HorizontalTextAlignment="Center" InputTransparent="True" Text="•••" TextColor="#7A5B16" VerticalTextAlignment="Center" /><Label Grid.Column="1" FontAttributes="Bold" InputTransparent="True" Text="Open smoky menu" TextColor="#7A5B16" VerticalTextAlignment="Center" /><Label Grid.Column="2" InputTransparent="True" Text="›" TextColor="#7A5B16" VerticalTextAlignment="Center" /></Grid></Border></controls:RichButton>
+                        <controls:RichButton AutomationId="DapperDan_More_Sheet" AutoResetIsBusyMilliseconds="700" Command="{Binding ExecutePanelDemoCommand}" CommandParameter="Sheet" HeightRequest="64"><Border BackgroundColor="#E6F2FF" InputTransparent="True" Padding="14" Stroke="#92BCE0" StrokeShape="RoundRectangle 16"><Grid ColumnSpacing="12" InputTransparent="True"><Grid.ColumnDefinitions><ColumnDefinition Width="42" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><Label FontAttributes="Bold" HorizontalTextAlignment="Center" InputTransparent="True" Text="↑" TextColor="#245A87" VerticalTextAlignment="Center" /><Label Grid.Column="1" FontAttributes="Bold" InputTransparent="True" Text="Raise bottom sheet" TextColor="#245A87" VerticalTextAlignment="Center" /><Label Grid.Column="2" InputTransparent="True" Text="›" TextColor="#245A87" VerticalTextAlignment="Center" /></Grid></Border></controls:RichButton>
+                        <controls:RichButton AutomationId="DapperDan_More_Dialog" AutoResetIsBusyMilliseconds="700" Command="{Binding ExecutePanelDemoCommand}" CommandParameter="Dialog" HeightRequest="64"><Border BackgroundColor="#FFECE8" InputTransparent="True" Padding="14" Stroke="#E7A496" StrokeShape="RoundRectangle 16"><Grid ColumnSpacing="12" InputTransparent="True"><Grid.ColumnDefinitions><ColumnDefinition Width="42" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><Label FontAttributes="Bold" HorizontalTextAlignment="Center" InputTransparent="True" Text="□" TextColor="#8E3C2C" VerticalTextAlignment="Center" /><Label Grid.Column="1" FontAttributes="Bold" InputTransparent="True" Text="Present popup dialog" TextColor="#8E3C2C" VerticalTextAlignment="Center" /><Label Grid.Column="2" InputTransparent="True" Text="›" TextColor="#8E3C2C" VerticalTextAlignment="Center" /></Grid></Border></controls:RichButton>
+                        <controls:RichButton AutomationId="DapperDan_More_Loading" Command="{Binding ExecutePanelDemoCommand}" CommandParameter="Loading" HeightRequest="64" IsBusy="{Binding IsLoadingPanelBusy, Mode=TwoWay}"><Border BackgroundColor="#173E52" InputTransparent="True" Padding="14" StrokeThickness="0" StrokeShape="RoundRectangle 16"><Grid ColumnSpacing="12" InputTransparent="True"><Grid.ColumnDefinitions><ColumnDefinition Width="42" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><ActivityIndicator Color="#F8C15C" InputTransparent="True" IsRunning="{Binding IsLoadingPanelBusy}" /><Label Grid.Column="1" FontAttributes="Bold" InputTransparent="True" Text="Pulse owned loading panel" TextColor="White" VerticalTextAlignment="Center" /><Label Grid.Column="2" InputTransparent="True" Text="›" TextColor="White" VerticalTextAlignment="Center" /></Grid></Border></controls:RichButton>
+                    </VerticalStackLayout>
+                </ScrollView>
+            </Grid>
+        </panelViews:PanelBossBody_DefaultView.ContentPanels>
+
+        <panelViews:PanelBossBody_DefaultView.LeftSelectorPanels>
+            <Grid
+                AutomationId="DapperDan_PalettePanel"
+                BackgroundColor="#E9F8F0"
+                HorizontalOptions="Start"
+                Padding="20,54,20,24"
+                WidthRequest="310"
+                pb:PanelBoss.PanelIsVisible="False"
+                pb:PanelBoss.PanelName="DapperDanPalettePanel"
+                pb:PanelBoss.PanelPriority="0"
+                pb:PanelBoss.PanelTransitionIn="SlideInToRight"
+                pb:PanelBoss.PanelTransitionOut="SlideOutToLeft">
+                <VerticalStackLayout Spacing="16">
+                    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="48" /></Grid.ColumnDefinitions><Label Style="{StaticResource SectionTitle}" Text="Palette lane" VerticalTextAlignment="Center" /><controls:RichButton Grid.Column="1" AutomationId="DapperDan_Palette_Close" AutoResetIsBusyMilliseconds="600" Command="{Binding ExecutePanelDemoCommand}" CommandParameter="ClosePalette" HeightRequest="44"><Border BackgroundColor="#CBEAD9" InputTransparent="True" StrokeThickness="0" StrokeShape="RoundRectangle 12"><Label FontAttributes="Bold" HorizontalTextAlignment="Center" InputTransparent="True" Text="×" TextColor="#17613B" VerticalTextAlignment="Center" /></Border></controls:RichButton></Grid>
+                    <Label Style="{StaticResource BodyCopy}" Text="LeftSelectorPanels can host a compact page-owned chooser without creating a navigation route." />
+                    <Border BackgroundColor="#075985" HeightRequest="64" StrokeThickness="0" StrokeShape="RoundRectangle 14" />
+                    <Border BackgroundColor="#F8C15C" HeightRequest="64" StrokeThickness="0" StrokeShape="RoundRectangle 14" />
+                    <Border BackgroundColor="#E7A496" HeightRequest="64" StrokeThickness="0" StrokeShape="RoundRectangle 14" />
+                </VerticalStackLayout>
+            </Grid>
+        </panelViews:PanelBossBody_DefaultView.LeftSelectorPanels>
+
+        <panelViews:PanelBossBody_DefaultView.RightSelectorPanels>
+            <Grid
+                AutomationId="DapperDan_InspectorPanel"
+                BackgroundColor="#F4ECFF"
+                HorizontalOptions="End"
+                Padding="20,54,20,24"
+                WidthRequest="330"
+                pb:PanelBoss.PanelIsVisible="False"
+                pb:PanelBoss.PanelName="DapperDanInspectorPanel"
+                pb:PanelBoss.PanelPriority="0"
+                pb:PanelBoss.PanelTransitionIn="SlideInToLeft"
+                pb:PanelBoss.PanelTransitionOut="SlideOutToRight">
+                <VerticalStackLayout Spacing="16">
+                    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="48" /></Grid.ColumnDefinitions><Label Style="{StaticResource SectionTitle}" Text="Inspector lane" VerticalTextAlignment="Center" /><controls:RichButton Grid.Column="1" AutomationId="DapperDan_Inspector_Close" AutoResetIsBusyMilliseconds="600" Command="{Binding ExecutePanelDemoCommand}" CommandParameter="CloseInspector" HeightRequest="44"><Border BackgroundColor="#E5D8F5" InputTransparent="True" StrokeThickness="0" StrokeShape="RoundRectangle 12"><Label FontAttributes="Bold" HorizontalTextAlignment="Center" InputTransparent="True" Text="×" TextColor="#5B3486" VerticalTextAlignment="Center" /></Border></controls:RichButton></Grid>
+                    <Label Style="{StaticResource BodyCopy}" Text="RightSelectorPanels is the natural place for live witness details, tuning, or contextual help." />
+                    <Border BackgroundColor="#FFFFFF" Padding="14" Stroke="#BFA4E8" StrokeShape="RoundRectangle 14"><VerticalStackLayout Spacing="6"><Label FontAttributes="Bold" Text="Current status" TextColor="#3D235B" /><Label Text="{Binding StatusMessage}" TextColor="#765B94" /></VerticalStackLayout></Border>
+                    <Border BackgroundColor="#FFFFFF" Padding="14" Stroke="#BFA4E8" StrokeShape="RoundRectangle 14"><VerticalStackLayout Spacing="6"><Label FontAttributes="Bold" Text="Local store" TextColor="#3D235B" /><Label Text="{Binding KeikiCountText}" TextColor="#765B94" /></VerticalStackLayout></Border>
+                </VerticalStackLayout>
+            </Grid>
+        </panelViews:PanelBossBody_DefaultView.RightSelectorPanels>
+
+        <panelViews:PanelBossBody_DefaultView.MenuPanels>
+            <Grid
+                AutomationId="DapperDan_MenuPanel"
+                Padding="20,86,20,140"
+                pb:PanelBoss.DoThatSmokyBackgroundThing="#99102A3A"
+                pb:PanelBoss.PanelIsVisible="False"
+                pb:PanelBoss.PanelName="DapperDanMenuPanel"
+                pb:PanelBoss.PanelPriority="0"
+                pb:PanelBoss.PanelTransitionIn="FadeInDownward"
+                pb:PanelBoss.PanelTransitionOut="FadeOutUpward">
+                <Border BackgroundColor="#FFFFFF" HorizontalOptions="End" Padding="16" Stroke="#B9CED8" StrokeShape="RoundRectangle 18" VerticalOptions="Start" WidthRequest="290">
+                    <VerticalStackLayout Spacing="12">
+                        <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions><Label FontAttributes="Bold" FontSize="18" Text="Menu lane" TextColor="#173E52" VerticalTextAlignment="Center" /><controls:RichButton Grid.Column="1" AutomationId="DapperDan_Menu_Close" AutoResetIsBusyMilliseconds="600" Command="{Binding ExecutePanelDemoCommand}" CommandParameter="CloseMenu" HeightRequest="42"><Border BackgroundColor="#EDF5F8" InputTransparent="True" StrokeThickness="0" StrokeShape="RoundRectangle 12"><Label FontAttributes="Bold" HorizontalTextAlignment="Center" InputTransparent="True" Text="×" TextColor="#075985" VerticalTextAlignment="Center" /></Border></controls:RichButton></Grid>
+                        <Label Style="{StaticResource BodyCopy}" Text="A smoky floating action card, still page-owned PLOXM." />
+                        <controls:RichButton AutomationId="DapperDan_Menu_Status" AutoResetIsBusyMilliseconds="600" Command="{Binding ExecutePanelDemoCommand}" CommandParameter="Status" HeightRequest="52"><Border BackgroundColor="#FFF8E6" InputTransparent="True" Stroke="#E7C76B" StrokeShape="RoundRectangle 14"><Label FontAttributes="Bold" HorizontalTextAlignment="Center" InputTransparent="True" Text="Toggle status ribbon" TextColor="#7A5B16" VerticalTextAlignment="Center" /></Border></controls:RichButton>
+                        <controls:RichButton AutomationId="DapperDan_Menu_Dialog" AutoResetIsBusyMilliseconds="600" Command="{Binding ExecutePanelDemoCommand}" CommandParameter="Dialog" HeightRequest="52"><Border BackgroundColor="#FFECE8" InputTransparent="True" Stroke="#E7A496" StrokeShape="RoundRectangle 14"><Label FontAttributes="Bold" HorizontalTextAlignment="Center" InputTransparent="True" Text="Open dialog" TextColor="#8E3C2C" VerticalTextAlignment="Center" /></Border></controls:RichButton>
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+        </panelViews:PanelBossBody_DefaultView.MenuPanels>
+
+        <panelViews:PanelBossBody_DefaultView.BottomInputPanels>
+            <Grid
+                AutomationId="DapperDan_PageActions"
+                BackgroundColor="#FFFFFF"
+                HeightRequest="82"
+                Padding="6,7"
+                pb:PanelBoss.PanelIsVisible="True"
+                pb:PanelBoss.PanelName="DapperDanPageActions"
+                pb:PanelBoss.PanelPriority="10"
+                pb:PanelBoss.PanelTransitionIn="None"
+                pb:PanelBoss.PanelTransitionOut="None">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <controls:RichButton AutomationId="DapperDan_Action_Buttons" Command="{Binding SelectPageActionCommand}" CommandParameter="{Binding ButtonsAction}" IsBusy="{Binding ButtonsAction.IsBusy, Mode=TwoWay}" Margin="2">
+                    <Border BackgroundColor="{Binding ButtonsAction.BackgroundColor}" InputTransparent="True" StrokeThickness="0" StrokeShape="RoundRectangle 14"><VerticalStackLayout InputTransparent="True" Spacing="1" VerticalOptions="Center"><Label FontAttributes="Bold" FontSize="13" HorizontalTextAlignment="Center" InputTransparent="True" Text="{Binding ButtonsAction.Glyph}" TextColor="{Binding ButtonsAction.TextColor}" /><Label FontSize="10" HorizontalTextAlignment="Center" InputTransparent="True" Text="{Binding ButtonsAction.Title}" TextColor="{Binding ButtonsAction.TextColor}" /></VerticalStackLayout></Border>
+                </controls:RichButton>
+                <controls:RichButton Grid.Column="1" AutomationId="DapperDan_Action_Panels" Command="{Binding SelectPageActionCommand}" CommandParameter="{Binding PanelsAction}" IsBusy="{Binding PanelsAction.IsBusy, Mode=TwoWay}" Margin="2">
+                    <Border BackgroundColor="{Binding PanelsAction.BackgroundColor}" InputTransparent="True" StrokeThickness="0" StrokeShape="RoundRectangle 14"><VerticalStackLayout InputTransparent="True" Spacing="1" VerticalOptions="Center"><Label FontAttributes="Bold" FontSize="13" HorizontalTextAlignment="Center" InputTransparent="True" Text="{Binding PanelsAction.Glyph}" TextColor="{Binding PanelsAction.TextColor}" /><Label FontSize="10" HorizontalTextAlignment="Center" InputTransparent="True" Text="{Binding PanelsAction.Title}" TextColor="{Binding PanelsAction.TextColor}" /></VerticalStackLayout></Border>
+                </controls:RichButton>
+                <controls:RichButton Grid.Column="2" AutomationId="DapperDan_Action_Motion" Command="{Binding SelectPageActionCommand}" CommandParameter="{Binding MotionAction}" IsBusy="{Binding MotionAction.IsBusy, Mode=TwoWay}" Margin="2">
+                    <Border BackgroundColor="{Binding MotionAction.BackgroundColor}" InputTransparent="True" StrokeThickness="0" StrokeShape="RoundRectangle 14"><VerticalStackLayout InputTransparent="True" Spacing="1" VerticalOptions="Center"><Label FontAttributes="Bold" FontSize="13" HorizontalTextAlignment="Center" InputTransparent="True" Text="{Binding MotionAction.Glyph}" TextColor="{Binding MotionAction.TextColor}" /><Label FontSize="10" HorizontalTextAlignment="Center" InputTransparent="True" Text="{Binding MotionAction.Title}" TextColor="{Binding MotionAction.TextColor}" /></VerticalStackLayout></Border>
+                </controls:RichButton>
+                <controls:RichButton Grid.Column="3" AutomationId="DapperDan_Action_Witness" Command="{Binding SelectPageActionCommand}" CommandParameter="{Binding WitnessAction}" IsBusy="{Binding WitnessAction.IsBusy, Mode=TwoWay}" Margin="2">
+                    <Border BackgroundColor="{Binding WitnessAction.BackgroundColor}" InputTransparent="True" StrokeThickness="0" StrokeShape="RoundRectangle 14"><VerticalStackLayout InputTransparent="True" Spacing="1" VerticalOptions="Center"><Label FontAttributes="Bold" FontSize="13" HorizontalTextAlignment="Center" InputTransparent="True" Text="{Binding WitnessAction.Glyph}" TextColor="{Binding WitnessAction.TextColor}" /><Label FontSize="10" HorizontalTextAlignment="Center" InputTransparent="True" Text="{Binding WitnessAction.Title}" TextColor="{Binding WitnessAction.TextColor}" /></VerticalStackLayout></Border>
+                </controls:RichButton>
+                <controls:RichButton Grid.Column="4" AutomationId="DapperDan_Action_More" Command="{Binding SelectPageActionCommand}" CommandParameter="{Binding MoreAction}" IsBusy="{Binding MoreAction.IsBusy, Mode=TwoWay}" Margin="2">
+                    <Border BackgroundColor="{Binding MoreAction.BackgroundColor}" InputTransparent="True" StrokeThickness="0" StrokeShape="RoundRectangle 14"><VerticalStackLayout InputTransparent="True" Spacing="1" VerticalOptions="Center"><Label FontAttributes="Bold" FontSize="13" HorizontalTextAlignment="Center" InputTransparent="True" Text="{Binding MoreAction.Glyph}" TextColor="{Binding MoreAction.TextColor}" /><Label FontSize="10" HorizontalTextAlignment="Center" InputTransparent="True" Text="{Binding MoreAction.Title}" TextColor="{Binding MoreAction.TextColor}" /></VerticalStackLayout></Border>
+                </controls:RichButton>
+            </Grid>
+
+            <Grid
+                AutomationId="DapperDan_BottomSheet"
+                BackgroundColor="#E6F2FF"
+                HeightRequest="310"
+                Padding="20,18,20,26"
+                pb:PanelBoss.DoThatSmokyBackgroundThing="#66102A3A"
+                pb:PanelBoss.PanelIsVisible="False"
+                pb:PanelBoss.PanelName="DapperDanBottomSheet"
+                pb:PanelBoss.PanelPriority="0"
+                pb:PanelBoss.PanelSizingMode="Viewport"
+                pb:PanelBoss.PanelTransitionIn="SlideInUpward"
+                pb:PanelBoss.PanelTransitionOut="SlideOutDownward"
+                pb:PanelBoss.PartOfSafeArea="False">
+                <VerticalStackLayout Spacing="14">
+                    <BoxView BackgroundColor="#92BCE0" HeightRequest="5" HorizontalOptions="Center" WidthRequest="54" />
+                    <Label Style="{StaticResource SectionTitle}" Text="Viewport bottom sheet" />
+                    <Label Style="{StaticResource BodyCopy}" Text="This second BottomInput panel replaces the five-cell strip while open, then hands control back to the highest-priority default panel." />
+                    <controls:RichButton AutomationId="DapperDan_BottomSheet_Status" AutoResetIsBusyMilliseconds="600" Command="{Binding ExecutePanelDemoCommand}" CommandParameter="Status" HeightRequest="54"><Border BackgroundColor="#FFFFFF" InputTransparent="True" Stroke="#92BCE0" StrokeShape="RoundRectangle 14"><Label FontAttributes="Bold" HorizontalTextAlignment="Center" InputTransparent="True" Text="Send status ribbon" TextColor="#245A87" VerticalTextAlignment="Center" /></Border></controls:RichButton>
+                    <controls:RichButton AutomationId="DapperDan_BottomSheet_Close" AutoResetIsBusyMilliseconds="600" Command="{Binding ExecutePanelDemoCommand}" CommandParameter="CloseSheet" HeightRequest="54"><Border BackgroundColor="#245A87" InputTransparent="True" StrokeThickness="0" StrokeShape="RoundRectangle 14"><Label FontAttributes="Bold" HorizontalTextAlignment="Center" InputTransparent="True" Text="Close sheet" TextColor="White" VerticalTextAlignment="Center" /></Border></controls:RichButton>
+                </VerticalStackLayout>
+            </Grid>
+        </panelViews:PanelBossBody_DefaultView.BottomInputPanels>
+
+        <panelViews:PanelBossBody_DefaultView.BottomStatusPanels>
+            <Grid
+                AutomationId="DapperDan_StatusPanel"
+                BackgroundColor="#173E52"
+                HeightRequest="54"
+                Margin="12,0,12,122"
+                Padding="14,8"
+                pb:PanelBoss.PanelIsVisible="False"
+                pb:PanelBoss.PanelName="DapperDanStatusPanel"
+                pb:PanelBoss.PanelPriority="0"
+                pb:PanelBoss.PanelTransitionIn="FadeInDownward"
+                pb:PanelBoss.PanelTransitionOut="FadeOutUpward">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions>
+                <Label FontSize="12" Text="{Binding StatusMessage}" TextColor="White" VerticalTextAlignment="Center" />
+                <controls:RichButton Grid.Column="1" AutomationId="DapperDan_Status_Close" AutoResetIsBusyMilliseconds="500" Command="{Binding ExecutePanelDemoCommand}" CommandParameter="CloseStatus" HeightRequest="40"><Border BackgroundColor="#2D5B70" InputTransparent="True" StrokeThickness="0" StrokeShape="RoundRectangle 12"><Label FontAttributes="Bold" HorizontalTextAlignment="Center" InputTransparent="True" Text="×" TextColor="White" VerticalTextAlignment="Center" /></Border></controls:RichButton>
+            </Grid>
+        </panelViews:PanelBossBody_DefaultView.BottomStatusPanels>
+
+        <panelViews:PanelBossBody_DefaultView.FullScreenPopupPanels>
+            <Grid
+                AutomationId="DapperDan_DialogPanel"
+                Padding="24"
+                pb:PanelBoss.DoThatSmokyBackgroundThing="#AA102A3A"
+                pb:PanelBoss.PanelIsVisible="False"
+                pb:PanelBoss.PanelName="DapperDanDialogPanel"
+                pb:PanelBoss.PanelPriority="0"
+                pb:PanelBoss.PanelTransitionIn="FadeInDownward"
+                pb:PanelBoss.PanelTransitionOut="FadeOutUpward">
+                <Border BackgroundColor="#FFFFFF" HorizontalOptions="Center" MaximumWidthRequest="420" Padding="22" Stroke="#B9CED8" StrokeShape="RoundRectangle 22" VerticalOptions="Center">
+                    <VerticalStackLayout Spacing="16">
+                        <Label Style="{StaticResource PageTitle}" Text="Popup archetype" />
+                        <Label Style="{StaticResource BodyCopy}" Text="A page-owned modal card mounted in FullScreenPopupPanels. The smoke and motion belong to the panel contract." />
+                        <controls:RichButton AutomationId="DapperDan_Dialog_Close" AutoResetIsBusyMilliseconds="650" Command="{Binding ExecutePanelDemoCommand}" CommandParameter="CloseDialog" HeightRequest="54"><Border BackgroundColor="#075985" InputTransparent="True" StrokeThickness="0" StrokeShape="RoundRectangle 14"><Label FontAttributes="Bold" HorizontalTextAlignment="Center" InputTransparent="True" Text="Close dialog" TextColor="White" VerticalTextAlignment="Center" /></Border></controls:RichButton>
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+
+            <Grid
+                AutomationId="DapperDan_LoadingPanel"
+                pb:PanelBoss.DoThatSmokyBackgroundThing="#BB102A3A"
+                pb:PanelBoss.PanelIsVisible="False"
+                pb:PanelBoss.PanelName="DapperDanLoadingPanel"
+                pb:PanelBoss.PanelPriority="0"
+                pb:PanelBoss.PanelTransitionIn="FadeInDownward"
+                pb:PanelBoss.PanelTransitionOut="FadeOutUpward">
+                <Border BackgroundColor="#173E52" HorizontalOptions="Center" Padding="26" StrokeThickness="0" StrokeShape="RoundRectangle 22" VerticalOptions="Center">
+                    <VerticalStackLayout Spacing="14">
+                        <ActivityIndicator AutomationId="DapperDan_LoadingSpinner" Color="#F8C15C" IsRunning="True" />
+                        <Label FontAttributes="Bold" HorizontalTextAlignment="Center" Text="Owned presentation fence" TextColor="White" />
+                        <Label FontSize="12" HorizontalTextAlignment="Center" Text="Waiting for visible opacity, not a guessed delay." TextColor="#CDE2EC" />
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+        </panelViews:PanelBossBody_DefaultView.FullScreenPopupPanels>
+    </panelViews:PanelBossBody_DefaultView>
+</ContentPage>
