@@ -69,13 +69,13 @@ jobs:
           lock_file="$(dirname "$PROJECT_PATH")/packages.lock.json"
           if [[ -f "$lock_file" ]]; then
             dotnet restore "$PROJECT_PATH" \
-              -p:TargetFramework=net10.0-ios \
+              -p:TargetFrameworks=net10.0-ios \
               -r iossimulator-arm64 \
               --locked-mode
           else
             echo "::warning file=$PROJECT_PATH::packages.lock.json is not committed; generating a run-local lock file."
             dotnet restore "$PROJECT_PATH" \
-              -p:TargetFramework=net10.0-ios \
+              -p:TargetFrameworks=net10.0-ios \
               -p:RestorePackagesWithLockFile=true \
               -r iossimulator-arm64
           fi
@@ -102,7 +102,7 @@ jobs:
         run: |
           set -euo pipefail
           dotnet restore "$PROJECT_PATH" \
-            -p:TargetFramework=net10.0-ios \
+            -p:TargetFrameworks=net10.0-ios \
             -r ios-arm64 \
             --locked-mode
 
