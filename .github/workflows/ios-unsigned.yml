@@ -62,21 +62,13 @@ jobs:
           test "$(dotnet workload --version)" = "$WORKLOAD_VERSION"
           dotnet workload list
 
-      - name: Restore simulator packages
+      - name: Restore full package graph for pinned toolchain
         shell: bash
         run: |
           set -euo pipefail
-          lock_file="$(dirname "$PROJECT_PATH")/packages.lock.json"
-          if [[ -f "$lock_file" ]]; then
-            dotnet restore "$PROJECT_PATH" \
-              -r iossimulator-arm64 \
-              --locked-mode
-          else
-            echo "::warning file=$PROJECT_PATH::packages.lock.json is not committed; generating a run-local lock file."
-            dotnet restore "$PROJECT_PATH" \
-              -p:RestorePackagesWithLockFile=true \
-              -r iossimulator-arm64
-          fi
+          dotnet restore "$PROJECT_PATH" \
+            -p:RestorePackagesWithLockFile=true \
+            --force-evaluate
 
       - name: Build unsigned simulator binary
         shell: bash
@@ -94,14 +86,6 @@ jobs:
             -p:ContinuousIntegrationBuild=true \
             -p:EnableCodeSigning=false \
             -bl:artifacts/iossimulator-arm64.binlog
-
-      - name: Restore device packages from lock
-        shell: bash
-        run: |
-          set -euo pipefail
-          dotnet restore "$PROJECT_PATH" \
-            -r ios-arm64 \
-            --locked-mode
 
       - name: Build unsigned device binary
         shell: bash
@@ -176,6 +160,7 @@ jobs:
           cp THIRD-PARTY-NOTICES.md artifacts/THIRD-PARTY-NOTICES.md
           cp THIRD-PARTY-LICENSES/Prism-9-package-notice.txt artifacts/PRISM-9-PACKAGE-NOTICE.txt
           cp THIRD-PARTY-LICENSES/DryIoc-MIT.txt artifacts/DRYIOC-MIT.txt
+          cp "$project_dir/packages.lock.json" artifacts/packages.lock.pinned-toolchain.json
 
           {
             printf '%s\n' 'DAPPER DAN iOS BUILD PROOF — RETURN TO SENDER'
@@ -198,6 +183,7 @@ jobs:
             artifacts/THIRD-PARTY-NOTICES.md
             artifacts/PRISM-9-PACKAGE-NOTICE.txt
             artifacts/DRYIOC-MIT.txt
+            artifacts/packages.lock.pinned-toolchain.json
             artifacts/RETURN-TO-SENDER.txt
             artifacts/*.binlog
           if-no-files-found: error

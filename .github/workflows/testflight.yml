@@ -79,21 +79,13 @@ jobs:
           test "$(dotnet workload --version)" = "$WORKLOAD_VERSION"
           dotnet workload list
 
-      - name: Restore packages before loading credentials
+      - name: Restore full package graph before loading credentials
         shell: bash
         run: |
           set -euo pipefail
-          lock_file="$(dirname "$PROJECT_PATH")/packages.lock.json"
-          if [[ -f "$lock_file" ]]; then
-            dotnet restore "$PROJECT_PATH" \
-              -r ios-arm64 \
-              --locked-mode
-          else
-            echo "::warning file=$PROJECT_PATH::packages.lock.json is not committed; generating a run-local lock file."
-            dotnet restore "$PROJECT_PATH" \
-              -p:RestorePackagesWithLockFile=true \
-              -r ios-arm64
-          fi
+          dotnet restore "$PROJECT_PATH" \
+            -p:RestorePackagesWithLockFile=true \
+            --force-evaluate
 
       - name: Import Apple distribution certificate
         uses: Apple-Actions/import-codesign-certs@5142e029c445c10ffc7149d172e540235a065466 # v7.0.0
