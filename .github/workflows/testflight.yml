@@ -83,9 +83,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          dotnet restore "$PROJECT_PATH" \
-            -p:RestorePackagesWithLockFile=true \
-            --force-evaluate
+          dotnet restore "$PROJECT_PATH" --locked-mode
 
       - name: Import Apple distribution certificate
         uses: Apple-Actions/import-codesign-certs@5142e029c445c10ffc7149d172e540235a065466 # v7.0.0

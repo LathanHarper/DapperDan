@@ -66,9 +66,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          dotnet restore "$PROJECT_PATH" \
-            -p:RestorePackagesWithLockFile=true \
-            --force-evaluate
+          dotnet restore "$PROJECT_PATH" --locked-mode
 
       - name: Build unsigned simulator binary
         shell: bash
