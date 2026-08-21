@@ -20,6 +20,20 @@
     <Compile Include="..\..\src\DapperDan\Data\Entities\Keiki.cs" Link="Production\Keiki.cs" />
     <Compile Include="..\..\src\DapperDan\Data\Entities\KeikiMemory.cs" Link="Production\KeikiMemory.cs" />
     <Compile Include="..\..\src\DapperDan\Data\DapperDanDbContext.cs" Link="Production\DapperDanDbContext.cs" />
+    <Compile Include="..\..\src\DapperDan\Data\CompiledModels\*.cs" Link="Production\CompiledModels\%(Filename)%(Extension)" />
+    <Compile Include="..\..\src\DapperDan\Data\DapperDanDatabaseMetadata.cs" Link="Production\DapperDanDatabaseMetadata.cs" />
+    <Compile Include="..\..\src\DapperDan\Data\DatabaseInitializer.cs" Link="Production\DatabaseInitializer.cs" />
+    <Compile Include="..\..\src\DapperDan\Data\IDatabasePathProvider.cs" Link="Production\IDatabasePathProvider.cs" />
+    <Compile Include="..\..\src\DapperDan\Data\IKeikiRepository.cs" Link="Production\IKeikiRepository.cs" />
+    <Compile Include="..\..\src\DapperDan\Data\IPackagedDatabaseSource.cs" Link="Production\IPackagedDatabaseSource.cs" />
+    <Compile Include="..\..\src\DapperDan\Data\KeikiRepository.cs" Link="Production\KeikiRepository.cs" />
+    <Compile Include="..\..\src\DapperDan\Data\PackagedDatabaseInstaller.cs" Link="Production\PackagedDatabaseInstaller.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\src\DapperDan\Resources\Raw\dapper-dan-seed-v1.db3"
+          Link="dapper-dan-seed-v1.db3"
+          CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

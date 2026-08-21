@@ -22,11 +22,58 @@ env:
   DOTNET_CLI_TELEMETRY_OPTOUT: "1"
   DOTNET_NOLOGO: "1"
   PROJECT_PATH: src/DapperDan/DapperDan.csproj
+  SEED_ASSET: dapper-dan-seed-v1.db3
   WORKLOAD_VERSION: 10.0.302.1
 
 jobs:
+  data-canary:
+    name: Compiled model and packaged SQLite
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Install pinned .NET SDK
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+
+      - name: Regenerate public database artifacts
+        shell: pwsh
+        run: ./tools/DapperDan.DatabaseTool/Generate.ps1
+
+      - name: Verify generated artifacts are current
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code -- \
+            src/DapperDan/Data/CompiledModels \
+            "src/DapperDan/Resources/Raw/$SEED_ASSET"
+          test -z "$(git status --porcelain --untracked-files=all -- \
+            src/DapperDan/Data/CompiledModels \
+            "src/DapperDan/Resources/Raw/$SEED_ASSET")"
+          test "$(sqlite3 "src/DapperDan/Resources/Raw/$SEED_ASSET" 'PRAGMA application_id;')" = "1145131088"
+          test "$(sqlite3 "src/DapperDan/Resources/Raw/$SEED_ASSET" 'PRAGMA user_version;')" = "1"
+          test "$(sqlite3 "src/DapperDan/Resources/Raw/$SEED_ASSET" 'PRAGMA integrity_check;')" = "ok"
+          test -z "$(sqlite3 "src/DapperDan/Resources/Raw/$SEED_ASSET" 'PRAGMA foreign_key_check;')"
+
+      - name: Run public data regression tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet restore tests/DapperDan.Tests/DapperDan.Tests.csproj --locked-mode
+          dotnet test tests/DapperDan.Tests/DapperDan.Tests.csproj \
+            -c Release \
+            --no-restore
+
   build:
     name: Simulator and device binaries
+    needs: data-canary
     runs-on: macos-26
     timeout-minutes: 75
 
@@ -130,6 +177,28 @@ jobs:
           test "$device_bundle_id" = "$BUNDLE_ID"
           test "$simulator_display_name" = "Dapper Dan - UNSIGNED PROOF"
           test "$device_display_name" = "Dapper Dan - UNSIGNED PROOF"
+
+          verify_seed() {
+            local app_bundle="$1"
+            local seed_count
+            local bundled_seed
+
+            seed_count="$(find "$app_bundle" -type f -name "$SEED_ASSET" | wc -l | tr -d ' ')"
+            test "$seed_count" = "1"
+            bundled_seed="$(find "$app_bundle" -type f -name "$SEED_ASSET" -print -quit)"
+            cmp -s "src/DapperDan/Resources/Raw/$SEED_ASSET" "$bundled_seed"
+            test "$(/usr/bin/sqlite3 "$bundled_seed" 'PRAGMA application_id;')" = "1145131088"
+            test "$(/usr/bin/sqlite3 "$bundled_seed" 'PRAGMA user_version;')" = "1"
+            test "$(/usr/bin/sqlite3 "$bundled_seed" 'PRAGMA integrity_check;')" = "ok"
+            test -z "$(/usr/bin/sqlite3 "$bundled_seed" 'PRAGMA foreign_key_check;')"
+            if find "$app_bundle" -type f \( -name "$SEED_ASSET-wal" -o -name "$SEED_ASSET-shm" \) | grep -q .; then
+              echo "SQLite sidecars must not be packaged." >&2
+              exit 1
+            fi
+          }
+
+          verify_seed "${simulator_apps[0]}"
+          verify_seed "${device_apps[0]}"
 
           ditto -c -k --sequesterRsrc --keepParent \
             "${simulator_apps[0]}" artifacts/DapperDan-iossimulator-arm64-unsigned.zip

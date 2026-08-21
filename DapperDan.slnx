@@ -5,4 +5,7 @@
   <Folder Name="/tests/">
     <Project Path="tests/DapperDan.Tests/DapperDan.Tests.csproj" />
   </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/DapperDan.DatabaseTool/DapperDan.DatabaseTool.csproj" />
+  </Folder>
 </Solution>

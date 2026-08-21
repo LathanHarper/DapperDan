@@ -45,6 +45,7 @@ secrets.*
 # Runtime data and diagnostics
 *.db
 *.db3
+!src/DapperDan/Resources/Raw/dapper-dan-seed-v1.db3
 *.sqlite
 *.sqlite3
 *.log

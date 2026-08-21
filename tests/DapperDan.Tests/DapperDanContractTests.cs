@@ -56,6 +56,27 @@ public sealed class DapperDanContractTests
     }
 
     [Fact]
+    public void MobileDatabasePathUsesCompiledModelAndNeverCreatesSchemaAtRuntime()
+    {
+        var root = FindRepositoryRoot();
+        var sourceRoot = Path.Combine(root.FullName, "src", "DapperDan");
+        var initializer = File.ReadAllText(Path.Combine(
+            sourceRoot,
+            "Data",
+            "DatabaseInitializer.cs"));
+        var startup = File.ReadAllText(Path.Combine(sourceRoot, "MauiProgram.cs"));
+
+        Assert.DoesNotContain("EnsureCreated", initializer, StringComparison.Ordinal);
+        Assert.DoesNotContain("EnsureDeleted", initializer, StringComparison.Ordinal);
+        Assert.DoesNotContain("ReadWriteCreate", startup, StringComparison.Ordinal);
+        Assert.Contains(
+            ".UseModel(DapperDanDbContextModel.Instance)",
+            startup,
+            StringComparison.Ordinal);
+        Assert.Contains("Mode=ReadWrite", startup, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void DapperDanDeclaresEachPanelBossLaneExactlyOnce()
     {
         var document = LoadDapperDanPage();
