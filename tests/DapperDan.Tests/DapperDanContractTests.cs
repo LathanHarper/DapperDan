@@ -39,6 +39,23 @@ public sealed class DapperDanContractTests
     }
 
     [Fact]
+    public void DapperDanLeavesNavigationPageRegistrationToPrism()
+    {
+        var root = FindRepositoryRoot();
+        var sourcePath = Path.Combine(root.FullName, "src", "DapperDan", "MauiProgram.cs");
+        var source = File.ReadAllText(sourcePath);
+
+        Assert.Contains(
+            ".CreateWindow(\"NavigationPage/DapperDanPage\")",
+            source,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            "RegisterForNavigation<NavigationPage>",
+            source,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void DapperDanDeclaresEachPanelBossLaneExactlyOnce()
     {
         var document = LoadDapperDanPage();
