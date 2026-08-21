@@ -19,13 +19,27 @@ public sealed class IosPrismRootPage : ContentPage
         var confirmButton = new Button
         {
             AutomationId = "DapperDan_PrismRoot_Confirm",
-            Text = "Confirm page is responsive"
+            Text = "Prism navigate to parameterless page"
         };
 
-        confirmButton.Clicked += (_, _) =>
+        confirmButton.Clicked += async (_, _) =>
         {
-            Console.WriteLine("DAPPER_BOOT 04 Prism root page responded to input");
-            status.Text = "Prism root page is alive.";
+            Console.WriteLine("DAPPER_BOOT 04 Attached Prism navigation requested from root page");
+
+            var navigationService = Prism.Navigation.Xaml.Navigation.GetNavigationService(this);
+            if (navigationService is null)
+            {
+                status.Text = "Prism did not attach a navigation service to the root page.";
+                Console.WriteLine("DAPPER_BOOT 05 Root page has no attached Prism navigation service");
+                return;
+            }
+
+            var result = await navigationService.NavigateAsync(nameof(IosPrismSecondPage));
+            if (!result.Success)
+            {
+                status.Text = $"Prism navigation failed: {result.Exception?.GetType().Name ?? "unknown"}";
+                Console.WriteLine("DAPPER_BOOT 05 Root page Prism navigation failed");
+            }
         };
 
         AutomationId = "DapperDan_PrismRoot_Page";
@@ -103,7 +117,7 @@ public sealed class IosPrismBootPage : ContentPage
 {
     public IosPrismBootPage(INavigationService navigationService)
     {
-        Console.WriteLine("DAPPER_BOOT 03 Prism created the first diagnostic page");
+        Console.WriteLine("DAPPER_BOOT 09 Prism injected INavigationService into the diagnostic page");
 
         var status = new Label
         {
@@ -121,12 +135,12 @@ public sealed class IosPrismBootPage : ContentPage
 
         continueButton.Clicked += async (_, _) =>
         {
-            Console.WriteLine("DAPPER_BOOT 04 Prism navigation requested");
+            Console.WriteLine("DAPPER_BOOT 10 Injected Prism navigation requested");
             var result = await navigationService.NavigateAsync(nameof(IosPrismSecondPage));
             if (!result.Success)
             {
                 status.Text = $"Prism navigation failed: {result.Exception?.GetType().Name ?? "unknown"}";
-                Console.WriteLine("DAPPER_BOOT 05 Prism navigation failed");
+                Console.WriteLine("DAPPER_BOOT 11 Injected Prism navigation failed");
             }
         };
 
@@ -146,17 +160,50 @@ public sealed class IosPrismSecondPage : ContentPage
 {
     public IosPrismSecondPage()
     {
-        Console.WriteLine("DAPPER_BOOT 06 Prism created the second diagnostic page");
+        Console.WriteLine("DAPPER_BOOT 06 Prism resolved the parameterless second page");
+
+        var status = new Label
+        {
+            AutomationId = "DapperDan_PrismSecond_Status",
+            FontSize = 24,
+            HorizontalTextAlignment = TextAlignment.Center,
+            Text = "Prism navigation resolved this parameterless second page.",
+            TextColor = Colors.Black
+        };
+        var continueButton = new Button
+        {
+            AutomationId = "DapperDan_PrismSecond_Continue",
+            Text = "Resolve injected-navigation page"
+        };
+
+        continueButton.Clicked += async (_, _) =>
+        {
+            Console.WriteLine("DAPPER_BOOT 07 Prism navigation requested to injected page");
+
+            var navigationService = Prism.Navigation.Xaml.Navigation.GetNavigationService(this);
+            if (navigationService is null)
+            {
+                status.Text = "Prism did not attach a navigation service to page two.";
+                Console.WriteLine("DAPPER_BOOT 08 Page two has no attached Prism navigation service");
+                return;
+            }
+
+            var result = await navigationService.NavigateAsync(nameof(IosPrismBootPage));
+            if (!result.Success)
+            {
+                status.Text = $"Injected-page resolution failed: {result.Exception?.GetType().Name ?? "unknown"}";
+                Console.WriteLine("DAPPER_BOOT 08 Injected-page resolution failed");
+            }
+        };
 
         AutomationId = "DapperDan_PrismBoot_Page2";
         BackgroundColor = Colors.White;
-        Content = new Label
+        Content = new VerticalStackLayout
         {
-            FontSize = 24,
-            HorizontalOptions = LayoutOptions.Center,
+            Padding = new Thickness(32),
+            Spacing = 24,
             VerticalOptions = LayoutOptions.Center,
-            Text = "Prism navigation reached page two.",
-            TextColor = Colors.Black
+            Children = { status, continueButton }
         };
     }
 }

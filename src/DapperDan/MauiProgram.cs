@@ -24,7 +24,7 @@ public static class MauiProgram
             .UseMauiApp<App>()
             .UsePrism(prism => prism
                 .RegisterTypes(RegisterIosDiagnosticTypes)
-                .CreateWindow(nameof(IosPrismRootPage)));
+                .CreateWindow($"NavigationPage/{nameof(IosPrismRootPage)}"));
 #else
         builder
             .UseMauiApp<App>()
