@@ -6,7 +6,6 @@ using CodeCrafty.DapperDan.Data;
 using CodeCrafty.DapperDan.PanelBossKit;
 using CodeCrafty.DapperDan.ViewModels;
 using CodeCrafty.DapperDan.Views.DapperDan;
-using CodeCrafty.DapperDan.Views.Diagnostics;
 
 namespace CodeCrafty.DapperDan;
 
@@ -14,18 +13,9 @@ public static class MauiProgram
 {
     public static MauiApp CreateMauiApp()
     {
-#if !IOS
         SQLitePCL.Batteries_V2.Init();
-#endif
 
         var builder = MauiApp.CreateBuilder();
-#if IOS
-        builder
-            .UseMauiApp<App>()
-            .UsePrism(prism => prism
-                .RegisterTypes(RegisterIosDiagnosticTypes)
-                .CreateWindow($"NavigationPage/{nameof(IosPrismRootPage)}"));
-#else
         builder
             .UseMauiApp<App>()
             .UsePrism(prism => prism
@@ -50,6 +40,12 @@ public static class MauiProgram
         builder.Services.AddSingleton<DatabaseInitializer>();
         builder.Services.AddSingleton<IKeikiRepository, KeikiRepository>();
         builder.Services.AddTransient<PanelBoss>();
+
+#if IOS
+        builder.ConfigureMauiHandlers(handlers =>
+        {
+            handlers.AddHandler<RichButton, NativePrimaryTapViewHandler>();
+        });
 #endif
 
 #if DEBUG
@@ -61,18 +57,6 @@ public static class MauiProgram
 
     private static void RegisterPrismTypes(IContainerRegistry containerRegistry)
     {
-        containerRegistry.RegisterForNavigation<NavigationPage>();
         containerRegistry.RegisterForNavigation<DapperDanPage, DapperDanViewModel>();
     }
-
-#if IOS
-    private static void RegisterIosDiagnosticTypes(IContainerRegistry containerRegistry)
-    {
-        // Leave NavigationPage unregistered so Prism installs its
-        // PrismNavigationPage implementation during initialization.
-        containerRegistry.RegisterForNavigation<IosPrismRootPage>();
-        containerRegistry.RegisterForNavigation<IosPrismBootPage>();
-        containerRegistry.RegisterForNavigation<IosPrismSecondPage>();
-    }
-#endif
 }
