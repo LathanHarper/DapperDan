@@ -13,9 +13,14 @@ public static class MauiProgram
 {
     public static MauiApp CreateMauiApp()
     {
+#if !IOS
         SQLitePCL.Batteries_V2.Init();
+#endif
 
         var builder = MauiApp.CreateBuilder();
+#if IOS
+        builder.UseMauiApp<App>();
+#else
         builder
             .UseMauiApp<App>()
             .UsePrism(prism => prism
@@ -40,12 +45,6 @@ public static class MauiProgram
         builder.Services.AddSingleton<DatabaseInitializer>();
         builder.Services.AddSingleton<IKeikiRepository, KeikiRepository>();
         builder.Services.AddTransient<PanelBoss>();
-
-#if IOS
-        builder.ConfigureMauiHandlers(handlers =>
-        {
-            handlers.AddHandler<RichButton, NativePrimaryTapViewHandler>();
-        });
 #endif
 
 #if DEBUG
