@@ -2,6 +2,44 @@ using Prism.Navigation;
 
 namespace CodeCrafty.DapperDan.Views.Diagnostics;
 
+public sealed class IosPrismRootPage : ContentPage
+{
+    public IosPrismRootPage()
+    {
+        Console.WriteLine("DAPPER_BOOT 03 Prism resolved the parameterless root page");
+
+        var status = new Label
+        {
+            AutomationId = "DapperDan_PrismRoot_Status",
+            FontSize = 24,
+            HorizontalTextAlignment = TextAlignment.Center,
+            Text = "Prism resolved this parameterless root page without a NavigationPage segment.",
+            TextColor = Colors.Black
+        };
+        var confirmButton = new Button
+        {
+            AutomationId = "DapperDan_PrismRoot_Confirm",
+            Text = "Confirm page is responsive"
+        };
+
+        confirmButton.Clicked += (_, _) =>
+        {
+            Console.WriteLine("DAPPER_BOOT 04 Prism root page responded to input");
+            status.Text = "Prism root page is alive.";
+        };
+
+        AutomationId = "DapperDan_PrismRoot_Page";
+        BackgroundColor = Colors.White;
+        Content = new VerticalStackLayout
+        {
+            Padding = new Thickness(32),
+            Spacing = 24,
+            VerticalOptions = LayoutOptions.Center,
+            Children = { status, confirmButton }
+        };
+    }
+}
+
 public sealed class IosPrismHostPage : ContentPage
 {
     public IosPrismHostPage()
