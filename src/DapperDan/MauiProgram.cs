@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Prism.Ioc;
-using Prism.Navigation;
 using CodeCrafty.DapperDan.Controls;
 using CodeCrafty.DapperDan.Data;
 using CodeCrafty.DapperDan.PanelBossKit;
@@ -25,19 +24,7 @@ public static class MauiProgram
             .UseMauiApp<App>()
             .UsePrism(prism => prism
                 .RegisterTypes(RegisterIosDiagnosticTypes)
-                .CreateWindow((container, _) =>
-                {
-                    Console.WriteLine("DAPPER_BOOT 03 Prism host initialized; opening a plain MAUI window");
-
-                    var windowManager = container.Resolve<IWindowManager>();
-                    windowManager.OpenWindow(
-                        new Window(
-                            new NavigationPage(
-                                new IosPrismHostPage())));
-
-                    Console.WriteLine("DAPPER_BOOT 04 Plain MAUI window opened through Prism's window manager");
-                    return Task.CompletedTask;
-                }));
+                .CreateWindow(nameof(IosPrismRootPage)));
 #else
         builder
             .UseMauiApp<App>()
@@ -82,6 +69,7 @@ public static class MauiProgram
     private static void RegisterIosDiagnosticTypes(IContainerRegistry containerRegistry)
     {
         containerRegistry.RegisterForNavigation<NavigationPage>();
+        containerRegistry.RegisterForNavigation<IosPrismRootPage>();
         containerRegistry.RegisterForNavigation<IosPrismBootPage>();
         containerRegistry.RegisterForNavigation<IosPrismSecondPage>();
     }
