@@ -6,6 +6,7 @@ using CodeCrafty.DapperDan.Data;
 using CodeCrafty.DapperDan.PanelBossKit;
 using CodeCrafty.DapperDan.ViewModels;
 using CodeCrafty.DapperDan.Views.DapperDan;
+using CodeCrafty.DapperDan.Views.Diagnostics;
 
 namespace CodeCrafty.DapperDan;
 
@@ -19,7 +20,11 @@ public static class MauiProgram
 
         var builder = MauiApp.CreateBuilder();
 #if IOS
-        builder.UseMauiApp<App>();
+        builder
+            .UseMauiApp<App>()
+            .UsePrism(prism => prism
+                .RegisterTypes(RegisterIosDiagnosticTypes)
+                .CreateWindow("NavigationPage/IosPrismBootPage"));
 #else
         builder
             .UseMauiApp<App>()
@@ -59,4 +64,13 @@ public static class MauiProgram
         containerRegistry.RegisterForNavigation<NavigationPage>();
         containerRegistry.RegisterForNavigation<DapperDanPage, DapperDanViewModel>();
     }
+
+#if IOS
+    private static void RegisterIosDiagnosticTypes(IContainerRegistry containerRegistry)
+    {
+        containerRegistry.RegisterForNavigation<NavigationPage>();
+        containerRegistry.RegisterForNavigation<IosPrismBootPage>();
+        containerRegistry.RegisterForNavigation<IosPrismSecondPage>();
+    }
+#endif
 }
