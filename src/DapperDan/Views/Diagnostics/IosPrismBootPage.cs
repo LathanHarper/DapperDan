@@ -13,7 +13,7 @@ public sealed class IosPrismRootPage : ContentPage
             AutomationId = "DapperDan_PrismRoot_Status",
             FontSize = 24,
             HorizontalTextAlignment = TextAlignment.Center,
-            Text = "Prism resolved this parameterless root page without a NavigationPage segment.",
+            Text = "Prism resolved this parameterless page inside its own NavigationPage wrapper.",
             TextColor = Colors.Black
         };
         var confirmButton = new Button

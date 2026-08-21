@@ -68,7 +68,8 @@ public static class MauiProgram
 #if IOS
     private static void RegisterIosDiagnosticTypes(IContainerRegistry containerRegistry)
     {
-        containerRegistry.RegisterForNavigation<NavigationPage>();
+        // Leave NavigationPage unregistered so Prism installs its
+        // PrismNavigationPage implementation during initialization.
         containerRegistry.RegisterForNavigation<IosPrismRootPage>();
         containerRegistry.RegisterForNavigation<IosPrismBootPage>();
         containerRegistry.RegisterForNavigation<IosPrismSecondPage>();
