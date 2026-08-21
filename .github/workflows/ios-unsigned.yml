@@ -30,6 +30,10 @@ jobs:
     name: Compiled model and packaged SQLite
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    env:
+      # This job builds only plain net10.0 tools/tests. The Apple job below
+      # restores and verifies the pinned MAUI workload set before mobile builds.
+      MSBuildEnableWorkloadResolver: "false"
 
     steps:
       - name: Check out source
