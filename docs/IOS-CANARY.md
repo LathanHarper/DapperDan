@@ -12,6 +12,21 @@ An unsigned `.app` proves that the .NET/iOS/Xcode toolchain compiled and package
 
 This slice does not enable EF's experimental precompiled-query interceptors. Keeping those out of the build isolates the compiled-model and packaged-database fix from a separate query-generation experiment.
 
+## Recovering an iOS launch journal
+
+Dapper Dan starts a small private JSONL journal near the start of managed `Program.Main`, before `UIApplication.Main`, MAUI, Prism, EF Core, or SQLite initialization. Each checkpoint is appended synchronously and asks the OS to flush it to storage. Managed, unobserved-task, managed-to-Objective-C, and Objective-C-to-managed exception hooks add bounded exception details when those runtime paths are available. The recorder does not change exception-marshaling modes or task-observation behavior.
+
+After a crash or launch failure:
+
+1. Open Dapper Dan one more time. Before MAUI starts, this seals the prior `.active.jsonl` file as `.interrupted.jsonl` and copies it into the app's Documents directory.
+2. Open **Files → On My iPad → Dapper Dan → DapperDan Diagnostics**.
+3. Review, then share or copy the newest `.interrupted.jsonl` file. It is line-delimited JSON; read every complete line even if the final line was interrupted mid-write. Redaction is best effort, so inspect exception text before posting a report publicly.
+4. Find the final complete `checkpoint` record. A missing matching `Ready` marker isolates the startup seam that did not return. In particular, `CompiledModelEnter` without `CompiledModelReady` isolates the generated EF compiled-model static initialization.
+
+An interrupted session is evidence that no clean process-return marker was written, not proof of a crash. Force-quit, watchdog termination, memory pressure, device shutdown, and normal iOS process reclamation can look the same. Managed hooks also cannot guarantee capture of native signals, aborts, stack overflow, dyld failures before `Main`, watchdog termination, or jetsam. For those cases, the last durable checkpoint and Apple's TestFlight crash report are the next tools.
+
+The journal has no LAN/cloud upload, background sender, crash SDK, database dependency, or UI dependency. It records allowlisted runtime identity, stage names, and bounded exception type/message/stack data, then redacts known container paths, email-shaped text, URLs, and bearer values. It does not inspect `Exception.Data` or intentionally collect Keiki rows, device identifiers, accounts, environment variables, or signing material. The app does not transmit journals; Files access and device-backup behavior remain under iOS and the tester's settings.
+
 Those bundles are complete Dapper Dan application products with substantial CodeCrafty functionality. They do not redistribute Prism as a NuGet package, loose development library, SDK, wrapper, control suite, low-code platform, or other reusable development component. The responsible developers must remain properly licensed for Prism, and the repository license and third-party notices stay alongside every proof artifact.
 
 ## Protected TestFlight lane

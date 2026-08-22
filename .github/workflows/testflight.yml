@@ -205,6 +205,8 @@ jobs:
           actual_build_number="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$app_bundle/Info.plist")"
           test "$actual_bundle_id" = "$BUNDLE_ID"
           test "$actual_build_number" = "$BUILD_NUMBER"
+          test "$(/usr/libexec/PlistBuddy -c 'Print :UIFileSharingEnabled' "$app_bundle/Info.plist")" = "true"
+          test "$(/usr/libexec/PlistBuddy -c 'Print :LSSupportsOpeningDocumentsInPlace' "$app_bundle/Info.plist")" = "true"
           codesign --verify --deep --strict --verbose=2 "$app_bundle"
 
           seed_count="$(find "$app_bundle" -type f -name "$SEED_ASSET" | wc -l | tr -d ' ')"

@@ -182,6 +182,15 @@ jobs:
           test "$simulator_display_name" = "Dapper Dan - UNSIGNED PROOF"
           test "$device_display_name" = "Dapper Dan - UNSIGNED PROOF"
 
+          verify_diagnostic_files_access() {
+            local app_bundle="$1"
+            test "$(/usr/libexec/PlistBuddy -c 'Print :UIFileSharingEnabled' "$app_bundle/Info.plist")" = "true"
+            test "$(/usr/libexec/PlistBuddy -c 'Print :LSSupportsOpeningDocumentsInPlace' "$app_bundle/Info.plist")" = "true"
+          }
+
+          verify_diagnostic_files_access "${simulator_apps[0]}"
+          verify_diagnostic_files_access "${device_apps[0]}"
+
           verify_seed() {
             local app_bundle="$1"
             local seed_count

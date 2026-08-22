@@ -1,5 +1,6 @@
 using System.Globalization;
 using Microsoft.Data.Sqlite;
+using CodeCrafty.DapperDan.Diagnostics;
 
 namespace CodeCrafty.DapperDan.Data;
 
@@ -9,9 +10,11 @@ public sealed class PackagedDatabaseInstaller(
 {
     public async Task InstallAsync(CancellationToken cancellationToken = default)
     {
+        CrashJournal.Checkpoint(CrashPoint.DatabaseInstallEnter);
         var databasePath = databasePathProvider.GetDatabasePath();
         if (File.Exists(databasePath))
         {
+            CrashJournal.Checkpoint(CrashPoint.DatabaseExistingValidateEnter);
             await ValidateAsync(databasePath, cancellationToken);
             return;
         }
@@ -23,6 +26,7 @@ public sealed class PackagedDatabaseInstaller(
         var installingPath = databasePath + $".{Guid.NewGuid():N}.installing";
         try
         {
+            CrashJournal.Checkpoint(CrashPoint.PackagedDatabaseOpenEnter);
             await using (var source = await packagedDatabaseSource.OpenReadAsync(cancellationToken))
             await using (var destination = new FileStream(
                 installingPath,
@@ -32,15 +36,19 @@ public sealed class PackagedDatabaseInstaller(
                 bufferSize: 81920,
                 FileOptions.Asynchronous))
             {
+                CrashJournal.Checkpoint(CrashPoint.PackagedDatabaseOpenReady);
                 await source.CopyToAsync(destination, cancellationToken);
                 await destination.FlushAsync(cancellationToken);
+                CrashJournal.Checkpoint(CrashPoint.PackagedDatabaseCopyReady);
             }
 
             await ValidateAsync(installingPath, cancellationToken);
+            CrashJournal.Checkpoint(CrashPoint.PackagedDatabaseValidateReady);
 
             try
             {
                 File.Move(installingPath, databasePath);
+                CrashJournal.Checkpoint(CrashPoint.PackagedDatabaseMoveReady);
             }
             catch (IOException) when (File.Exists(databasePath))
             {
@@ -60,6 +68,7 @@ public sealed class PackagedDatabaseInstaller(
         string databasePath,
         CancellationToken cancellationToken)
     {
+        CrashJournal.Checkpoint(CrashPoint.DatabaseValidateEnter);
         var connectionString = new SqliteConnectionStringBuilder
         {
             DataSource = databasePath,
@@ -101,6 +110,8 @@ public sealed class PackagedDatabaseInstaller(
             throw new InvalidDataException(
                 $"SQLite quick_check failed: {integrityResult ?? "no result"}.");
         }
+
+        CrashJournal.Checkpoint(CrashPoint.DatabaseValidateReady);
     }
 
     private static async Task<int> ReadIntPragmaAsync(

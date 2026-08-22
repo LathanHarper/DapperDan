@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 
 using CodeCrafty.DapperDan.Data.Entities;
+using CodeCrafty.DapperDan.Diagnostics;
 
 namespace CodeCrafty.DapperDan.Data;
 
@@ -43,14 +44,19 @@ public sealed class KeikiRepository(
 
     public async Task<IReadOnlyList<Keiki>> LoadAsync(CancellationToken cancellationToken = default)
     {
+        CrashJournal.Checkpoint(CrashPoint.KeikiQueryEnter);
         await databaseInitializer.InitializeAsync(cancellationToken);
 
+        CrashJournal.Checkpoint(CrashPoint.DbContextCreateEnter);
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
-        return await context.Keiki
+        CrashJournal.Checkpoint(CrashPoint.DbContextCreateReady);
+        var loaded = await context.Keiki
             .AsNoTracking()
             .Include(item => item.Memories)
             .OrderBy(item => item.Name)
             .ThenBy(item => item.Id)
             .ToListAsync(cancellationToken);
+        CrashJournal.Checkpoint(CrashPoint.KeikiQueryReady);
+        return loaded;
     }
 }

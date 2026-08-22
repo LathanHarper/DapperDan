@@ -17,6 +17,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\src\DapperDan\Diagnostics\CrashJournal.cs" Link="Production\CrashJournal.cs" />
+    <Compile Include="..\..\src\DapperDan\Diagnostics\DurableCrashJournal.cs" Link="Production\DurableCrashJournal.cs" />
     <Compile Include="..\..\src\DapperDan\Data\Entities\Keiki.cs" Link="Production\Keiki.cs" />
     <Compile Include="..\..\src\DapperDan\Data\Entities\KeikiMemory.cs" Link="Production\KeikiMemory.cs" />
     <Compile Include="..\..\src\DapperDan\Data\DapperDanDbContext.cs" Link="Production\DapperDanDbContext.cs" />

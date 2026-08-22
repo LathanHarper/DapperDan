@@ -1,3 +1,5 @@
+using CodeCrafty.DapperDan.Diagnostics;
+
 namespace CodeCrafty.DapperDan.Data;
 
 public sealed class DatabaseInitializer(PackagedDatabaseInstaller databaseInstaller)
@@ -7,8 +9,11 @@ public sealed class DatabaseInitializer(PackagedDatabaseInstaller databaseInstal
 
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
+        CrashJournal.Checkpoint(CrashPoint.DatabaseInitializeEnter);
+
         if (_isInitialized)
         {
+            CrashJournal.Checkpoint(CrashPoint.DatabaseInitializeReady);
             return;
         }
 
@@ -17,11 +22,13 @@ public sealed class DatabaseInitializer(PackagedDatabaseInstaller databaseInstal
         {
             if (_isInitialized)
             {
+                CrashJournal.Checkpoint(CrashPoint.DatabaseInitializeReady);
                 return;
             }
 
             await databaseInstaller.InstallAsync(cancellationToken);
             _isInitialized = true;
+            CrashJournal.Checkpoint(CrashPoint.DatabaseInitializeReady);
         }
         finally
         {
