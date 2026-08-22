@@ -7,6 +7,7 @@ internal enum CrashPoint
     ProcessMainEnter,
     SharedHooksInstalled,
     IosHooksInstalled,
+    EfCompiledModelInlineInitializationEnabled,
     UIApplicationMainEnter,
     UIApplicationMainReturned,
     MauiAppCreateEnter,
