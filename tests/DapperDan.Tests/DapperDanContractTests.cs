@@ -241,6 +241,53 @@ public sealed class DapperDanContractTests
         Assert.True(instance < ready);
     }
 
+    [Fact]
+    public void IosEnablesInlineCompiledModelInitializationBeforeUIKitStarts()
+    {
+        var root = FindRepositoryRoot();
+        var program = File.ReadAllText(Path.Combine(
+            root.FullName,
+            "src",
+            "DapperDan",
+            "Platforms",
+            "iOS",
+            "Program.cs"));
+        var generatedModel = File.ReadAllText(Path.Combine(
+            root.FullName,
+            "src",
+            "DapperDan",
+            "Data",
+            "CompiledModels",
+            "DapperDanDbContextModel.cs"));
+
+        const string switchName = "Microsoft.EntityFrameworkCore.Issue31751";
+        const string setSwitchCall =
+            "AppContext.SetSwitch(EfCompiledModelInlineInitializationSwitch, isEnabled: true)";
+        var setSwitch = program.IndexOf(setSwitchCall, StringComparison.Ordinal);
+        var switchMarker = program.IndexOf(
+            "CrashPoint.EfCompiledModelInlineInitializationEnabled",
+            StringComparison.Ordinal);
+        var startUIKit = program.IndexOf("UIApplication.Main", StringComparison.Ordinal);
+        var generatedSwitchBranch = generatedModel.IndexOf(
+            "if (_useOldBehavior31751)",
+            StringComparison.Ordinal);
+        var inlineInitialize = generatedModel.IndexOf(
+            "model.Initialize();",
+            generatedSwitchBranch,
+            StringComparison.Ordinal);
+        var generatedElseBranch = generatedModel.IndexOf(
+            "else",
+            generatedSwitchBranch,
+            StringComparison.Ordinal);
+
+        Assert.Contains(switchName, program, StringComparison.Ordinal);
+        Assert.True(setSwitch >= 0 && setSwitch < switchMarker);
+        Assert.True(switchMarker < startUIKit);
+        Assert.Contains(switchName, generatedModel, StringComparison.Ordinal);
+        Assert.True(generatedSwitchBranch >= 0 && generatedSwitchBranch < inlineInitialize);
+        Assert.True(inlineInitialize < generatedElseBranch);
+    }
+
     [Theory]
     [InlineData("PanelBoss.leftactions.cs")]
     [InlineData("PanelBoss.rightactions.cs")]

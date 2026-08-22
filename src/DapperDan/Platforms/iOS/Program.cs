@@ -7,10 +7,15 @@ namespace CodeCrafty.DapperDan;
 
 public class Program
 {
+    private const string EfCompiledModelInlineInitializationSwitch =
+        "Microsoft.EntityFrameworkCore.Issue31751";
+
     // This is the earliest managed entry point available to the application.
     static void Main(string[] args)
     {
         TryStartDiagnostics();
+        AppContext.SetSwitch(EfCompiledModelInlineInitializationSwitch, isEnabled: true);
+        CrashJournal.Checkpoint(CrashPoint.EfCompiledModelInlineInitializationEnabled);
 
         try
         {
