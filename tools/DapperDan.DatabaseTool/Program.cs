@@ -49,7 +49,12 @@ try
 
     await using (var context = new DapperDanDbContext(options))
     {
-        await context.Database.EnsureCreatedAsync();
+        // SQLite stores the original CREATE statements in sqlite_schema. Use
+        // one canonical newline so the reviewed seed does not depend on the
+        // generator host's Windows/Unix line ending.
+        var createScript = NormalizeLineEndings(
+            context.Database.GenerateCreateScript());
+        await context.Database.ExecuteSqlRawAsync(createScript);
         context.Keiki.Add(new Keiki
         {
             Id = 1,
@@ -162,3 +167,8 @@ static void DeleteDatabaseFiles(string databasePath)
     File.Delete(databasePath + "-wal");
     File.Delete(databasePath + "-shm");
 }
+
+static string NormalizeLineEndings(string value) =>
+    value
+        .Replace("\r\n", "\n", StringComparison.Ordinal)
+        .Replace('\r', '\n');

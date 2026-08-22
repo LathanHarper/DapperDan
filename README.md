@@ -44,7 +44,7 @@ When the neutral entities or `DapperDanDbContext` change, regenerate the compile
 .\tools\DapperDan.DatabaseTool\Generate.ps1
 ```
 
-`EnsureCreated` is intentionally confined to that ordinary build-time tool. The mobile app copies `dapper-dan-seed-v1.db3` into a versioned writable app-data path on first launch, validates its SQLite identity/schema/integrity, opens it without create fallback, and supplies EF with the checked-in compiled model. Later launches validate but never overwrite the user's writable copy.
+EF schema generation is intentionally confined to that ordinary build-time tool. It emits a canonical-LF create script before producing the reviewed seed. The mobile app copies `dapper-dan-seed-v1.db3` into a versioned writable app-data path on first launch, validates its SQLite identity/schema/integrity, opens it without create fallback, and supplies EF with the checked-in compiled model. Later launches validate but never overwrite the user's writable copy.
 
 This canary deliberately tests one AOT variable at a time: it uses the compiled model but does not enable EF's experimental precompiled-query interceptors. The normal repository queries are exercised by the signed iPad build.
 

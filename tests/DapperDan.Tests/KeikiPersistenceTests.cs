@@ -93,6 +93,15 @@ public sealed class KeikiPersistenceTests
             DapperDanDatabaseMetadata.SchemaVersion,
             await ReadIntAsync(connection, "PRAGMA user_version;"));
         Assert.Equal("ok", await ReadStringAsync(connection, "PRAGMA integrity_check;"));
+
+        await using var schemaCommand = connection.CreateCommand();
+        schemaCommand.CommandText = "SELECT sql FROM sqlite_schema WHERE sql IS NOT NULL;";
+        await using var schemaReader = await schemaCommand.ExecuteReaderAsync();
+        while (await schemaReader.ReadAsync())
+        {
+            // Canonical seed schema text uses LF on every generation platform.
+            Assert.DoesNotContain('\r', schemaReader.GetString(0));
+        }
     }
 
     [Fact]

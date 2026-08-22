@@ -19,6 +19,6 @@ The cleaner microphone channel was isolated, then each clip received conservativ
 - SQLite `application_id`: `1145131088` (ASCII `DAPP`)
 - Schema `user_version`: `1`
 - Journal mode: `DELETE`; no WAL or SHM sidecars are packaged
-- SHA-256: `CBA11379139791623F0774EB586A8ED3E7BE2F407141A9605996672E637843A3`
+- SHA-256: `A124C3A2CB880E49F8A52EBB7DD279A9CE4020E09A83E978F9C62A390A36A14D`
 
-The public CI regenerates the file, rejects byte or model drift, and validates SQLite integrity and foreign keys before the macOS build starts.
+The generator normalizes EF's create script to LF before SQLite stores it in `sqlite_schema`, so Windows and Unix hosts produce the same reviewed bytes. Public CI regenerates the file, rejects byte or model drift, and validates SQLite integrity and foreign keys before the macOS build starts.
