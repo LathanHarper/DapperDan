@@ -79,7 +79,9 @@ jobs:
     name: Simulator and device binaries
     needs: data-canary
     runs-on: macos-26
-    timeout-minutes: 75
+    # This proof lane AOT-compiles both simulator and device bundles. The first
+    # interpreter canary measured 64 minutes for the simulator bundle alone.
+    timeout-minutes: 180
 
     steps:
       - name: Check out source
