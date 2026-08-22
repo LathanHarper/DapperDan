@@ -72,6 +72,8 @@ public sealed class VoiceCanaryContractTests
         Assert.DoesNotContain(".SetMode(", source, StringComparison.Ordinal);
         Assert.DoesNotContain(".SetActive(", source, StringComparison.Ordinal);
         Assert.DoesNotContain("VoiceTraits", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("IDisposable", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("public void Dispose", source, StringComparison.Ordinal);
     }
 
     private static DirectoryInfo FindRepositoryRoot()

@@ -3,16 +3,18 @@ using Microsoft.Maui.ApplicationModel;
 
 namespace CodeCrafty.DapperDan.Speech;
 
-internal sealed class IosVoiceCanaryService : IVoiceCanaryService, IDisposable
+internal sealed class IosVoiceCanaryService : IVoiceCanaryService
 {
     private const string EnglishUsLanguage = "en-US";
 
+    // This service and its native synthesizer deliberately share the application
+    // lifetime. Queuing main-thread speech shutdown from synchronous DI disposal
+    // would create a use-after-dispose race during process teardown.
     private readonly object _activeGate = new();
     private readonly SemaphoreSlim _runGate = new(1, 1);
     private readonly AVSpeechSynthesizer _synthesizer = new();
     private readonly VoiceCanarySpeechDelegate _speechDelegate;
     private ActiveSpeech? _activeSpeech;
-    private bool _disposed;
 
     public IosVoiceCanaryService()
     {
@@ -31,7 +33,6 @@ internal sealed class IosVoiceCanaryService : IVoiceCanaryService, IDisposable
         CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(text);
-        ObjectDisposedException.ThrowIf(_disposed, this);
         await _runGate.WaitAsync(cancellationToken);
 
         AVSpeechUtterance? utterance = null;
@@ -39,7 +40,6 @@ internal sealed class IosVoiceCanaryService : IVoiceCanaryService, IDisposable
 
         try
         {
-            ObjectDisposedException.ThrowIf(_disposed, this);
             cancellationToken.ThrowIfCancellationRequested();
 
             var plan = VoiceCanaryPlan.For(scenario);
@@ -112,21 +112,6 @@ internal sealed class IosVoiceCanaryService : IVoiceCanaryService, IDisposable
     {
         TakeActiveSpeech()?.Completion.TrySetCanceled();
         MainThread.BeginInvokeOnMainThread(StopNativeSpeech);
-    }
-
-    public void Dispose()
-    {
-        if (_disposed)
-        {
-            return;
-        }
-
-        _disposed = true;
-        Stop();
-        _synthesizer.Delegate = null;
-        _speechDelegate.Dispose();
-        _synthesizer.Dispose();
-        _runGate.Dispose();
     }
 
     private static AVSpeechSynthesisVoice? SelectVoice(
