@@ -19,6 +19,14 @@ Before opening an issue or pull request, remove credentials, tokens, account ide
 
 Audio, images, fonts, and other assets must be original CodeCrafty work or carry an explicit redistribution license recorded in `THIRD-PARTY-NOTICES.md`.
 
+After changing the public Keiki entities or `DapperDanDbContext`, regenerate and review both database artifacts:
+
+```powershell
+.\tools\DapperDan.DatabaseTool\Generate.ps1
+```
+
+Never hand-edit the compiled model or replace the seed with an application database.
+
 Run:
 
 Only after satisfying the Prism license prerequisite, run:

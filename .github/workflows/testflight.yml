@@ -26,6 +26,7 @@ env:
   DOTNET_CLI_TELEMETRY_OPTOUT: "1"
   DOTNET_NOLOGO: "1"
   PROJECT_PATH: src/DapperDan/DapperDan.csproj
+  SEED_ASSET: dapper-dan-seed-v1.db3
   WORKLOAD_VERSION: 10.0.302.1
 
 jobs:
@@ -84,6 +85,25 @@ jobs:
         run: |
           set -euo pipefail
           dotnet restore "$PROJECT_PATH" --locked-mode
+
+      - name: Regenerate public database artifacts before loading credentials
+        shell: pwsh
+        run: ./tools/DapperDan.DatabaseTool/Generate.ps1
+
+      - name: Verify public database artifacts before loading credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code -- \
+            src/DapperDan/Data/CompiledModels \
+            "src/DapperDan/Resources/Raw/$SEED_ASSET"
+          test -z "$(git status --porcelain --untracked-files=all -- \
+            src/DapperDan/Data/CompiledModels \
+            "src/DapperDan/Resources/Raw/$SEED_ASSET")"
+          test "$(/usr/bin/sqlite3 "src/DapperDan/Resources/Raw/$SEED_ASSET" 'PRAGMA application_id;')" = "1145131088"
+          test "$(/usr/bin/sqlite3 "src/DapperDan/Resources/Raw/$SEED_ASSET" 'PRAGMA user_version;')" = "1"
+          test "$(/usr/bin/sqlite3 "src/DapperDan/Resources/Raw/$SEED_ASSET" 'PRAGMA integrity_check;')" = "ok"
+          test -z "$(/usr/bin/sqlite3 "src/DapperDan/Resources/Raw/$SEED_ASSET" 'PRAGMA foreign_key_check;')"
 
       - name: Import Apple distribution certificate
         uses: Apple-Actions/import-codesign-certs@5142e029c445c10ffc7149d172e540235a065466 # v7.0.0
@@ -186,6 +206,19 @@ jobs:
           test "$actual_bundle_id" = "$BUNDLE_ID"
           test "$actual_build_number" = "$BUILD_NUMBER"
           codesign --verify --deep --strict --verbose=2 "$app_bundle"
+
+          seed_count="$(find "$app_bundle" -type f -name "$SEED_ASSET" | wc -l | tr -d ' ')"
+          test "$seed_count" = "1"
+          bundled_seed="$(find "$app_bundle" -type f -name "$SEED_ASSET" -print -quit)"
+          cmp -s "src/DapperDan/Resources/Raw/$SEED_ASSET" "$bundled_seed"
+          test "$(/usr/bin/sqlite3 "$bundled_seed" 'PRAGMA application_id;')" = "1145131088"
+          test "$(/usr/bin/sqlite3 "$bundled_seed" 'PRAGMA user_version;')" = "1"
+          test "$(/usr/bin/sqlite3 "$bundled_seed" 'PRAGMA integrity_check;')" = "ok"
+          test -z "$(/usr/bin/sqlite3 "$bundled_seed" 'PRAGMA foreign_key_check;')"
+          if find "$app_bundle" -type f \( -name "$SEED_ASSET-wal" -o -name "$SEED_ASSET-shm" \) | grep -q .; then
+            echo "SQLite sidecars must not be packaged." >&2
+            exit 1
+          fi
 
           embedded_profile_plist="$RUNNER_TEMP/DapperDan-embedded-profile.plist"
           security cms -D -i "$app_bundle/embedded.mobileprovision" > "$embedded_profile_plist"

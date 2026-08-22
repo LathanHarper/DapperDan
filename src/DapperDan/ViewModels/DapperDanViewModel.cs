@@ -158,7 +158,7 @@ public partial class DapperDanViewModel : BindableBase
         try
         {
             await LoadKeikiCoreAsync();
-            StatusMessage = "All ten PanelBoss lanes are mounted; choose a tile to move one.";
+            StatusMessage = $"Compiled EF model + packaged SQLite v{DapperDanDatabaseMetadata.SchemaVersion} ready; {Keiki.Count} Keiki loaded.";
         }
         catch (Exception exception)
         {

@@ -9,6 +9,7 @@ Dapper Dan was cut from a stable, product-neutral .NET 10 MAUI suitcase containi
 - Android and iOS platform adapters needed by those components.
 - Dapper Dan page-owned sample XAML and ViewModel logic.
 - The Keiki EF Core/SQLite example and focused tests.
+- The generated Keiki compiled model and deterministic SQLite v1 seed containing only fixed public canary rows. Their complete generation recipe lives in `tools/DapperDan.DatabaseTool`.
 - Generic .NET MAUI template resources, CodeCrafty-recorded mechanical feedback sounds, and public CI scaffolding.
 
 ## Excluded from this export
@@ -19,7 +20,7 @@ Dapper Dan was cut from a stable, product-neutral .NET 10 MAUI suitcase containi
 - Preview-framework variants, abandoned experiments, construction/timing comparison probes, and inactive platform targets.
 - Three previously transferred feedback WAV files. They were excluded and replaced with fresh clips from a CodeCrafty recording; see `docs/ASSET-PROVENANCE.md`.
 
-Public bug reproductions must be newly minimized around platform behavior. Never paste a private implementation and call it a sample. Detailed private transfer records remain private; this summary is the public boundary.
+Public bug reproductions must be newly minimized around platform behavior. Never paste a private implementation and call it a sample. The packaged database is not a product export: it is generated solely from the two public Keiki entities with fixed Kai sample values. Detailed private transfer records remain private; this summary is the public boundary.
 
 ## Public license
 

@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\src\DapperDan\Data\Entities\*.cs" Link="Data\Entities\%(Filename)%(Extension)" />
+    <Compile Include="..\..\src\DapperDan\Data\DapperDanDatabaseMetadata.cs" Link="Data\DapperDanDatabaseMetadata.cs" />
+    <Compile Include="..\..\src\DapperDan\Data\DapperDanDbContext.cs" Link="Data\DapperDanDbContext.cs" />
+  </ItemGroup>
+
+</Project>

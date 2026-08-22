@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Prism.Ioc;
 using CodeCrafty.DapperDan.Controls;
 using CodeCrafty.DapperDan.Data;
+using CodeCrafty.DapperDan.Data.CompiledModels;
 using CodeCrafty.DapperDan.PanelBossKit;
 using CodeCrafty.DapperDan.ViewModels;
 using CodeCrafty.DapperDan.Views.DapperDan;
@@ -28,14 +29,17 @@ public static class MauiProgram
             });
 
         builder.Services.AddSingleton<IDatabasePathProvider, MauiDatabasePathProvider>();
+        builder.Services.AddSingleton<IPackagedDatabaseSource, MauiPackagedDatabaseSource>();
+        builder.Services.AddSingleton<PackagedDatabaseInstaller>();
         builder.Services.AddDbContextFactory<DapperDanDbContext>((services, options) =>
         {
             var databasePath = services
                 .GetRequiredService<IDatabasePathProvider>()
                 .GetDatabasePath();
 
-            options.UseSqlite(
-                $"Data Source={databasePath};Mode=ReadWriteCreate;Cache=Private");
+            options
+                .UseSqlite($"Data Source={databasePath};Mode=ReadWrite;Cache=Private;Foreign Keys=True")
+                .UseModel(DapperDanDbContextModel.Instance);
         });
         builder.Services.AddSingleton<DatabaseInitializer>();
         builder.Services.AddSingleton<IKeikiRepository, KeikiRepository>();
