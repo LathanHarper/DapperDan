@@ -10,7 +10,9 @@ public partial class DapperDanViewModel
     private AsyncDelegateCommand? _clearKeikiCommand;
     private AsyncDelegateCommand<string>? _executePanelDemoCommand;
     private AsyncDelegateCommand? _loadKeikiCommand;
+    private AsyncDelegateCommand<string>? _runVoiceCanaryCommand;
     private AsyncDelegateCommand<DapperDanPageAction>? _selectPageActionCommand;
+    private DelegateCommand? _stopVoiceCanaryCommand;
 
     public AsyncDelegateCommand AddKeikiCommand =>
         _addKeikiCommand ??= new AsyncDelegateCommand(AddKeikiAsync);
@@ -27,6 +29,13 @@ public partial class DapperDanViewModel
     public AsyncDelegateCommand LoadKeikiCommand =>
         _loadKeikiCommand ??= new AsyncDelegateCommand(LoadKeikiAsync);
 
+    public AsyncDelegateCommand<string> RunVoiceCanaryCommand =>
+        _runVoiceCanaryCommand ??=
+            new AsyncDelegateCommand<string>(RunVoiceCanaryAsync);
+
     public AsyncDelegateCommand<DapperDanPageAction> SelectPageActionCommand =>
         _selectPageActionCommand ??= new AsyncDelegateCommand<DapperDanPageAction>(SelectPageActionAsync);
+
+    public DelegateCommand StopVoiceCanaryCommand =>
+        _stopVoiceCanaryCommand ??= new DelegateCommand(StopVoiceCanary);
 }

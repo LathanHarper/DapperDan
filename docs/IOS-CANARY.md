@@ -33,6 +33,27 @@ Build 12 then booted and rendered both Dapper Dan pages on the physical iPad, bu
 
 The journal has no LAN/cloud upload, background sender, crash SDK, database dependency, or UI dependency. It records allowlisted runtime identity, stage names, and bounded exception type/message/stack data, then redacts known container paths, email-shaped text, URLs, and bearer values. It does not inspect `Exception.Data` or intentionally collect Keiki rows, device identifiers, accounts, environment variables, or signing material. The app does not transmit journals; Files access and device-backup behavior remain under iOS and the tester's settings.
 
+## Comparing native voice timbre
+
+The **Canary → Native voice A/B/C** card is a physical-device probe for distorted `AVSpeechSynthesizer` output. Every trial speaks the same neutral sentence and leaves rate, pitch, and volume at their native defaults. Its RichButtons use `FeedbackMode=None`, so a tap sound cannot overlap the first phonemes.
+
+| Trial | Voice selection | Speech audio session | Experimental purpose |
+| --- | --- | --- | --- |
+| A | `AVSpeechSynthesisVoice.FromLanguage("en-US")` | Shared application session | Language-default baseline |
+| B | Installed en-US voices ranked by quality, then ordinal name | Shared application session | Reproduces the unsafe assumption that quality/name ranking implies a natural voice |
+| C | `AVSpeechSynthesisVoice.FromLanguage("en-US")` | Separate Apple-managed session | Changes only audio-session ownership from A |
+
+Run A, B, and C with the same device volume and output route. The result card reports the selected voice name, identifier, language, quality, matching voice count, and read-only snapshots of the shared application audio session before, at the start of, and after speech. Trial C's speech session is separate and is not exposed through `AVAudioSession.SharedInstance`; the shared-session snapshots are retained only to prove that the canary did not mutate it. Voice quality is a fidelity/download tier, not a naturalness or novelty guarantee.
+
+Interpret the physical result this way:
+
+- A sounds natural and B sounds distorted: arbitrary installed-voice ranking selected the wrong kind of voice. Use a language default instead of treating quality or enumeration order as a naturalness score.
+- A sounds distorted and C sounds natural: Dapper Dan's configured shared application-session path is implicated. Prefer Apple-managed speech-session ownership unless the app has a demonstrated need to own interruption, mixing, or ducking policy.
+- A, B, and C all sound distorted: keep voice selection and session ownership constant, then investigate the output route, downloaded voice asset, iOS version, and device-level accessibility/audio settings.
+- All three sound natural while another app remains distorted: reproduce that app's remaining audio-session difference here as a new independent trial before changing production code.
+
+The speech canary service never configures, activates, or deactivates the shared audio session. Dapper Dan's existing RichButton sound player primes that shared session to Ambient + MixWithOthers when page buttons load—even when these three trial buttons suppress tap playback—so A and B intentionally observe the app's normal configured baseline. The result snapshots make that state explicit. The canary does not write voice details to disk or transmit results. Selected metadata exists only on screen; inspect it before sharing a screenshot from a device with Personal Voice installed. The implementation is an independently authored platform sample, not a copy of private application code.
+
 Those bundles are complete Dapper Dan application products with substantial CodeCrafty functionality. They do not redistribute Prism as a NuGet package, loose development library, SDK, wrapper, control suite, low-code platform, or other reusable development component. The responsible developers must remain properly licensed for Prism, and the repository license and third-party notices stay alongside every proof artifact.
 
 ## Protected TestFlight lane
