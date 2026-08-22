@@ -10,11 +10,13 @@ Both lanes restore Prism 9. The maintainer and every developer whose work is bui
 
 An unsigned `.app` proves that the .NET/iOS/Xcode toolchain compiled and packaged the source. The simulator build can be used only with compatible simulator tooling; the unsigned device build cannot be installed on a physical iPad or enter TestFlight. The signed lane is still the physical-device proof that the compiled model, first-launch database copy, and normal EF queries survive iOS AOT.
 
-This slice does not enable EF's experimental precompiled-query interceptors. Keeping those out of the build isolates the compiled-model and packaged-database fix from a separate query-generation experiment.
+This slice does not enable EF's experimental precompiled-query interceptors or NativeAOT. iOS Release instead uses Microsoft's documented [`MtouchInterpreter=-all`](https://learn.microsoft.com/dotnet/maui/macios/interpreter?view=net-maui-10.0#enable-the-interpreter) mode: every normal assembly remains AOT-compiled, while Mono retains its interpreter for runtime-generated delegates. Keeping the build-12 compiled model in place for this slice isolates that single query-runtime change.
 
 ## Recovering an iOS launch journal
 
 Dapper Dan starts a small private JSONL journal near the start of managed `Program.Main`, before `UIApplication.Main`, MAUI, Prism, EF Core, or SQLite initialization. Each checkpoint is appended synchronously and asks the OS to flush it to storage. Managed, unobserved-task, managed-to-Objective-C, and Objective-C-to-managed exception hooks add bounded exception details when those runtime paths are available. The recorder does not change exception-marshaling modes or task-observation behavior.
+
+Each session's first `launch` record also contains `isDynamicCodeSupported` and `isDynamicCodeCompiled`. The expected physical-device values for the Mono AOT plus `MtouchInterpreter=-all` lane are `true` and `false`: EF may create its ordinary query delegates through the interpreter, but iOS still does not JIT-compile them.
 
 After a crash or launch failure:
 
@@ -26,6 +28,8 @@ After a crash or launch failure:
 An interrupted session is evidence that no clean process-return marker was written, not proof of a crash. Force-quit, watchdog termination, memory pressure, device shutdown, and normal iOS process reclamation can look the same. Managed hooks also cannot guarantee capture of native signals, aborts, stack overflow, dyld failures before `Main`, watchdog termination, or jetsam. For those cases, the last durable checkpoint and Apple's TestFlight crash report are the next tools.
 
 Build 11's first physical-iPad journal ended at `CompiledModelEnter`, after SQLite, MAUI construction, dependency injection, and App XAML had all returned. EF Core 10.0.5's generated compiled-model initializer normally starts a helper thread with a 10 MiB requested stack and immediately joins it. EF tracks [this generated thread path freezing MAUI applications](https://github.com/dotnet/efcore/issues/32346) under its still-open [compiled-model initialization work](https://github.com/dotnet/efcore/issues/31370). The iOS entry point now enables EF's generated `Microsoft.EntityFrameworkCore.Issue31751` compatibility switch before `UIApplication.Main`, selecting direct initialization for Dapper Dan's two-entity model. This retains the checked-in compiled model and normal iOS AOT; it does not fall back to design-time model building and it does not edit generated files.
+
+Build 12 then booted and rendered both Dapper Dan pages on the physical iPad, but the first ordinary EF query reported `Query wasn't precompiled and dynamic code isn't supported with NativeAOT.` The app was actually on .NET 10's default Mono AOT runtime, not NativeAOT; EF uses that message whenever `RuntimeFeature.IsDynamicCodeSupported` is false. The next canary keeps the known-good startup path and enables the supported interpreter fallback so the same query can use EF's normal runtime compilation path.
 
 The journal has no LAN/cloud upload, background sender, crash SDK, database dependency, or UI dependency. It records allowlisted runtime identity, stage names, and bounded exception type/message/stack data, then redacts known container paths, email-shaped text, URLs, and bearer values. It does not inspect `Exception.Data` or intentionally collect Keiki rows, device identifiers, accounts, environment variables, or signing material. The app does not transmit journals; Files access and device-backup behavior remain under iOS and the tester's settings.
 

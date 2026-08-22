@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace CodeCrafty.DapperDan.Diagnostics;
@@ -246,11 +247,15 @@ internal readonly record struct CrashJournalIdentity(
     string AppVersion,
     string Runtime,
     string OperatingSystem,
-    string Architecture)
+    string Architecture,
+    bool IsDynamicCodeSupported,
+    bool IsDynamicCodeCompiled)
 {
     internal static CrashJournalIdentity Current => new(
         typeof(CrashJournal).Assembly.GetName().Version?.ToString() ?? "unknown",
         RuntimeInformation.FrameworkDescription,
         RuntimeInformation.OSDescription,
-        RuntimeInformation.ProcessArchitecture.ToString());
+        RuntimeInformation.ProcessArchitecture.ToString(),
+        RuntimeFeature.IsDynamicCodeSupported,
+        RuntimeFeature.IsDynamicCodeCompiled);
 }

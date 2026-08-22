@@ -194,6 +194,57 @@ public sealed class DapperDanContractTests
     }
 
     [Fact]
+    public void IosReleaseUsesDocumentedInterpreterFallbackWithoutNativeAotInterceptors()
+    {
+        var root = FindRepositoryRoot();
+        var projectPath = Path.Combine(
+            root.FullName,
+            "src",
+            "DapperDan",
+            "DapperDan.csproj");
+        var project = XDocument.Load(projectPath);
+        var interpreter = Assert.Single(project.Descendants("MtouchInterpreter"));
+        var condition = interpreter.Parent?.Attribute("Condition")?.Value ?? string.Empty;
+
+        Assert.Equal("-all", interpreter.Value.Trim());
+        Assert.Contains("ios", condition, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Release", condition, StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            project.Descendants("PublishAot"),
+            property => string.Equals(
+                property.Value.Trim(),
+                "true",
+                StringComparison.OrdinalIgnoreCase));
+        Assert.Empty(project.Descendants("UseInterpreter"));
+        Assert.Empty(project.Descendants("DynamicCodeSupport"));
+        Assert.Empty(project.Descendants("InterceptorsNamespaces"));
+        Assert.DoesNotContain(
+            project.Descendants("PackageReference"),
+            package => string.Equals(
+                package.Attribute("Include")?.Value,
+                "Microsoft.EntityFrameworkCore.Tasks",
+                StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void LaunchJournalIncludesDynamicCodeCapabilities()
+    {
+        var root = FindRepositoryRoot();
+        var diagnosticsRoot = Path.Combine(
+            root.FullName,
+            "src",
+            "DapperDan",
+            "Diagnostics");
+        var identity = File.ReadAllText(Path.Combine(diagnosticsRoot, "CrashJournal.cs"));
+        var writer = File.ReadAllText(Path.Combine(diagnosticsRoot, "DurableCrashJournal.cs"));
+
+        Assert.Contains("RuntimeFeature.IsDynamicCodeSupported", identity, StringComparison.Ordinal);
+        Assert.Contains("RuntimeFeature.IsDynamicCodeCompiled", identity, StringComparison.Ordinal);
+        Assert.Contains("\"isDynamicCodeSupported\"", writer, StringComparison.Ordinal);
+        Assert.Contains("\"isDynamicCodeCompiled\"", writer, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void IosDocumentsExposeSealedCrashJournalExportsThroughFiles()
     {
         var root = FindRepositoryRoot();
