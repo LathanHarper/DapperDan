@@ -261,7 +261,9 @@ public sealed class DapperDanContractTests
             "DapperDanDbContextModel.cs"));
 
         const string switchName = "Microsoft.EntityFrameworkCore.Issue31751";
-        var setSwitch = program.IndexOf("AppContext.SetSwitch", StringComparison.Ordinal);
+        const string setSwitchCall =
+            "AppContext.SetSwitch(EfCompiledModelInlineInitializationSwitch, isEnabled: true)";
+        var setSwitch = program.IndexOf(setSwitchCall, StringComparison.Ordinal);
         var switchMarker = program.IndexOf(
             "CrashPoint.EfCompiledModelInlineInitializationEnabled",
             StringComparison.Ordinal);
