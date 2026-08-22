@@ -569,6 +569,78 @@
                                 </controls:RichButton>
                             </VerticalStackLayout>
                         </Border>
+                        <Border BackgroundColor="#FFFFFF" Padding="16" Stroke="#B9CED8" StrokeShape="RoundRectangle 18">
+                            <VerticalStackLayout Spacing="10">
+                                <Label FontAttributes="Bold" Text="4. Native voice A/B/C" TextColor="#173E52" />
+                                <Label Style="{StaticResource BodyCopy}" Text="A versus B changes only voice selection. A versus C changes only who owns the audio session. Every lane speaks the same neutral sentence with native rate, pitch, and volume defaults." />
+                                <Grid ColumnSpacing="10" RowSpacing="10">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="58" />
+                                        <RowDefinition Height="58" />
+                                        <RowDefinition Height="58" />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <controls:RichButton
+                                        AutomationId="DapperDan_Voice_DefaultAppSession"
+                                        Command="{Binding RunVoiceCanaryCommand}"
+                                        CommandParameter="LanguageDefaultApplicationSession"
+                                        FeedbackMode="None"
+                                        IsBusy="{Binding IsVoiceCanaryBusy, Mode=TwoWay}"
+                                        IsEnabled="{Binding IsVoiceCanarySupported}">
+                                        <Border BackgroundColor="#075985" InputTransparent="True" Padding="10" StrokeThickness="0" StrokeShape="RoundRectangle 14">
+                                            <Label FontAttributes="Bold" FontSize="12" HorizontalTextAlignment="Center" InputTransparent="True" Text="A · en-US default&#10;app session" TextColor="White" VerticalTextAlignment="Center" />
+                                        </Border>
+                                    </controls:RichButton>
+                                    <controls:RichButton
+                                        Grid.Column="1"
+                                        AutomationId="DapperDan_Voice_RankedAppSession"
+                                        Command="{Binding RunVoiceCanaryCommand}"
+                                        CommandParameter="RankedInstalledApplicationSession"
+                                        FeedbackMode="None"
+                                        IsBusy="{Binding IsVoiceCanaryBusy, Mode=TwoWay}"
+                                        IsEnabled="{Binding IsVoiceCanarySupported}">
+                                        <Border BackgroundColor="#8E3C2C" InputTransparent="True" Padding="10" StrokeThickness="0" StrokeShape="RoundRectangle 14">
+                                            <Label FontAttributes="Bold" FontSize="12" HorizontalTextAlignment="Center" InputTransparent="True" Text="B · ranked voice&#10;app session" TextColor="White" VerticalTextAlignment="Center" />
+                                        </Border>
+                                    </controls:RichButton>
+                                    <controls:RichButton
+                                        Grid.Row="1"
+                                        Grid.ColumnSpan="2"
+                                        AutomationId="DapperDan_Voice_DefaultSystemSession"
+                                        Command="{Binding RunVoiceCanaryCommand}"
+                                        CommandParameter="LanguageDefaultSystemManagedSession"
+                                        FeedbackMode="None"
+                                        IsBusy="{Binding IsVoiceCanaryBusy, Mode=TwoWay}"
+                                        IsEnabled="{Binding IsVoiceCanarySupported}">
+                                        <Border BackgroundColor="#17613B" InputTransparent="True" Padding="10" StrokeThickness="0" StrokeShape="RoundRectangle 14">
+                                            <Label FontAttributes="Bold" FontSize="12" HorizontalTextAlignment="Center" InputTransparent="True" Text="C · en-US default · Apple-managed session" TextColor="White" VerticalTextAlignment="Center" />
+                                        </Border>
+                                    </controls:RichButton>
+                                    <controls:RichButton
+                                        Grid.Row="2"
+                                        Grid.ColumnSpan="2"
+                                        AutomationId="DapperDan_Voice_Stop"
+                                        AutoResetIsBusyMilliseconds="400"
+                                        Command="{Binding StopVoiceCanaryCommand}"
+                                        FeedbackMode="None"
+                                        IsEnabled="{Binding IsVoiceCanaryBusy}">
+                                        <Border BackgroundColor="#EDF5F8" InputTransparent="True" Padding="10" Stroke="#B9CED8" StrokeShape="RoundRectangle 14">
+                                            <Label FontAttributes="Bold" FontSize="12" HorizontalTextAlignment="Center" InputTransparent="True" Text="Stop voice trial" TextColor="#173E52" VerticalTextAlignment="Center" />
+                                        </Border>
+                                    </controls:RichButton>
+                                </Grid>
+                                <Border BackgroundColor="#F5F8FA" Padding="12" Stroke="#D5E1E7" StrokeShape="RoundRectangle 12">
+                                    <VerticalStackLayout Spacing="6">
+                                        <Label AutomationId="DapperDan_Voice_ResultHeading" FontAttributes="Bold" Text="{Binding VoiceCanaryHeading}" TextColor="#173E52" />
+                                        <Label AutomationId="DapperDan_Voice_ResultDetails" FontFamily="monospace" FontSize="11" LineBreakMode="WordWrap" Text="{Binding VoiceCanaryReport}" TextColor="#486171" />
+                                    </VerticalStackLayout>
+                                </Border>
+                                <Label FontSize="11" LineBreakMode="WordWrap" Text="Dapper Dan's normal RichButton setup primes the shared session to Ambient + MixWithOthers; the snapshots make that baseline visible. Selected voice metadata stays on this screen, so inspect it before sharing screenshots." TextColor="#765B94" />
+                            </VerticalStackLayout>
+                        </Border>
                     </VerticalStackLayout>
                 </ScrollView>
             </Grid>

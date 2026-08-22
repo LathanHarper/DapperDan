@@ -12,6 +12,7 @@ The app deliberately exercises a useful native cross-section:
 - a checked-in compiled EF model and versioned packaged SQLite seed that avoid runtime design-time schema operations;
 - iOS Release assemblies kept AOT-compiled while Mono's documented interpreter fallback handles runtime-generated EF query delegates;
 - a dependency-free, durable iOS launch journal that brackets MAUI, Prism, XAML, the compiled model, SQLite, and the first responsive UI dispatch;
+- a physical-iOS native voice A/B/C that isolates language-default selection, arbitrary installed-voice ranking, and Apple-managed speech-session ownership without transmitting diagnostics;
 - iPhone and iPad packaging from the same project that supplies the Android baseline.
 
 It does **not** contain customer code, private routes, accounts, endpoints, credentials, company assets, production configuration, or copied bug implementations. Public iOS quirks belong here only as small, independently authored reproductions.

@@ -5,11 +5,15 @@ using CodeCrafty.DapperDan.Data.Entities;
 using CodeCrafty.DapperDan.Diagnostics;
 using CodeCrafty.DapperDan.Models;
 using CodeCrafty.DapperDan.PanelBossKit;
+using CodeCrafty.DapperDan.Speech;
 
 namespace CodeCrafty.DapperDan.ViewModels;
 
 public partial class DapperDanViewModel : BindableBase
 {
+    private const string VoiceCanaryPhrase =
+        "Dapper Dan voice canary. One two three. Clear speech should sound natural from start to finish.";
+
     public const string BottomSheetPanelName = "DapperDanBottomSheet";
     public const string ButtonsPanelName = "DapperDanButtonsPanel";
     public const string DialogPanelName = "DapperDanDialogPanel";
@@ -26,23 +30,30 @@ public partial class DapperDanViewModel : BindableBase
     public const string WitnessPanelName = "DapperDanWitnessPanel";
 
     private readonly IKeikiRepository _keikiRepository;
+    private readonly IVoiceCanaryService _voiceCanaryService;
     private string _favoriteBreak = "First Light";
     private bool _hasInitialized;
     private bool _isAsyncSpecimenBusy;
     private bool _isKeikiBusy;
     private bool _isLoadingPanelBusy;
+    private bool _isVoiceCanaryBusy;
     private string _keikiCountText = "No saved Keiki yet";
     private string _keikiMemory = "Remember the clean little win.";
     private string _keikiName = "Kai";
     private DapperDanPageAction _lastPrimaryAction;
     private string _statusMessage = "Dapper Dan is ready to exercise the public canary.";
+    private string _voiceCanaryHeading = "No voice trial yet";
+    private string _voiceCanaryReport =
+        "Run A, B, and C with the same device volume and output route. Nothing leaves the device.";
 
     public DapperDanViewModel(
         PanelBoss activePanelBoss,
-        IKeikiRepository keikiRepository)
+        IKeikiRepository keikiRepository,
+        IVoiceCanaryService voiceCanaryService)
     {
         ActivePanelBoss = activePanelBoss;
         _keikiRepository = keikiRepository;
+        _voiceCanaryService = voiceCanaryService;
 
         ButtonsAction = new DapperDanPageAction(
             "Buttons",
@@ -111,6 +122,14 @@ public partial class DapperDanViewModel : BindableBase
         set => SetProperty(ref _isLoadingPanelBusy, value);
     }
 
+    public bool IsVoiceCanaryBusy
+    {
+        get => _isVoiceCanaryBusy;
+        set => SetProperty(ref _isVoiceCanaryBusy, value);
+    }
+
+    public bool IsVoiceCanarySupported => _voiceCanaryService.IsSupported;
+
     public ObservableCollection<Keiki> Keiki { get; } = [];
 
     public string KeikiCountText
@@ -146,6 +165,18 @@ public partial class DapperDanViewModel : BindableBase
     }
 
     public DapperDanPageAction WitnessAction { get; }
+
+    public string VoiceCanaryHeading
+    {
+        get => _voiceCanaryHeading;
+        private set => SetProperty(ref _voiceCanaryHeading, value);
+    }
+
+    public string VoiceCanaryReport
+    {
+        get => _voiceCanaryReport;
+        private set => SetProperty(ref _voiceCanaryReport, value);
+    }
 
     public async Task InitializeAsync()
     {
@@ -373,6 +404,58 @@ public partial class DapperDanViewModel : BindableBase
         {
             IsAsyncSpecimenBusy = false;
         }
+    }
+
+    private async Task RunVoiceCanaryAsync(string scenarioName)
+    {
+        if (!Enum.TryParse<VoiceCanaryScenario>(
+                scenarioName,
+                ignoreCase: false,
+                out var scenario))
+        {
+            VoiceCanaryHeading = "Unknown voice trial";
+            VoiceCanaryReport = $"The scenario '{scenarioName}' is not registered.";
+            IsVoiceCanaryBusy = false;
+            return;
+        }
+
+        var plan = VoiceCanaryPlan.For(scenario);
+        IsVoiceCanaryBusy = true;
+        VoiceCanaryHeading = $"Running {plan.Label}";
+        VoiceCanaryReport =
+            "Listen for natural timbre while Dapper Dan records the selected voice and shared audio-session state.";
+
+        try
+        {
+            var result = await _voiceCanaryService.SpeakAsync(
+                scenario,
+                VoiceCanaryPhrase);
+            VoiceCanaryHeading = $"Completed {result.Plan.Label}";
+            VoiceCanaryReport = result.ToDisplayText();
+            StatusMessage = $"Voice canary completed: {result.Plan.Label}.";
+        }
+        catch (OperationCanceledException)
+        {
+            VoiceCanaryHeading = $"Stopped {plan.Label}";
+            VoiceCanaryReport = "Speech stopped before the trial completed.";
+            StatusMessage = "Voice canary stopped.";
+        }
+        catch (Exception exception)
+        {
+            VoiceCanaryHeading = $"Failed {plan.Label}";
+            VoiceCanaryReport = $"{exception.GetType().Name}: {exception.Message}";
+            StatusMessage = $"Voice canary failed: {exception.Message}";
+        }
+        finally
+        {
+            IsVoiceCanaryBusy = false;
+        }
+    }
+
+    private void StopVoiceCanary()
+    {
+        _voiceCanaryService.Stop();
+        StatusMessage = "Stopping the active voice canary trial.";
     }
 
     private async Task SelectPageActionAsync(DapperDanPageAction action)

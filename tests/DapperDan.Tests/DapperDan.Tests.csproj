@@ -30,6 +30,7 @@
     <Compile Include="..\..\src\DapperDan\Data\IPackagedDatabaseSource.cs" Link="Production\IPackagedDatabaseSource.cs" />
     <Compile Include="..\..\src\DapperDan\Data\KeikiRepository.cs" Link="Production\KeikiRepository.cs" />
     <Compile Include="..\..\src\DapperDan\Data\PackagedDatabaseInstaller.cs" Link="Production\PackagedDatabaseInstaller.cs" />
+    <Compile Include="..\..\src\DapperDan\Speech\VoiceCanaryScenario.cs" Link="Production\VoiceCanaryScenario.cs" />
   </ItemGroup>
 
   <ItemGroup>

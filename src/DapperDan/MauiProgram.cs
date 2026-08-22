@@ -6,6 +6,7 @@ using CodeCrafty.DapperDan.Data;
 using CodeCrafty.DapperDan.Data.CompiledModels;
 using CodeCrafty.DapperDan.Diagnostics;
 using CodeCrafty.DapperDan.PanelBossKit;
+using CodeCrafty.DapperDan.Speech;
 using CodeCrafty.DapperDan.ViewModels;
 using CodeCrafty.DapperDan.Views.DapperDan;
 
@@ -57,6 +58,11 @@ public static class MauiProgram
             });
             builder.Services.AddSingleton<DatabaseInitializer>();
             builder.Services.AddSingleton<IKeikiRepository, KeikiRepository>();
+#if IOS
+            builder.Services.AddSingleton<IVoiceCanaryService, IosVoiceCanaryService>();
+#else
+            builder.Services.AddSingleton<IVoiceCanaryService, UnsupportedVoiceCanaryService>();
+#endif
             builder.Services.AddTransient<PanelBoss>();
 
             RichButtonDiagnostics.CommandExceptionReporter = context =>
