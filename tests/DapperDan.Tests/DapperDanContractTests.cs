@@ -70,7 +70,11 @@ public sealed class DapperDanContractTests
         Assert.DoesNotContain("EnsureDeleted", initializer, StringComparison.Ordinal);
         Assert.DoesNotContain("ReadWriteCreate", startup, StringComparison.Ordinal);
         Assert.Contains(
-            ".UseModel(DapperDanDbContextModel.Instance)",
+            "var compiledModel = DapperDanDbContextModel.Instance",
+            startup,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            ".UseModel(compiledModel)",
             startup,
             StringComparison.Ordinal);
         Assert.Contains("Mode=ReadWrite", startup, StringComparison.Ordinal);
@@ -164,6 +168,77 @@ public sealed class DapperDanContractTests
                 element.Attribute(android + "name")?.Value,
                 "android.permission.VIBRATE",
                 StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void IosCrashHooksAreInstalledBeforeUIApplicationMain()
+    {
+        var root = FindRepositoryRoot();
+        var iosRoot = Path.Combine(root.FullName, "src", "DapperDan", "Platforms", "iOS");
+        var program = File.ReadAllText(Path.Combine(iosRoot, "Program.cs"));
+        var hooks = File.ReadAllText(Path.Combine(iosRoot, "IosCrashJournalHooks.cs"));
+
+        var startCall = program.IndexOf("TryStartDiagnostics();", StringComparison.Ordinal);
+        var begin = program.IndexOf("CrashJournal.BeginLaunch", StringComparison.Ordinal);
+        var sharedHooks = program.IndexOf("CrashJournal.InstallSharedHooks", StringComparison.Ordinal);
+        var iosHooks = program.IndexOf("IosCrashJournalHooks.Install", StringComparison.Ordinal);
+        var applicationMain = program.IndexOf("UIApplication.Main", StringComparison.Ordinal);
+
+        Assert.True(startCall >= 0 && startCall < applicationMain);
+        Assert.True(begin >= 0 && begin < sharedHooks);
+        Assert.True(sharedHooks < iosHooks);
+        Assert.Contains("Runtime.MarshalManagedException +=", hooks, StringComparison.Ordinal);
+        Assert.Contains("Runtime.MarshalObjectiveCException +=", hooks, StringComparison.Ordinal);
+        Assert.DoesNotContain("ExceptionMode =", hooks, StringComparison.Ordinal);
+        Assert.DoesNotContain("SetObserved", hooks, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void IosDocumentsExposeSealedCrashJournalExportsThroughFiles()
+    {
+        var root = FindRepositoryRoot();
+        var plistPath = Path.Combine(
+            root.FullName,
+            "src",
+            "DapperDan",
+            "Platforms",
+            "iOS",
+            "Info.plist");
+        var document = XDocument.Load(plistPath);
+        var dictionary = Assert.Single(document.Root!.Elements("dict"));
+
+        Assert.True(ReadBooleanPlistValue(dictionary, "UIFileSharingEnabled"));
+        Assert.True(ReadBooleanPlistValue(dictionary, "LSSupportsOpeningDocumentsInPlace"));
+
+        var program = File.ReadAllText(Path.Combine(
+            root.FullName,
+            "src",
+            "DapperDan",
+            "Platforms",
+            "iOS",
+            "Program.cs"));
+        Assert.Contains("NSSearchPathDirectory.ApplicationSupportDirectory", program, StringComparison.Ordinal);
+        Assert.Contains("SpecialFolder.MyDocuments", program, StringComparison.Ordinal);
+        Assert.DoesNotContain("SpecialFolder.LocalApplicationData", program, StringComparison.Ordinal);
+        Assert.Contains("DapperDan Diagnostics", program, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void CompiledModelRiskHasDurableMarkersOnBothSides()
+    {
+        var root = FindRepositoryRoot();
+        var startup = File.ReadAllText(Path.Combine(
+            root.FullName,
+            "src",
+            "DapperDan",
+            "MauiProgram.cs"));
+
+        var enter = startup.IndexOf("CrashPoint.CompiledModelEnter", StringComparison.Ordinal);
+        var instance = startup.IndexOf("DapperDanDbContextModel.Instance", StringComparison.Ordinal);
+        var ready = startup.IndexOf("CrashPoint.CompiledModelReady", StringComparison.Ordinal);
+
+        Assert.True(enter >= 0 && enter < instance);
+        Assert.True(instance < ready);
     }
 
     [Theory]
@@ -278,5 +353,14 @@ public sealed class DapperDanContractTests
             .Attributes()
             .SingleOrDefault(attribute => attribute.Name.LocalName == name)
             ?.Value;
+
+    private static bool ReadBooleanPlistValue(XElement dictionary, string key)
+    {
+        var keyElement = Assert.Single(
+            dictionary.Elements("key"),
+            element => string.Equals(element.Value, key, StringComparison.Ordinal));
+        var valueElement = keyElement.ElementsAfterSelf().First();
+        return string.Equals(valueElement.Name.LocalName, "true", StringComparison.Ordinal);
+    }
 
 }

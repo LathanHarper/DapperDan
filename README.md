@@ -10,6 +10,7 @@ The app deliberately exercises a useful native cross-section:
 - RichButton native touch and haptic feedback;
 - EF Core with an on-device SQLite store;
 - a checked-in compiled EF model and versioned packaged SQLite seed that avoid runtime design-time schema operations;
+- a dependency-free, durable iOS launch journal that brackets MAUI, Prism, XAML, the compiled model, SQLite, and the first responsive UI dispatch;
 - iPhone and iPad packaging from the same project that supplies the Android baseline.
 
 It does **not** contain customer code, private routes, accounts, endpoints, credentials, company assets, production configuration, or copied bug implementations. Public iOS quirks belong here only as small, independently authored reproductions.
@@ -47,6 +48,8 @@ When the neutral entities or `DapperDanDbContext` change, regenerate the compile
 EF schema generation is intentionally confined to that ordinary build-time tool. It emits a canonical-LF create script before producing the reviewed seed. The mobile app copies `dapper-dan-seed-v1.db3` into a versioned writable app-data path on first launch, validates its SQLite identity/schema/integrity, opens it without create fallback, and supplies EF with the checked-in compiled model. Later launches validate but never overwrite the user's writable copy.
 
 This canary deliberately tests one AOT variable at a time: it uses the compiled model but does not enable EF's experimental precompiled-query interceptors. The normal repository queries are exercised by the signed iPad build.
+
+On iOS, each launch writes a private, synchronously flushed JSONL journal before `UIApplication.Main`. The next launch seals the prior session and exports it to **Files → On My iPad → Dapper Dan → DapperDan Diagnostics** before MAUI starts. The journal has no network transport and does not intentionally collect database rows, device identifiers, accounts, credentials, or arbitrary application metadata; bounded exception text is redacted before it is written. See [the iOS canary guide](docs/IOS-CANARY.md#recovering-an-ios-launch-journal) for retrieval and interpretation.
 
 An iOS build requires macOS, the pinned .NET workload set, and compatible Xcode:
 

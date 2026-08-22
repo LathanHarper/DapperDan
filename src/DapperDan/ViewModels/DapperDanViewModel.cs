@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using Prism.Mvvm;
 using CodeCrafty.DapperDan.Data;
 using CodeCrafty.DapperDan.Data.Entities;
+using CodeCrafty.DapperDan.Diagnostics;
 using CodeCrafty.DapperDan.Models;
 using CodeCrafty.DapperDan.PanelBossKit;
 
@@ -154,14 +155,21 @@ public partial class DapperDanViewModel : BindableBase
         }
 
         _hasInitialized = true;
+        CrashJournal.Checkpoint(CrashPoint.ViewModelInitializeEnter);
 
         try
         {
             await LoadKeikiCoreAsync();
             StatusMessage = $"Compiled EF model + packaged SQLite v{DapperDanDatabaseMetadata.SchemaVersion} ready; {Keiki.Count} Keiki loaded.";
+            CrashJournal.Checkpoint(CrashPoint.ViewModelInitializeReady);
         }
         catch (Exception exception)
         {
+            CrashJournal.Capture(
+                CrashSource.HandledStartupFailure,
+                CrashPoint.ViewModelInitializeHandledFailure,
+                exception,
+                terminating: false);
             StatusMessage = $"Keiki store is not ready: {exception.Message}";
         }
     }
@@ -186,6 +194,11 @@ public partial class DapperDanViewModel : BindableBase
         }
         catch (Exception exception)
         {
+            CrashJournal.Capture(
+                CrashSource.HandledDataFailure,
+                CrashPoint.DatabaseInitializeEnter,
+                exception,
+                terminating: false);
             StatusMessage = $"Save failed: {exception.Message}";
         }
         finally
@@ -204,6 +217,11 @@ public partial class DapperDanViewModel : BindableBase
         }
         catch (Exception exception)
         {
+            CrashJournal.Capture(
+                CrashSource.HandledDataFailure,
+                CrashPoint.DatabaseInitializeEnter,
+                exception,
+                terminating: false);
             StatusMessage = $"Clear failed: {exception.Message}";
         }
         finally
@@ -285,6 +303,11 @@ public partial class DapperDanViewModel : BindableBase
         }
         catch (Exception exception)
         {
+            CrashJournal.Capture(
+                CrashSource.HandledDataFailure,
+                CrashPoint.KeikiQueryEnter,
+                exception,
+                terminating: false);
             StatusMessage = $"Load failed: {exception.Message}";
         }
         finally
