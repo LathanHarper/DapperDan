@@ -37,6 +37,12 @@
 		<RuntimeIdentifiers Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' And '$(RuntimeIdentifier)' == ''">ios-arm64;iossimulator-arm64</RuntimeIdentifiers>
 	</PropertyGroup>
 
+	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' And '$(Configuration)' == 'Release'">
+		<!-- Keep every assembly AOT-compiled while retaining Mono's documented
+		     interpreter path for runtime-generated delegates such as EF queries. -->
+		<MtouchInterpreter>-all</MtouchInterpreter>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<!-- App Icon -->
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />

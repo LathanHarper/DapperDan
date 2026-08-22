@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using CodeCrafty.DapperDan.Diagnostics;
 
@@ -23,6 +24,10 @@ public sealed class CrashJournalTests : IDisposable
         Assert.Equal(4, lines.Length);
         Assert.All(lines, line => JsonDocument.Parse(line).Dispose());
 
+        using var launch = JsonDocument.Parse(lines[0]);
+        Assert.True(launch.RootElement.GetProperty("isDynamicCodeSupported").GetBoolean());
+        Assert.False(launch.RootElement.GetProperty("isDynamicCodeCompiled").GetBoolean());
+
         using var last = JsonDocument.Parse(lines[^1]);
         Assert.Equal(
             nameof(CrashPoint.CompiledModelEnter),
@@ -32,6 +37,15 @@ public sealed class CrashJournalTests : IDisposable
         using var identity = JsonDocument.Parse(lines[2]);
         Assert.Equal("1.0", identity.RootElement.GetProperty("displayVersion").GetString());
         Assert.Equal("11", identity.RootElement.GetProperty("buildNumber").GetString());
+    }
+
+    [Fact]
+    public void CurrentIdentityCapturesRuntimeDynamicCodeCapabilities()
+    {
+        var identity = CrashJournalIdentity.Current;
+
+        Assert.Equal(RuntimeFeature.IsDynamicCodeSupported, identity.IsDynamicCodeSupported);
+        Assert.Equal(RuntimeFeature.IsDynamicCodeCompiled, identity.IsDynamicCodeCompiled);
     }
 
     [Fact]
@@ -142,7 +156,9 @@ public sealed class CrashJournalTests : IDisposable
                 "1.0.11",
                 ".NET 10",
                 "iOS",
-                "Arm64"),
+                "Arm64",
+                IsDynamicCodeSupported: true,
+                IsDynamicCodeCompiled: false),
             startedAt,
             launchId);
 }

@@ -329,6 +329,14 @@ internal sealed class DurableCrashJournal
             AddString(builder, "runtime", _identity.Runtime);
             AddString(builder, "os", _identity.OperatingSystem);
             AddString(builder, "architecture", _identity.Architecture);
+            AddBoolean(
+                builder,
+                "isDynamicCodeSupported",
+                _identity.IsDynamicCodeSupported);
+            AddBoolean(
+                builder,
+                "isDynamicCodeCompiled",
+                _identity.IsDynamicCodeCompiled);
             EndRecord(builder);
             AppendLine(_sessionPath, builder.ToString());
         }
