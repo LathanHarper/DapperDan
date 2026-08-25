@@ -641,6 +641,20 @@
                                 <Label FontSize="11" LineBreakMode="WordWrap" Text="Dapper Dan's normal RichButton setup primes the shared session to Ambient + MixWithOthers; the snapshots make that baseline visible. Selected voice metadata stays on this screen, so inspect it before sharing screenshots." TextColor="#765B94" />
                             </VerticalStackLayout>
                         </Border>
+                        <Border BackgroundColor="#FFFFFF" Padding="16" Stroke="#B9CED8" StrokeShape="RoundRectangle 18">
+                            <VerticalStackLayout Spacing="10">
+                                <Label FontAttributes="Bold" Text="5. Native rotation lab" TextColor="#173E52" />
+                                <Label Style="{StaticResource BodyCopy}" Text="Open one focused page with a single asymmetric image grid, direct MAUI Rotation / RotationX / RotationY sliders, and optional composition switches. No Skia or platform-specific transform code." />
+                                <controls:RichButton
+                                    AutomationId="DapperDan_Canary_OpenRotationLab"
+                                    Command="{Binding OpenRotationCanaryCommand}"
+                                    HeightRequest="56">
+                                    <Border BackgroundColor="#17613B" InputTransparent="True" StrokeThickness="0" StrokeShape="RoundRectangle 14">
+                                        <Label FontAttributes="Bold" HorizontalTextAlignment="Center" InputTransparent="True" Text="Open native rotation lab" TextColor="White" VerticalTextAlignment="Center" />
+                                    </Border>
+                                </controls:RichButton>
+                            </VerticalStackLayout>
+                        </Border>
                     </VerticalStackLayout>
                 </ScrollView>
             </Grid>

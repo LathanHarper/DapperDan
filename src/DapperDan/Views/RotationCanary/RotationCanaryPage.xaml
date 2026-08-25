@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="CodeCrafty.DapperDan.Views.RotationCanary.RotationCanaryPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:controls="clr-namespace:CodeCrafty.DapperDan.Controls"
+    xmlns:panelViews="clr-namespace:CodeCrafty.DapperDan.PanelBossKit.Views"
+    xmlns:pb="clr-namespace:CodeCrafty.DapperDan.PanelBossKit"
+    xmlns:vm="clr-namespace:CodeCrafty.DapperDan.ViewModels"
+    x:DataType="vm:RotationCanaryViewModel"
+    AutomationId="DapperDan_Rotation_Page"
+    BackgroundColor="#EAF2F5"
+    NavigationPage.HasNavigationBar="True"
+    Title="Native rotation lab">
+
+    <panelViews:PanelBossBody_DefaultView
+        AutomationId="DapperDan_Rotation_PanelBossRoot"
+        BackgroundColor="#EAF2F5"
+        HorizontalOptions="Fill"
+        PanelBossInstance="{Binding ActivePanelBoss}"
+        VerticalOptions="Fill">
+        <panelViews:PanelBossBody_DefaultView.ContentPanels>
+            <Grid
+                AutomationId="DapperDan_Rotation_ContentPanel"
+                BackgroundColor="#EAF2F5"
+                pb:PanelBoss.PanelIsVisible="True"
+                pb:PanelBoss.PanelName="DapperDanRotationContentPanel"
+                pb:PanelBoss.PanelPriority="10"
+                pb:PanelBoss.PanelTransitionIn="None"
+                pb:PanelBoss.PanelTransitionOut="None">
+                <ScrollView AutomationId="DapperDan_Rotation_ScrollView">
+                    <VerticalStackLayout Padding="18,20,18,36" Spacing="16">
+            <Label
+                FontAttributes="Bold"
+                FontSize="26"
+                Text="Native MAUI rotation lab"
+                TextColor="#102A3A" />
+            <Label
+                FontSize="14"
+                LineBreakMode="WordWrap"
+                Text="One target, three standard VisualElement transforms. The target uses no Skia or platform-specific transform handler. Sweep one slider at a time; then add the reef switches that reproduce a layered image host."
+                TextColor="#486171" />
+
+            <Grid
+                AutomationId="DapperDan_Rotation_Stage"
+                BackgroundColor="#D9E8EE"
+                HeightRequest="320"
+                HorizontalOptions="Center"
+                IsClippedToBounds="False"
+                WidthRequest="320">
+                <Border
+                    AutomationId="DapperDan_Rotation_Underlay"
+                    BackgroundColor="#B9CED8"
+                    HeightRequest="90"
+                    HorizontalOptions="Center"
+                    IsVisible="{Binding IsUnderlayVisible}"
+                    Stroke="#78909C"
+                    StrokeShape="RoundRectangle 12"
+                    VerticalOptions="Center"
+                    WidthRequest="240">
+                    <Label
+                        FontAttributes="Bold"
+                        HorizontalTextAlignment="Center"
+                        Text="UNDERLAY"
+                        TextColor="#486171"
+                        VerticalTextAlignment="Center" />
+                </Border>
+
+                <ContentView
+                    AutomationId="DapperDan_Rotation_Target"
+                    BackgroundColor="{Binding HostBackgroundColor}"
+                    HeightRequest="90"
+                    HorizontalOptions="Center"
+                    Rotation="{Binding Rotation}"
+                    RotationX="{Binding RotationX}"
+                    RotationY="{Binding RotationY}"
+                    VerticalOptions="Center"
+                    WidthRequest="240"
+                    ZIndex="{Binding TargetZIndex}">
+                    <Grid IsClippedToBounds="{Binding IsInnerClipped}">
+                        <Image
+                            Aspect="Fill"
+                            Opacity="{Binding FrontOpacity}"
+                            Source="rotation_canary_a.png" />
+                        <Image
+                            Aspect="Fill"
+                            IsVisible="{Binding IsStackedLayers}"
+                            Opacity="{Binding BackOpacity}"
+                            Source="rotation_canary_b.png" />
+                        <Label
+                            FontAttributes="Bold"
+                            FontSize="18"
+                            HorizontalOptions="Start"
+                            Margin="12,0,0,0"
+                            Text="L"
+                            TextColor="White"
+                            VerticalOptions="Center" />
+                        <Label
+                            FontAttributes="Bold"
+                            FontSize="18"
+                            HorizontalOptions="End"
+                            Margin="0,0,12,0"
+                            Text="R"
+                            TextColor="White"
+                            VerticalOptions="Center" />
+                        <Label
+                            FontAttributes="Bold"
+                            FontSize="12"
+                            HorizontalOptions="Center"
+                            Margin="0,6,0,0"
+                            Text="TOP"
+                            TextColor="White"
+                            VerticalOptions="Start" />
+                        <Label
+                            FontAttributes="Bold"
+                            FontSize="12"
+                            HorizontalOptions="Center"
+                            Margin="0,0,0,6"
+                            Text="BOTTOM"
+                            TextColor="#102A3A"
+                            VerticalOptions="End" />
+                    </Grid>
+                </ContentView>
+            </Grid>
+
+            <Border
+                BackgroundColor="#FFFFFF"
+                Padding="12"
+                Stroke="#B9CED8"
+                StrokeShape="RoundRectangle 12">
+                <Label
+                    AutomationId="DapperDan_Rotation_Status"
+                    FontSize="13"
+                    LineBreakMode="WordWrap"
+                    Text="{Binding Status}"
+                    TextColor="#173E52" />
+            </Border>
+
+            <Grid ColumnSpacing="10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <controls:RichButton
+                    AutomationId="DapperDan_Rotation_PresetFlat"
+                    Command="{Binding SetPresetCommand}"
+                    CommandParameter="Flat"
+                    HeightRequest="50">
+                    <Border BackgroundColor="#FFFFFF" InputTransparent="True" Stroke="#B9CED8" StrokeShape="RoundRectangle 12">
+                        <Label FontAttributes="Bold" HorizontalTextAlignment="Center" InputTransparent="True" Text="Flat" TextColor="#173E52" VerticalTextAlignment="Center" />
+                    </Border>
+                </controls:RichButton>
+                <controls:RichButton
+                    Grid.Column="1"
+                    AutomationId="DapperDan_Rotation_PresetNegative"
+                    Command="{Binding SetPresetCommand}"
+                    CommandParameter="Negative"
+                    HeightRequest="50">
+                    <Border BackgroundColor="#E6F2FF" InputTransparent="True" Stroke="#92BCE0" StrokeShape="RoundRectangle 12">
+                        <Label FontAttributes="Bold" HorizontalTextAlignment="Center" InputTransparent="True" Text="Small −Y" TextColor="#245A87" VerticalTextAlignment="Center" />
+                    </Border>
+                </controls:RichButton>
+                <controls:RichButton
+                    Grid.Column="2"
+                    AutomationId="DapperDan_Rotation_PresetPositive"
+                    Command="{Binding SetPresetCommand}"
+                    CommandParameter="Positive"
+                    HeightRequest="50">
+                    <Border BackgroundColor="#E9F8F0" InputTransparent="True" Stroke="#87C9A5" StrokeShape="RoundRectangle 12">
+                        <Label FontAttributes="Bold" HorizontalTextAlignment="Center" InputTransparent="True" Text="Small +Y" TextColor="#17613B" VerticalTextAlignment="Center" />
+                    </Border>
+                </controls:RichButton>
+            </Grid>
+
+            <Border BackgroundColor="#FFFFFF" Padding="14" Stroke="#B9CED8" StrokeShape="RoundRectangle 16">
+                <VerticalStackLayout Spacing="12">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label FontAttributes="Bold" Text="Rotation · 2D / Z axis" TextColor="#173E52" />
+                        <Label Grid.Column="1" AutomationId="DapperDan_Rotation_Value" FontFamily="monospace" Text="{Binding Rotation, StringFormat='{}{0:F1}°'}" TextColor="#486171" />
+                    </Grid>
+                    <Slider AutomationId="DapperDan_Rotation_Slider" Maximum="45" Minimum="-45" Value="{Binding Rotation, Mode=TwoWay}" />
+
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label FontAttributes="Bold" Text="RotationX · tilt top / bottom" TextColor="#173E52" />
+                        <Label Grid.Column="1" AutomationId="DapperDan_RotationX_Value" FontFamily="monospace" Text="{Binding RotationX, StringFormat='{}{0:F1}°'}" TextColor="#486171" />
+                    </Grid>
+                    <Slider AutomationId="DapperDan_RotationX_Slider" Maximum="45" Minimum="-45" Value="{Binding RotationX, Mode=TwoWay}" />
+
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label FontAttributes="Bold" Text="RotationY · tilt left / right" TextColor="#173E52" />
+                        <Label Grid.Column="1" AutomationId="DapperDan_RotationY_Value" FontFamily="monospace" Text="{Binding RotationY, StringFormat='{}{0:F1}°'}" TextColor="#486171" />
+                    </Grid>
+                    <Slider AutomationId="DapperDan_RotationY_Slider" Maximum="45" Minimum="-45" Value="{Binding RotationY, Mode=TwoWay}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border BackgroundColor="#FFFFFF" Padding="14" Stroke="#B9CED8" StrokeShape="RoundRectangle 16">
+                <VerticalStackLayout Spacing="12">
+                    <Label FontAttributes="Bold" Text="Reef switches" TextColor="#173E52" />
+                    <Label FontSize="12" LineBreakMode="WordWrap" Text="Leave these off for the isolated control. Add one at a time after the sliders behave." TextColor="#486171" />
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="Sibling underneath" TextColor="#173E52" VerticalTextAlignment="Center" />
+                        <Switch Grid.Column="1" AutomationId="DapperDan_Rotation_UnderlaySwitch" IsToggled="{Binding IsUnderlayVisible, Mode=TwoWay}" />
+                    </Grid>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="Explicit target ZIndex = 1" TextColor="#173E52" VerticalTextAlignment="Center" />
+                        <Switch Grid.Column="1" AutomationId="DapperDan_Rotation_ZIndexSwitch" IsToggled="{Binding IsExplicitZOrder, Mode=TwoWay}" />
+                    </Grid>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="Clip inner content" TextColor="#173E52" VerticalTextAlignment="Center" />
+                        <Switch Grid.Column="1" AutomationId="DapperDan_Rotation_ClipSwitch" IsToggled="{Binding IsInnerClipped, Mode=TwoWay}" />
+                    </Grid>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="Opaque transformed host" TextColor="#173E52" VerticalTextAlignment="Center" />
+                        <Switch Grid.Column="1" AutomationId="DapperDan_Rotation_OpaqueSwitch" IsToggled="{Binding IsHostOpaque, Mode=TwoWay}" />
+                    </Grid>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="Stack two image layers" TextColor="#173E52" VerticalTextAlignment="Center" />
+                        <Switch Grid.Column="1" AutomationId="DapperDan_Rotation_StackSwitch" IsToggled="{Binding IsStackedLayers, Mode=TwoWay}" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <controls:RichButton
+                AutomationId="DapperDan_Rotation_CrossFade"
+                Command="{Binding RunCrossFadeCommand}"
+                HeightRequest="56"
+                IsBusy="{Binding IsCrossFadeBusy, Mode=OneWay}">
+                <Border BackgroundColor="#075985" InputTransparent="True" StrokeThickness="0" StrokeShape="RoundRectangle 14">
+                    <Label FontAttributes="Bold" HorizontalTextAlignment="Center" InputTransparent="True" Text="Run 30 image cross-fades" TextColor="White" VerticalTextAlignment="Center" />
+                </Border>
+            </controls:RichButton>
+
+            <Label
+                FontSize="11"
+                LineBreakMode="WordWrap"
+                Text="Read the result literally: if flat and isolated sliders stay whole, the transform is healthy. The first reef switch that removes an edge identifies the composition seam. Opposite RotationY signs removing opposite edges is a signed 3D-layer clue."
+                TextColor="#765B94" />
+                    </VerticalStackLayout>
+                </ScrollView>
+            </Grid>
+        </panelViews:PanelBossBody_DefaultView.ContentPanels>
+    </panelViews:PanelBossBody_DefaultView>
+</ContentPage>

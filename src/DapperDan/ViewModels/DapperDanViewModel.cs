@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using Prism.Mvvm;
+using Prism.Navigation;
 using CodeCrafty.DapperDan.Data;
 using CodeCrafty.DapperDan.Data.Entities;
 using CodeCrafty.DapperDan.Diagnostics;
@@ -30,6 +31,7 @@ public partial class DapperDanViewModel : BindableBase
     public const string WitnessPanelName = "DapperDanWitnessPanel";
 
     private readonly IKeikiRepository _keikiRepository;
+    private readonly INavigationService _navigationService;
     private readonly IVoiceCanaryService _voiceCanaryService;
     private string _favoriteBreak = "First Light";
     private bool _hasInitialized;
@@ -49,10 +51,12 @@ public partial class DapperDanViewModel : BindableBase
     public DapperDanViewModel(
         PanelBoss activePanelBoss,
         IKeikiRepository keikiRepository,
+        INavigationService navigationService,
         IVoiceCanaryService voiceCanaryService)
     {
         ActivePanelBoss = activePanelBoss;
         _keikiRepository = keikiRepository;
+        _navigationService = navigationService;
         _voiceCanaryService = voiceCanaryService;
 
         ButtonsAction = new DapperDanPageAction(
@@ -176,6 +180,16 @@ public partial class DapperDanViewModel : BindableBase
     {
         get => _voiceCanaryReport;
         private set => SetProperty(ref _voiceCanaryReport, value);
+    }
+
+    private async Task OpenRotationCanaryAsync()
+    {
+        var result = await _navigationService.NavigateAsync("RotationCanaryPage");
+        if (!result.Success)
+        {
+            StatusMessage =
+                $"Rotation canary navigation failed: {result.Exception?.Message ?? "unknown navigation error"}";
+        }
     }
 
     public async Task InitializeAsync()

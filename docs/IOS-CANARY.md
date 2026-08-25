@@ -54,6 +54,21 @@ Interpret the physical result this way:
 
 The speech canary service never configures, activates, or deactivates the shared audio session. Dapper Dan's existing RichButton sound player primes that shared session to Ambient + MixWithOthers when page buttons load—even when these three trial buttons suppress tap playback—so A and B intentionally observe the app's normal configured baseline. The result snapshots make that state explicit. The canary does not write voice details to disk or transmit results. Selected metadata exists only on screen; inspect it before sharing a screenshot from a device with Personal Voice installed. The implementation is an independently authored platform sample, not a copy of private application code.
 
+## Exercising native MAUI rotations
+
+The **Canary → Native rotation lab** opens a dedicated, product-neutral physical-device probe. One asymmetric image target binds directly to the standard MAUI `VisualElement.Rotation`, `RotationX`, and `RotationY` properties. The target contains no Skia canvas, custom renderer, platform-specific transform handler, or native `CALayer` workaround.
+
+Use the controls in this order:
+
+1. Press **Flat** and leave every reef switch off. Sweep `Rotation`, `RotationX`, and `RotationY` separately in both directions. Every red left edge, green right edge, blue top edge, and amber bottom edge should remain visible.
+2. Load **Small −Y** and **Small +Y**. These are opposite-sign, small-angle combinations intended to reveal a direction-dependent failure without exposing product code or assets.
+3. Return to **Flat**, load one small-angle preset, then enable one reef switch at a time: sibling underneath, explicit `ZIndex = 1`, inner clipping, opaque transformed host, and stacked image layers.
+4. With stacked layers enabled, press **Run 30 image cross-fades**. This repeatedly changes ordinary MAUI `Image.Opacity`; it does not animate or replace the transform itself.
+
+Interpret the first failing step as the seam to minimize. If the isolated sliders pass but adding an underlying sibling fails, the transform is healthy and the overlapping native layers are implicated. If clipping alone fails, remove the unnecessary mask or reduce that case upstream. If only the stacked fade fails, isolate image-layer composition. If opposite `RotationY` signs remove opposite edges, capture both states: that signed signature is materially stronger than a generic screenshot of a clipped view.
+
+MAUI documents these as supported basic transforms. The lab's progressive topology is intentionally stricter than an isolated rotating rectangle and can produce useful public evidence for [dotnet/maui issue #16586](https://github.com/dotnet/maui/issues/16586) or a smaller follow-up if the behavior differs.
+
 Those bundles are complete Dapper Dan application products with substantial CodeCrafty functionality. They do not redistribute Prism as a NuGet package, loose development library, SDK, wrapper, control suite, low-code platform, or other reusable development component. The responsible developers must remain properly licensed for Prism, and the repository license and third-party notices stay alongside every proof artifact.
 
 ## Protected TestFlight lane
