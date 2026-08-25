@@ -1,6 +1,7 @@
 using Microsoft.Maui.Graphics;
 using Prism.Commands;
 using Prism.Mvvm;
+using CodeCrafty.DapperDan.PanelBossKit;
 
 namespace CodeCrafty.DapperDan.ViewModels;
 
@@ -23,11 +24,14 @@ public sealed class RotationCanaryViewModel : BindableBase
     private string _status =
         "Start flat. Sweep one slider at a time and watch all four colored edges.";
 
-    public RotationCanaryViewModel()
+    public RotationCanaryViewModel(PanelBoss activePanelBoss)
     {
+        ActivePanelBoss = activePanelBoss;
         _runCrossFadeCommand = new AsyncDelegateCommand(RunCrossFadeAsync);
         _setPresetCommand = new DelegateCommand<string>(SetPreset);
     }
+
+    public PanelBoss ActivePanelBoss { get; }
 
     public double BackOpacity
     {

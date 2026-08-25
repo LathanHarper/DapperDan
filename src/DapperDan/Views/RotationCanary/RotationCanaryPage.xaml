@@ -17,6 +17,7 @@
         AutomationId="DapperDan_Rotation_PanelBossRoot"
         BackgroundColor="#EAF2F5"
         HorizontalOptions="Fill"
+        PanelBossInstance="{Binding ActivePanelBoss}"
         VerticalOptions="Fill">
         <panelViews:PanelBossBody_DefaultView.ContentPanels>
             <Grid

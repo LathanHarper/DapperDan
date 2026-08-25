@@ -113,6 +113,25 @@ public sealed class RotationCanaryContractTests
         var pageChild = Assert.Single(document.Root!.Elements());
 
         Assert.Equal("PanelBossBody_DefaultView", pageChild.Name.LocalName);
+        Assert.Contains(
+            "ActivePanelBoss",
+            GetOptionalAttribute(pageChild, "PanelBossInstance"),
+            StringComparison.Ordinal);
+
+        var viewModelSource = File.ReadAllText(Path.Combine(
+            root.FullName,
+            "src",
+            "DapperDan",
+            "ViewModels",
+            "RotationCanaryViewModel.cs"));
+        Assert.Contains(
+            "RotationCanaryViewModel(PanelBoss activePanelBoss)",
+            viewModelSource,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "ActivePanelBoss = activePanelBoss",
+            viewModelSource,
+            StringComparison.Ordinal);
 
         var stage = Assert.Single(
             document.Descendants(),
