@@ -13,6 +13,7 @@ Dapper Dan was cut from a stable, product-neutral .NET 10 MAUI suitcase containi
 - The generic crash-journal implementation, neutral startup checkpoint names, and tests. It has no upload endpoint or product-specific metadata.
 - An independently authored native iOS voice-selection and audio-session canary with neutral speech, on-screen-only metadata, and no product vocabulary or transport.
 - An independently authored, product-neutral native MAUI rotation lab and its two geometric edge-marker SVGs. The lab contains no private assets, product layout, Skia renderer, or platform workaround.
+- An independently authored Commerce Road billboard-layout canary: one public vector scene, two public geometric ad faces, one upper-left native MAUI `Grid` presenter, and a cross-fade loop. It reproduces a publicly authorized demo composition without product code, customer material, Skia, or platform-specific transform handlers.
 - Generic .NET MAUI template resources, CodeCrafty-recorded mechanical feedback sounds, and public CI scaffolding.
 
 ## Excluded from this export
