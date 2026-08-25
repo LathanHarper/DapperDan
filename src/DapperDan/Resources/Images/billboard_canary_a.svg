@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="288" viewBox="0 0 960 288">
+  <rect width="960" height="288" fill="#073b4c" />
+  <path d="M690 0h190L780 288H590z" fill="#18a7a5" />
+  <path d="M810 0h150v288H710z" fill="#0b2735" />
+  <path d="M850 42l40 196h-80z" fill="#ffd166" />
+  <g font-family="sans-serif" font-weight="900" fill="#fff">
+    <text x="42" y="52" font-size="24" fill="#ffd166">PUBLIC MAUI CANARY</text>
+    <text x="38" y="132" font-size="70">ROAD READY</text>
+    <text x="42" y="184" font-size="29" fill="#8ff0dc">NATIVE GRID • NO SKIA</text>
+    <rect x="42" y="213" width="510" height="47" rx="7" fill="#ffd166" />
+    <text x="100" y="246" font-size="23" fill="#073b4c">ALL FOUR EDGES MUST STAY WHOLE</text>
+  </g>
+</svg>

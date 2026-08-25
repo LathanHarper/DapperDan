@@ -192,6 +192,16 @@ public partial class DapperDanViewModel : BindableBase
         }
     }
 
+    private async Task OpenBillboardCanaryAsync()
+    {
+        var result = await _navigationService.NavigateAsync("BillboardCanaryPage");
+        if (!result.Success)
+        {
+            StatusMessage =
+                $"Billboard canary navigation failed: {result.Exception?.Message ?? "unknown navigation error"}";
+        }
+    }
+
     public async Task InitializeAsync()
     {
         if (_hasInitialized)

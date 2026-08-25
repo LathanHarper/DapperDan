@@ -22,3 +22,7 @@ The cleaner microphone channel was isolated, then each clip received conservativ
 - SHA-256: `A124C3A2CB880E49F8A52EBB7DD279A9CE4020E09A83E978F9C62A390A36A14D`
 
 The generator normalizes EF's create script to LF before SQLite stores it in `sqlite_schema`, so Windows and Unix hosts produce the same reviewed bytes. Public CI regenerates the file, rejects byte or model drift, and validates SQLite integrity and foreign keys before the macOS build starts.
+
+## Billboard layout canary
+
+`billboard_canary_scene.svg`, `billboard_canary_a.svg`, and `billboard_canary_b.svg` were independently authored for Dapper Dan as public geometric test fixtures. They contain no customer identity, private footage, product screenshot, or third-party artwork. The scene deliberately provides a fixed 960×540 coordinate space; the two 960×288 faces make edge loss obvious while exercising stacked native MAUI images and opacity cross-fades.

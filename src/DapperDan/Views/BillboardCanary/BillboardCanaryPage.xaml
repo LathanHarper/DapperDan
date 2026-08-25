@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="CodeCrafty.DapperDan.Views.BillboardCanary.BillboardCanaryPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:panelViews="clr-namespace:CodeCrafty.DapperDan.PanelBossKit.Views"
+    xmlns:pb="clr-namespace:CodeCrafty.DapperDan.PanelBossKit"
+    xmlns:vm="clr-namespace:CodeCrafty.DapperDan.ViewModels"
+    x:DataType="vm:BillboardCanaryViewModel"
+    AutomationId="DapperDan_Billboard_Page"
+    BackgroundColor="#EAF2F5"
+    NavigationPage.HasNavigationBar="True"
+    Title="Commerce Road canary">
+
+    <panelViews:PanelBossBody_DefaultView
+        AutomationId="DapperDan_Billboard_PanelBossRoot"
+        BackgroundColor="#EAF2F5"
+        HorizontalOptions="Fill"
+        PanelBossInstance="{Binding ActivePanelBoss}"
+        VerticalOptions="Fill">
+        <panelViews:PanelBossBody_DefaultView.ContentPanels>
+            <Grid
+                AutomationId="DapperDan_Billboard_ContentPanel"
+                BackgroundColor="#EAF2F5"
+                pb:PanelBoss.PanelIsVisible="True"
+                pb:PanelBoss.PanelName="DapperDanBillboardContentPanel"
+                pb:PanelBoss.PanelPriority="10"
+                pb:PanelBoss.PanelTransitionIn="None"
+                pb:PanelBoss.PanelTransitionOut="None">
+                <ScrollView AutomationId="DapperDan_Billboard_ScrollView">
+                    <VerticalStackLayout Padding="18,20,18,36" Spacing="14">
+                        <Label
+                            FontAttributes="Bold"
+                            FontSize="26"
+                            Text="Commerce Road layout canary"
+                            TextColor="#102A3A" />
+                        <Label
+                            FontSize="14"
+                            LineBreakMode="WordWrap"
+                            Text="One native Grid holds the scene and one upper-left SignPresenter. The presenter receives only physical size, translation, Rotation, RotationX, and RotationY—no scaled ancestor, AbsoluteLayout, Skia, or platform handler."
+                            TextColor="#486171" />
+
+                        <Grid
+                            x:Name="SceneViewport"
+                            AutomationId="DapperDan_Billboard_Viewport"
+                            BackgroundColor="#09161B"
+                            HeightRequest="540"
+                            HorizontalOptions="Fill"
+                            IsClippedToBounds="True"
+                            MaximumWidthRequest="960"
+                            SizeChanged="OnSceneViewportSizeChanged">
+                            <Image
+                                Aspect="Fill"
+                                InputTransparent="True"
+                                Source="billboard_canary_scene.png" />
+
+                            <Grid
+                                x:Name="SignPresenter"
+                                AutomationId="DapperDan_Billboard_SignPresenter"
+                                AnchorX="0.5"
+                                AnchorY="0.5"
+                                BackgroundColor="#073B4C"
+                                HeightRequest="96"
+                                HorizontalOptions="Start"
+                                IsClippedToBounds="True"
+                                VerticalOptions="Start"
+                                WidthRequest="318"
+                                ZIndex="1">
+                                <Image
+                                    x:Name="BackFace"
+                                    Aspect="Fill"
+                                    InputTransparent="True"
+                                    Source="billboard_canary_b.png" />
+                                <Image
+                                    x:Name="FrontFace"
+                                    Aspect="Fill"
+                                    InputTransparent="True"
+                                    Source="billboard_canary_a.png" />
+                                <BoxView BackgroundColor="#FF4D4D" HeightRequest="3" HorizontalOptions="Fill" VerticalOptions="Start" />
+                                <BoxView BackgroundColor="#52E875" HeightRequest="3" HorizontalOptions="Fill" VerticalOptions="End" />
+                                <BoxView BackgroundColor="#4DA3FF" HorizontalOptions="Start" VerticalOptions="Fill" WidthRequest="3" />
+                                <BoxView BackgroundColor="#FFD34D" HorizontalOptions="End" VerticalOptions="Fill" WidthRequest="3" />
+                            </Grid>
+                        </Grid>
+
+                        <Border
+                            BackgroundColor="#FFFFFF"
+                            Padding="12"
+                            Stroke="#B9CED8"
+                            StrokeShape="RoundRectangle 12">
+                            <Label
+                                x:Name="CanaryStatus"
+                                AutomationId="DapperDan_Billboard_Status"
+                                FontFamily="monospace"
+                                FontSize="12"
+                                LineBreakMode="WordWrap"
+                                Text="Waiting for viewport layout…"
+                                TextColor="#173E52" />
+                        </Border>
+
+                        <Label
+                            FontSize="12"
+                            LineBreakMode="WordWrap"
+                            Text="PASS: the entire face and all four colored edge markers remain visible while the two images cross-fade. FAIL: one side vanishes, the face is cropped, or the presenter jumps away from the roadside frame."
+                            TextColor="#765B94" />
+                    </VerticalStackLayout>
+                </ScrollView>
+            </Grid>
+        </panelViews:PanelBossBody_DefaultView.ContentPanels>
+    </panelViews:PanelBossBody_DefaultView>
+</ContentPage>

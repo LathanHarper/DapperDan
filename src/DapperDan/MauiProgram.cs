@@ -8,6 +8,7 @@ using CodeCrafty.DapperDan.Diagnostics;
 using CodeCrafty.DapperDan.PanelBossKit;
 using CodeCrafty.DapperDan.Speech;
 using CodeCrafty.DapperDan.ViewModels;
+using CodeCrafty.DapperDan.Views.BillboardCanary;
 using CodeCrafty.DapperDan.Views.DapperDan;
 using CodeCrafty.DapperDan.Views.RotationCanary;
 
@@ -107,6 +108,7 @@ public static class MauiProgram
 
     private static void RegisterPrismTypes(IContainerRegistry containerRegistry)
     {
+        containerRegistry.RegisterForNavigation<BillboardCanaryPage, BillboardCanaryViewModel>();
         containerRegistry.RegisterForNavigation<DapperDanPage, DapperDanViewModel>();
         containerRegistry.RegisterForNavigation<RotationCanaryPage, RotationCanaryViewModel>();
     }

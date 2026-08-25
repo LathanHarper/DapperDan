@@ -655,6 +655,20 @@
                                 </controls:RichButton>
                             </VerticalStackLayout>
                         </Border>
+                        <Border BackgroundColor="#FFFFFF" Padding="16" Stroke="#B9CED8" StrokeShape="RoundRectangle 18">
+                            <VerticalStackLayout Spacing="10">
+                                <Label FontAttributes="Bold" Text="6. Commerce Road layout canary" TextColor="#173E52" />
+                                <Label Style="{StaticResource BodyCopy}" Text="Reproduce the real billboard composition with one scene Grid and one upper-left SignPresenter. Native transforms only; no scaled ancestor, AbsoluteLayout, Skia, or platform handler." />
+                                <controls:RichButton
+                                    AutomationId="DapperDan_Canary_OpenBillboardLab"
+                                    Command="{Binding OpenBillboardCanaryCommand}"
+                                    HeightRequest="56">
+                                    <Border BackgroundColor="#8E3C2C" InputTransparent="True" StrokeThickness="0" StrokeShape="RoundRectangle 14">
+                                        <Label FontAttributes="Bold" HorizontalTextAlignment="Center" InputTransparent="True" Text="Open Commerce Road canary" TextColor="White" VerticalTextAlignment="Center" />
+                                    </Border>
+                                </controls:RichButton>
+                            </VerticalStackLayout>
+                        </Border>
                     </VerticalStackLayout>
                 </ScrollView>
             </Grid>
