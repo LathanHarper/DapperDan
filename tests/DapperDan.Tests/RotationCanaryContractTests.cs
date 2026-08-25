@@ -99,6 +99,43 @@ public sealed class RotationCanaryContractTests
     }
 
     [Fact]
+    public void RotationLabUsesPanelBossHostAndKeepsFullSweepInsideStage()
+    {
+        var root = FindRepositoryRoot();
+        var pagePath = Path.Combine(
+            root.FullName,
+            "src",
+            "DapperDan",
+            "Views",
+            "RotationCanary",
+            "RotationCanaryPage.xaml");
+        var document = XDocument.Load(pagePath);
+        var pageChild = Assert.Single(document.Root!.Elements());
+
+        Assert.Equal("PanelBossBody_DefaultView", pageChild.Name.LocalName);
+
+        var stage = Assert.Single(
+            document.Descendants(),
+            element => GetOptionalAttribute(element, "AutomationId") ==
+                "DapperDan_Rotation_Stage");
+        var target = Assert.Single(
+            document.Descendants(),
+            element => GetOptionalAttribute(element, "AutomationId") ==
+                "DapperDan_Rotation_Target");
+        var stageWidth = double.Parse(GetOptionalAttribute(stage, "WidthRequest")!);
+        var stageHeight = double.Parse(GetOptionalAttribute(stage, "HeightRequest")!);
+        var targetWidth = double.Parse(GetOptionalAttribute(target, "WidthRequest")!);
+        var targetHeight = double.Parse(GetOptionalAttribute(target, "HeightRequest")!);
+        var targetDiagonal = Math.Sqrt(
+            (targetWidth * targetWidth) + (targetHeight * targetHeight));
+
+        Assert.True(stageWidth > targetDiagonal);
+        Assert.True(stageHeight > targetDiagonal);
+        Assert.Equal("Center", GetOptionalAttribute(target, "HorizontalOptions"));
+        Assert.Equal("Center", GetOptionalAttribute(target, "VerticalOptions"));
+    }
+
+    [Fact]
     public void RotationLabAddsEachRiskyCompositionIngredientIndependently()
     {
         var root = FindRepositoryRoot();

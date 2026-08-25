@@ -4,6 +4,8 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:controls="clr-namespace:CodeCrafty.DapperDan.Controls"
+    xmlns:panelViews="clr-namespace:CodeCrafty.DapperDan.PanelBossKit.Views"
+    xmlns:pb="clr-namespace:CodeCrafty.DapperDan.PanelBossKit"
     xmlns:vm="clr-namespace:CodeCrafty.DapperDan.ViewModels"
     x:DataType="vm:RotationCanaryViewModel"
     AutomationId="DapperDan_Rotation_Page"
@@ -11,8 +13,22 @@
     NavigationPage.HasNavigationBar="True"
     Title="Native rotation lab">
 
-    <ScrollView AutomationId="DapperDan_Rotation_ScrollView">
-        <VerticalStackLayout Padding="18,20,18,36" Spacing="16">
+    <panelViews:PanelBossBody_DefaultView
+        AutomationId="DapperDan_Rotation_PanelBossRoot"
+        BackgroundColor="#EAF2F5"
+        HorizontalOptions="Fill"
+        VerticalOptions="Fill">
+        <panelViews:PanelBossBody_DefaultView.ContentPanels>
+            <Grid
+                AutomationId="DapperDan_Rotation_ContentPanel"
+                BackgroundColor="#EAF2F5"
+                pb:PanelBoss.PanelIsVisible="True"
+                pb:PanelBoss.PanelName="DapperDanRotationContentPanel"
+                pb:PanelBoss.PanelPriority="10"
+                pb:PanelBoss.PanelTransitionIn="None"
+                pb:PanelBoss.PanelTransitionOut="None">
+                <ScrollView AutomationId="DapperDan_Rotation_ScrollView">
+                    <VerticalStackLayout Padding="18,20,18,36" Spacing="16">
             <Label
                 FontAttributes="Bold"
                 FontSize="26"
@@ -27,15 +43,20 @@
             <Grid
                 AutomationId="DapperDan_Rotation_Stage"
                 BackgroundColor="#D9E8EE"
-                HeightRequest="240"
-                IsClippedToBounds="False">
+                HeightRequest="320"
+                HorizontalOptions="Center"
+                IsClippedToBounds="False"
+                WidthRequest="320">
                 <Border
                     AutomationId="DapperDan_Rotation_Underlay"
                     BackgroundColor="#B9CED8"
+                    HeightRequest="90"
+                    HorizontalOptions="Center"
                     IsVisible="{Binding IsUnderlayVisible}"
-                    Margin="24,54"
                     Stroke="#78909C"
-                    StrokeShape="RoundRectangle 12">
+                    StrokeShape="RoundRectangle 12"
+                    VerticalOptions="Center"
+                    WidthRequest="240">
                     <Label
                         FontAttributes="Bold"
                         HorizontalTextAlignment="Center"
@@ -47,10 +68,13 @@
                 <ContentView
                     AutomationId="DapperDan_Rotation_Target"
                     BackgroundColor="{Binding HostBackgroundColor}"
-                    Margin="32,62"
+                    HeightRequest="90"
+                    HorizontalOptions="Center"
                     Rotation="{Binding Rotation}"
                     RotationX="{Binding RotationX}"
                     RotationY="{Binding RotationY}"
+                    VerticalOptions="Center"
+                    WidthRequest="240"
                     ZIndex="{Binding TargetZIndex}">
                     <Grid IsClippedToBounds="{Binding IsInnerClipped}">
                         <Image
@@ -212,6 +236,9 @@
                 LineBreakMode="WordWrap"
                 Text="Read the result literally: if flat and isolated sliders stay whole, the transform is healthy. The first reef switch that removes an edge identifies the composition seam. Opposite RotationY signs removing opposite edges is a signed 3D-layer clue."
                 TextColor="#765B94" />
-        </VerticalStackLayout>
-    </ScrollView>
+                    </VerticalStackLayout>
+                </ScrollView>
+            </Grid>
+        </panelViews:PanelBossBody_DefaultView.ContentPanels>
+    </panelViews:PanelBossBody_DefaultView>
 </ContentPage>
