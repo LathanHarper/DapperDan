@@ -1,6 +1,6 @@
 import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync, copyFileSync, statSync } from 'node:fs';
+import { closeSync, cpSync, existsSync, mkdirSync, openSync, readFileSync, readdirSync, writeFileSync, copyFileSync, statSync } from 'node:fs';
 import { basename, join, resolve } from 'node:path';
 import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -40,6 +40,9 @@ export function pngDimensions(bytes) {
 
 export function validateDimensions(bytes, family) {
   const size = pngDimensions(bytes);
+  if (!bytes.subarray(-12).equals(Buffer.from('0000000049454e44ae426082', 'hex'))) {
+    throw new Error('PNG output is incomplete: final IEND chunk is missing.');
+  }
   if (!acceptedDimensions[family].some(expected => expected.every((value, index) => value === size[index]))) {
     throw new Error(`Unexpected ${family} capture size ${size.join('x')}; native accepted dimensions required.`);
   }
@@ -200,8 +203,7 @@ async function capture() {
   for (const family of ['iphone', 'ipad']) {
     let udid;
     let runtimeLog;
-    const runtimeChunks = [];
-    let runtimeBytes = 0;
+    let runtimeLogFd;
     const record = { family, startedUtc: new Date().toISOString() };
     const start = Date.now();
     try {
@@ -215,18 +217,22 @@ async function capture() {
       command('xcrun', ['simctl', 'ui', udid, 'appearance', 'light']);
       command('xcrun', ['simctl', 'install', udid, app], 120000);
       // Start the filtered diagnostic stream BEFORE launch; short-lived failures must survive.
-      runtimeLog = spawn('xcrun', ['simctl', 'spawn', udid, 'log', 'stream', '--style', 'compact', '--level', 'debug', '--predicate', `process == "CodeCrafty.DapperDan" OR eventMessage CONTAINS "${process.env.BUNDLE_ID}" OR eventMessage CONTAINS "CodeCrafty.DapperDan"`], { stdio: ['ignore', 'pipe', 'pipe'] });
-      const collect = bytes => {
-        if (runtimeBytes < 8 * 1024 * 1024) runtimeChunks.push(bytes);
-        runtimeBytes += bytes.length;
-      };
-      runtimeLog.stdout.on('data', collect);
-      runtimeLog.stderr.on('data', collect);
-      runtimeLog.on('error', error => runtimeChunks.push(Buffer.from(error.message)));
+      // Direct file descriptors avoid pipe backpressure while synchronous simctl calls run.
+      runtimeLogFd = openSync(join(output, `${family}-launch-stream.log`), 'w');
+      runtimeLog = spawn('xcrun', ['simctl', 'spawn', udid, 'log', 'stream', '--style', 'compact', '--level', 'debug', '--predicate', `process == "CodeCrafty.DapperDan" OR eventMessage CONTAINS "${process.env.BUNDLE_ID}" OR eventMessage CONTAINS "CodeCrafty.DapperDan"`], { stdio: ['ignore', runtimeLogFd, runtimeLogFd] });
+      runtimeLog.on('error', error => { record.runtimeStreamError = error.message; });
       record.launch = command('xcrun', ['simctl', 'launch', udid, process.env.BUNDLE_ID], 60000);
       await new Promise(resolveWait => setTimeout(resolveWait, 12000));
       const image = join(output, `${family}.png`);
-      command('xcrun', ['simctl', 'io', udid, 'screenshot', '--type=png', image], 60000);
+      try {
+        command('xcrun', ['simctl', 'io', udid, 'screenshot', '--type=png', image], 60000);
+      } catch (error) {
+        if (!error.message.includes('ETIMEDOUT') || !existsSync(image)) throw error;
+        // A timed-out command can still have emitted a complete image. Preserve the
+        // warning, require PNG completion/dimensions and live process, then inspect visually.
+        validateDimensions(readFileSync(image), family);
+        record.screenshotCommandWarning = error.message;
+      }
       record.dimensions = validateDimensions(readFileSync(image), family);
       record.image = basename(image);
       record.sha256 = sha256(image);
@@ -243,8 +249,8 @@ async function capture() {
       if (runtimeLog) {
         runtimeLog.kill('SIGTERM');
         await new Promise(resolveWait => setTimeout(resolveWait, 300));
-        writeFileSync(join(output, `${family}-launch-stream.log`), Buffer.concat(runtimeChunks));
       }
+      if (runtimeLogFd !== undefined) closeSync(runtimeLogFd);
       const reports = join(homedir(), 'Library', 'Logs', 'DiagnosticReports');
       if (existsSync(reports)) {
         for (const name of readdirSync(reports).filter(name => name.startsWith('CodeCrafty.DapperDan') && name.endsWith('.ips'))) {
@@ -252,6 +258,7 @@ async function capture() {
         }
       }
       if (udid) {
+        if (!record.processRows) captureDiagnostics(udid, output, family, record);
         try { command('xcrun', ['simctl', 'shutdown', udid], 60000); }
         catch (error) { record.shutdownWarning = error.message; }
       }

@@ -5,11 +5,12 @@ import { selectDeviceType, selectRuntime, pngDimensions, validateDimensions } fr
 import { projectSimulatorLock } from './project-lock.mjs';
 
 function png(width, height) {
-  const bytes = Buffer.alloc(24);
+  const bytes = Buffer.alloc(36);
   Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]).copy(bytes);
   bytes.write('IHDR', 12, 'ascii');
   bytes.writeUInt32BE(width, 16);
   bytes.writeUInt32BE(height, 20);
+  Buffer.from('0000000049454e44ae426082', 'hex').copy(bytes, 24);
   return bytes;
 }
 
@@ -30,6 +31,7 @@ test('captures require PNG signature and accepted unresized native dimensions', 
   assert.deepEqual(validateDimensions(png(2064, 2752), 'ipad'), [2064, 2752]);
   assert.throws(() => pngDimensions(Buffer.alloc(24)), /not a PNG/);
   assert.throws(() => validateDimensions(png(1536, 2048), 'ipad'), /native accepted/);
+  assert.throws(() => validateDimensions(png(1284, 2778).subarray(0, 24), 'iphone'), /incomplete/);
 });
 
 test('iOS-only restore keeps exact pinned dependency objects without Android or device targets', () => {
