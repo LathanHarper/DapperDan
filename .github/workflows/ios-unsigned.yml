@@ -1,17 +1,13 @@
-name: Manual Debug Simulator capture proof
+name: Manual bottom-panel Simulator comparison
 
 # Branch-only proof: main's Release/device canary is unchanged.
 on:
   workflow_dispatch:
     inputs:
       reuse_run_id:
-        description: Optional prior public proof run; download its preserved app and skip all compilation
+        description: Optional prior bottom-panel canary run; reuse its preserved app without compilation
         type: string
         default: ''
-      repair_adhoc:
-        description: Re-seal a fresh copy of retained Simulator app with credential-free ad-hoc signatures
-        type: boolean
-        default: false
 
 permissions:
   contents: read
@@ -31,7 +27,7 @@ env:
 
 jobs:
   capture:
-    if: ${{ github.repository == 'LathanHarper/DapperDan' && github.event.repository.private == false && github.ref == 'refs/heads/codex/simulator-capture-proof' }}
+    if: ${{ github.event_name == 'workflow_dispatch' && github.repository == 'LathanHarper/DapperDan' && github.event.repository.private == false && github.ref == 'refs/heads/codex/panelboss-bottom-inset-canary' }}
     runs-on: macos-26
     timeout-minutes: 45
     steps:
@@ -43,7 +39,7 @@ jobs:
           persist-credentials: false
 
       - name: Test capture-selection and image contracts
-        run: node --test tools/simulator-proof/capture.test.mjs
+        run: node --test tools/simulator-proof/*.test.mjs
 
       - name: Validate optional public reuse request
         env:
@@ -67,22 +63,9 @@ jobs:
 
       - name: Verify and extract retained Simulator app
         if: ${{ inputs.reuse_run_id != '' }}
+        env:
+          REUSE_RUN_ID: ${{ inputs.reuse_run_id }}
         run: node tools/simulator-proof/capture.mjs restore
-
-      - name: Repair local Simulator signatures on a fresh app copy
-        id: repair
-        if: ${{ inputs.reuse_run_id != '' && inputs.repair_adhoc }}
-        run: node tools/simulator-proof/capture.mjs sign-simulator
-
-      - name: Preserve re-sealed Simulator product before capture
-        if: ${{ steps.repair.outcome == 'success' }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: dapperdan-adhoc-simulator-${{ github.run_id }}
-          path: artifacts/adhoc-recovery/
-          compression-level: 0
-          if-no-files-found: error
-          retention-days: 1
 
       - name: Install pinned .NET SDK
         if: ${{ inputs.reuse_run_id == '' }}
@@ -120,6 +103,7 @@ jobs:
           node tools/simulator-proof/project-lock.mjs
           dotnet restore "$PROJECT_PATH" --locked-mode \
             -p:TargetFrameworks=net10.0-ios -r iossimulator-arm64 \
+            -p:DapperDanBottomPanelCanary=true \
             -p:NuGetLockFilePath="$GITHUB_WORKSPACE/artifacts/recovery/packages.iossimulator.lock.json" \
             2>&1 | tee artifacts/recovery/package-restore.log
 
@@ -132,6 +116,7 @@ jobs:
           dotnet build "$PROJECT_PATH" \
             -f net10.0-ios -c Debug -r iossimulator-arm64 --no-restore \
             -p:TargetFrameworks=net10.0-ios \
+            -p:DapperDanBottomPanelCanary=true \
             -p:ApplicationId="$BUNDLE_ID" \
             -p:EnableCodeSigning=false -p:ArchiveOnBuild=false -p:BuildIpa=false \
             -p:ContinuousIntegrationBuild=true \
@@ -153,7 +138,21 @@ jobs:
           compression-level: 0
           retention-days: 1
 
-      - name: Capture native iPhone and iPad proof sequentially
+      - name: Re-seal a fresh Simulator copy without signing credentials
+        id: repair
+        run: node tools/simulator-proof/capture.mjs sign-simulator
+
+      - name: Preserve re-sealed Simulator product before capture
+        if: ${{ steps.repair.outcome == 'success' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: dapperdan-adhoc-simulator-${{ github.run_id }}
+          path: artifacts/adhoc-recovery/
+          compression-level: 0
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Capture native iPhone and iPad baseline and safe-area-none sequentially
         timeout-minutes: 12
         run: node tools/simulator-proof/capture.mjs capture
 
@@ -167,5 +166,6 @@ jobs:
             artifacts/recovery/toolchain.txt
             artifacts/recovery/receipt.json
             artifacts/recovery/*.log
+            artifacts/adhoc-recovery/transformation-receipt.json
           if-no-files-found: warn
           retention-days: 1

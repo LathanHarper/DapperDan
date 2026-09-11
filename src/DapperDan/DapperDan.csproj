@@ -43,6 +43,10 @@
 		<MtouchInterpreter>-all</MtouchInterpreter>
 	</PropertyGroup>
 
+	<PropertyGroup Condition="'$(DapperDanBottomPanelCanary)' == 'true' And '$(Configuration)' == 'Debug'">
+		<DefineConstants>$(DefineConstants);DAPPERDAN_BOTTOM_PANEL_CANARY</DefineConstants>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<!-- App Icon -->
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />

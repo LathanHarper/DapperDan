@@ -1,0 +1,276 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage AutomationId="BottomPanel_Page" Title="Bottom panel canary" BackgroundColor="#EAF2F5"
+    x:Class="CodeCrafty.DapperDan.Views.BottomPanelCanary.BottomPanelCanaryPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:controls="clr-namespace:CodeCrafty.DapperDan.Controls"
+    xmlns:panelViews="clr-namespace:CodeCrafty.DapperDan.PanelBossKit.Views"
+    xmlns:pb="clr-namespace:CodeCrafty.DapperDan.PanelBossKit"
+    xmlns:vm="clr-namespace:CodeCrafty.DapperDan.ViewModels"
+    x:DataType="vm:BottomPanelCanaryViewModel"
+    NavigationPage.HasNavigationBar="False"
+    >
+    <panelViews:PanelBossBody_DefaultView x:Name="PanelBossRoot" AutomationId="BottomPanel_Host" BackgroundColor="#EAF2F5" PanelBossInstance="{Binding ActivePanelBoss}"
+        HorizontalOptions="Fill"
+        VerticalOptions="Fill"
+        >
+        <panelViews:PanelBossBody_DefaultView.ContentPanels>
+            <Grid AutomationId="BottomPanel_Body"
+                Padding="16,64,16,0"
+                pb:PanelBoss.PanelIsVisible="True"
+                pb:PanelBoss.PanelName="BottomPanelBody"
+                pb:PanelBoss.PanelPriority="10"
+                pb:PanelBoss.PanelTransitionIn="None"
+                pb:PanelBoss.PanelTransitionOut="None"
+                >
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="124" pb:PanelBoss.PanelClearanceFor="BottomPanelActions" />
+                </Grid.RowDefinitions>
+                <Label
+                    FontFamily="OpenSansSemibold"
+                    FontSize="22"
+                    Text="Bottom panel canary"
+                    TextColor="#102A3A"
+                    />
+                <Label AutomationId="BottomPanel_Measurements"
+                    Grid.Row="1"
+                    Margin="0,12,0,0"
+                    FontSize="14"
+                    Text="{Binding Status}"
+                    TextColor="#486171"
+                    />
+            </Grid>
+        </panelViews:PanelBossBody_DefaultView.ContentPanels>
+        <panelViews:PanelBossBody_DefaultView.BottomInputPanels>
+            <!--
+                Baseline deliberately leaves this child Grid's SafeAreaEdges at its default.
+                The comparison changes only that property before the first layout.
+            -->
+            <Grid x:Name="ActionPanel" AutomationId="BottomPanel_Actions" BackgroundColor="#C5DCE6"
+                pb:PanelBoss.PanelIsVisible="True"
+                pb:PanelBoss.PanelName="BottomPanelActions"
+                pb:PanelBoss.PanelPriority="20"
+                pb:PanelBoss.PanelTransitionIn="None"
+                pb:PanelBoss.PanelTransitionOut="None"
+                ColumnDefinitions="*,*,*,*,*"
+                ColumnSpacing="0"
+                HeightRequest="124"
+                RowDefinitions="52,*"
+                RowSpacing="0"
+                >
+                <Label x:Name="Tongue"
+                    Grid.ColumnSpan="5"
+                    HorizontalTextAlignment="Center"
+                    VerticalTextAlignment="Center"
+                    FontSize="14"
+                    HeightRequest="52"
+                    Text="52-point header + remaining action row"
+                    TextColor="#102A3A"
+                    />
+
+                <controls:RichButton x:Name="AlphaButton" AutomationId="BottomPanel_Alpha"
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    AutoResetIsBusyMilliseconds="100"
+                    Command="{Binding SelectActionCommand}"
+                    CommandParameter="Alpha"
+                    >
+                    <Border x:Name="AlphaBorder" BackgroundColor="#F8C15C"
+                        Margin="2,2,2,16"
+                        Stroke="#486171"
+                        StrokeShape="RoundRectangle 10"
+                        StrokeThickness="2"
+                        InputTransparent="True"
+                        >
+                        <!--  Keep the centered text stack identical in both cases.  -->
+                        <VerticalStackLayout
+                            VerticalOptions="Center"
+                            Spacing="1"
+                            InputTransparent="True"
+                            >
+                            <Label
+                                HorizontalTextAlignment="Center"
+                                FontFamily="OpenSansRegular"
+                                FontSize="12"
+                                Text="A"
+                                TextColor="#102A3A"
+                                InputTransparent="True"
+                                />
+                            <Label
+                                HorizontalTextAlignment="Center"
+                                FontFamily="OpenSansRegular"
+                                FontSize="9"
+                                Text="Alpha"
+                                TextColor="#102A3A"
+                                InputTransparent="True"
+                                />
+                        </VerticalStackLayout>
+                    </Border>
+                </controls:RichButton>
+
+                <controls:RichButton x:Name="BravoButton" AutomationId="BottomPanel_Bravo"
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    AutoResetIsBusyMilliseconds="100"
+                    Command="{Binding SelectActionCommand}"
+                    CommandParameter="Bravo"
+                    >
+                    <Border x:Name="BravoBorder" BackgroundColor="#EAF2F5"
+                        Margin="2,2,2,16"
+                        Stroke="#486171"
+                        StrokeShape="RoundRectangle 10"
+                        StrokeThickness="1"
+                        InputTransparent="True"
+                        >
+                        <!--  Keep the centered text stack identical in both cases.  -->
+                        <VerticalStackLayout
+                            VerticalOptions="Center"
+                            Spacing="1"
+                            InputTransparent="True"
+                            >
+                            <Label
+                                HorizontalTextAlignment="Center"
+                                FontFamily="OpenSansRegular"
+                                FontSize="12"
+                                Text="B"
+                                TextColor="#102A3A"
+                                InputTransparent="True"
+                                />
+                            <Label
+                                HorizontalTextAlignment="Center"
+                                FontFamily="OpenSansRegular"
+                                FontSize="9"
+                                Text="Bravo"
+                                TextColor="#102A3A"
+                                InputTransparent="True"
+                                />
+                        </VerticalStackLayout>
+                    </Border>
+                </controls:RichButton>
+
+                <controls:RichButton x:Name="CharlieButton" AutomationId="BottomPanel_Charlie"
+                    Grid.Row="1"
+                    Grid.Column="2"
+                    AutoResetIsBusyMilliseconds="100"
+                    Command="{Binding SelectActionCommand}"
+                    CommandParameter="Charlie"
+                    >
+                    <Border x:Name="CharlieBorder" BackgroundColor="#EAF2F5"
+                        Margin="2,2,2,16"
+                        Stroke="#486171"
+                        StrokeShape="RoundRectangle 10"
+                        StrokeThickness="1"
+                        InputTransparent="True"
+                        >
+                        <!--  Keep the centered text stack identical in both cases.  -->
+                        <VerticalStackLayout
+                            VerticalOptions="Center"
+                            Spacing="1"
+                            InputTransparent="True"
+                            >
+                            <Label
+                                HorizontalTextAlignment="Center"
+                                FontFamily="OpenSansRegular"
+                                FontSize="12"
+                                Text="C"
+                                TextColor="#102A3A"
+                                InputTransparent="True"
+                                />
+                            <Label
+                                HorizontalTextAlignment="Center"
+                                FontFamily="OpenSansRegular"
+                                FontSize="9"
+                                Text="Charlie"
+                                TextColor="#102A3A"
+                                InputTransparent="True"
+                                />
+                        </VerticalStackLayout>
+                    </Border>
+                </controls:RichButton>
+
+                <controls:RichButton x:Name="DeltaButton" AutomationId="BottomPanel_Delta"
+                    Grid.Row="1"
+                    Grid.Column="3"
+                    AutoResetIsBusyMilliseconds="100"
+                    Command="{Binding SelectActionCommand}"
+                    CommandParameter="Delta"
+                    >
+                    <Border x:Name="DeltaBorder" BackgroundColor="#EAF2F5"
+                        Margin="2,2,2,16"
+                        Stroke="#486171"
+                        StrokeShape="RoundRectangle 10"
+                        StrokeThickness="1"
+                        InputTransparent="True"
+                        >
+                        <!--  Keep the centered text stack identical in both cases.  -->
+                        <VerticalStackLayout
+                            VerticalOptions="Center"
+                            Spacing="1"
+                            InputTransparent="True"
+                            >
+                            <Label
+                                HorizontalTextAlignment="Center"
+                                FontFamily="OpenSansRegular"
+                                FontSize="12"
+                                Text="D"
+                                TextColor="#102A3A"
+                                InputTransparent="True"
+                                />
+                            <Label
+                                HorizontalTextAlignment="Center"
+                                FontFamily="OpenSansRegular"
+                                FontSize="9"
+                                Text="Delta"
+                                TextColor="#102A3A"
+                                InputTransparent="True"
+                                />
+                        </VerticalStackLayout>
+                    </Border>
+                </controls:RichButton>
+
+                <controls:RichButton x:Name="MoreButton" AutomationId="BottomPanel_More"
+                    Grid.Row="1"
+                    Grid.Column="4"
+                    AutoResetIsBusyMilliseconds="100"
+                    Command="{Binding SelectActionCommand}"
+                    CommandParameter="More"
+                    >
+                    <Border x:Name="MoreBorder" BackgroundColor="#EAF2F5"
+                        Margin="2,2,2,16"
+                        Stroke="#486171"
+                        StrokeShape="RoundRectangle 10"
+                        StrokeThickness="1"
+                        InputTransparent="True"
+                        >
+                        <!--  Keep the centered text stack identical in both cases.  -->
+                        <VerticalStackLayout
+                            VerticalOptions="Center"
+                            Spacing="1"
+                            InputTransparent="True"
+                            >
+                            <Label
+                                HorizontalTextAlignment="Center"
+                                FontFamily="OpenSansRegular"
+                                FontSize="12"
+                                Text="•••"
+                                TextColor="#102A3A"
+                                InputTransparent="True"
+                                />
+                            <Label
+                                HorizontalTextAlignment="Center"
+                                FontFamily="OpenSansRegular"
+                                FontSize="9"
+                                Text="More"
+                                TextColor="#102A3A"
+                                InputTransparent="True"
+                                />
+                        </VerticalStackLayout>
+                    </Border>
+                </controls:RichButton>
+            </Grid>
+        </panelViews:PanelBossBody_DefaultView.BottomInputPanels>
+    </panelViews:PanelBossBody_DefaultView>
+</ContentPage>

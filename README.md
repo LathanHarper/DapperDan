@@ -2,6 +2,8 @@
 
 Dapper Dan is CodeCrafty.net's public .NET MAUI distribution canary: one small Android/iOS app that proves the shared code can compile on Apple tooling before production code or signing credentials enter the water.
 
+This diagnostic branch adds a [minimal bottom-panel safe-area comparison](docs/BOTTOM-PANEL-CANARY.md): one Debug Simulator binary, two layout cases, and native measurements. Default app startup and protected release signing are unchanged.
+
 The app deliberately exercises a useful native cross-section:
 
 - Prism startup and navigation;

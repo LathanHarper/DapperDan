@@ -16,6 +16,7 @@ Dapper Dan was cut from a stable, product-neutral .NET 10 MAUI suitcase containi
 - An independently authored Commerce Road billboard-layout canary: one public vector scene, two public geometric ad faces, one upper-left native MAUI `Grid` presenter, and a cross-fade loop. It reproduces a publicly authorized demo composition without product code, customer material, Skia, or platform-specific transform handlers.
 - Generic .NET MAUI template resources, CodeCrafty-recorded mechanical feedback sounds, and public CI scaffolding.
 - Independently authored, branch-only Debug Simulator capture automation using only the public Dapper Dan application. Its transient public artifacts contain the complete unsigned application product, license notices, native canary screenshots, and generic toolchain/timing evidence; no private product material is imported.
+- An independently authored bottom-panel safe-area canary: an otherwise minimal PanelBoss page with five neutral RichButtons, fixed outer geometry, and two same-binary layout cases. Evidence contains only sample view bounds, native window insets, and sample screenshots. No product implementation, assets, data, endpoints, or private evidence is copied.
 
 ## Excluded from this export
 

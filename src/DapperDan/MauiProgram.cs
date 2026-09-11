@@ -9,6 +9,7 @@ using CodeCrafty.DapperDan.PanelBossKit;
 using CodeCrafty.DapperDan.Speech;
 using CodeCrafty.DapperDan.ViewModels;
 using CodeCrafty.DapperDan.Views.BillboardCanary;
+using CodeCrafty.DapperDan.Views.BottomPanelCanary;
 using CodeCrafty.DapperDan.Views.DapperDan;
 using CodeCrafty.DapperDan.Views.RotationCanary;
 
@@ -33,7 +34,11 @@ public static class MauiProgram
                 .UseMauiApp<App>()
                 .UsePrism(prism => prism
                     .RegisterTypes(RegisterPrismTypes)
+#if DAPPERDAN_BOTTOM_PANEL_CANARY
+                    .CreateWindow("NavigationPage/BottomPanelCanaryPage"))
+#else
                     .CreateWindow("NavigationPage/DapperDanPage"))
+#endif
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -108,6 +113,7 @@ public static class MauiProgram
 
     private static void RegisterPrismTypes(IContainerRegistry containerRegistry)
     {
+        containerRegistry.RegisterForNavigation<BottomPanelCanaryPage, BottomPanelCanaryViewModel>();
         containerRegistry.RegisterForNavigation<BillboardCanaryPage, BillboardCanaryViewModel>();
         containerRegistry.RegisterForNavigation<DapperDanPage, DapperDanViewModel>();
         containerRegistry.RegisterForNavigation<RotationCanaryPage, RotationCanaryViewModel>();
