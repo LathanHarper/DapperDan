@@ -12,11 +12,44 @@ const appName = 'CodeCrafty.DapperDan.app';
 const executable = 'CodeCrafty.DapperDan';
 const save = (path, value) => writeFileSync(path, JSON.stringify(value, null, 2) + '\n');
 
-export function validateOrientedPng(bytes, family, orientation) {
-  if (!orientations.includes(orientation)) throw new Error('Unknown orientation.');
-  const size = pngDimensions(bytes);
+export function nativePngGeometry(bytes) {
+  const pixelDimensions = pngDimensions(bytes);
   if (!bytes.subarray(-12).equals(Buffer.from('0000000049454e44ae426082', 'hex')))
     throw new Error('Incomplete native PNG.');
+  let exifOrientation = 1;
+  for (let offset = 8; offset + 12 <= bytes.length;) {
+    const length = bytes.readUInt32BE(offset);
+    if (offset + length + 12 > bytes.length) throw new Error('Truncated PNG chunk.');
+    if (bytes.toString('ascii', offset + 4, offset + 8) === 'eXIf') {
+      const tiff = bytes.subarray(offset + 8, offset + 8 + length);
+      const order = tiff.toString('ascii', 0, 2);
+      if (tiff.length < 8 || !['II', 'MM'].includes(order)) throw new Error('Invalid PNG EXIF header.');
+      const u16 = p => order === 'II' ? tiff.readUInt16LE(p) : tiff.readUInt16BE(p);
+      const u32 = p => order === 'II' ? tiff.readUInt32LE(p) : tiff.readUInt32BE(p);
+      if (u16(2) !== 42) throw new Error('Invalid TIFF marker.');
+      const ifd = u32(4);
+      const count = u16(ifd);
+      for (let i = 0; i < count; i++) {
+        const entry = ifd + 2 + i * 12;
+        if (entry + 12 > tiff.length) throw new Error('Truncated EXIF entry.');
+        if (u16(entry) === 0x0112) {
+          if (u16(entry + 2) !== 3 || u32(entry + 4) !== 1) throw new Error('Invalid EXIF orientation type.');
+          exifOrientation = u16(entry + 8);
+          if (exifOrientation < 1 || exifOrientation > 8) throw new Error('Invalid EXIF orientation value.');
+        }
+      }
+    }
+    offset += length + 12;
+  }
+  // XCTest preserves sensor-axis pixels and encodes landscape as TIFF orientation
+  // (observed value 8). Interpret that metadata; never rotate or rewrite the PNG.
+  return { pixelDimensions, exifOrientation,
+    displayDimensions: exifOrientation >= 5 ? [...pixelDimensions].reverse() : pixelDimensions };
+}
+
+export function validateOrientedPng(bytes, family, orientation) {
+  if (!orientations.includes(orientation)) throw new Error('Unknown orientation.');
+  const size = nativePngGeometry(bytes).displayDimensions;
   const expected = acceptedDimensions[family].map(pair => orientation === 'portrait' ? pair : [...pair].reverse());
   if (!expected.some(pair => pair.every((value, i) => value === size[i])))
     throw new Error(`Wrong native ${family}/${orientation} dimensions: ${size.join('x')}.`);
@@ -111,6 +144,7 @@ async function capture() {
           if (pngs.length !== 1) throw new Error(`Expected one explicitly retained native screenshot, found ${pngs.length}; attachments retained.`);
           const image = join(output, `${prefix}.png`);
           copyFileSync(join(exported, pngs[0]), image);
+          Object.assign(record, nativePngGeometry(readFileSync(image)));
           record.dimensions = validateOrientedPng(readFileSync(image), family, orientation);
           record.image = basename(image);
           record.imageSha256 = sha256(image);

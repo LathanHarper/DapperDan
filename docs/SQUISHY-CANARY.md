@@ -129,6 +129,14 @@ ad-hoc Simulator products before capture. Each family boots/installs once; nativ
 The capture script verifies native PNG dimensions, fresh orientation-specific
 geometry, and the same Dapper binary hash. Simulators run sequentially.
 
+XCTest's native PNG can retain portrait-axis pixel dimensions while its EXIF
+orientation is 8 for landscape. Validate the metadata-aware display dimensions
+and record both pixel/display sizes. Keep the exported PNG bytes untouched.
+The first squishy run (`34645540341`, source `e233eb4`) built Dapper successfully
+in 54.36 seconds and captured both iPhone orientations, but the initial checker
+rejected that valid landscape metadata before reaching iPad. The capture-only
+follow-up reuses that saved Dapper app; it does not compile the application again.
+
 Keep the public-repository/standard-runner gates, one-day remote artifact
 retention, and frozen iOS inputs. Download products and evidence locally while
 available. Do not dispatch a paid/private Release or TestFlight run.

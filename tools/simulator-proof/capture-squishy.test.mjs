@@ -2,16 +2,36 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { scenarioContract, validateProductReceipt } from './capture.mjs';
-import { orientations, validateOrientedPng } from './capture-squishy.mjs';
+import { orientations, nativePngGeometry, validateOrientedPng } from './capture-squishy.mjs';
 
 const read = path => readFileSync(new URL(path, import.meta.url), 'utf8');
-function png(width, height) {
-  const bytes = Buffer.alloc(36);
+function png(width, height, orientation) {
+  const bytes = Buffer.alloc(45);
   Buffer.from([137,80,78,71,13,10,26,10]).copy(bytes);
+  bytes.writeUInt32BE(13,8);
   bytes.write('IHDR',12); bytes.writeUInt32BE(width,16); bytes.writeUInt32BE(height,20);
-  Buffer.from('0000000049454e44ae426082','hex').copy(bytes,24);
+  Buffer.from('0000000049454e44ae426082','hex').copy(bytes,33);
+  if (orientation !== undefined) {
+    const exif = Buffer.alloc(38);
+    exif.writeUInt32BE(26,0); exif.write('eXIf',4); exif.write('MM',8);
+    exif.writeUInt16BE(42,10); exif.writeUInt32BE(8,12); exif.writeUInt16BE(1,16);
+    exif.writeUInt16BE(0x0112,18); exif.writeUInt16BE(3,20); exif.writeUInt32BE(1,22);
+    exif.writeUInt16BE(orientation,26);
+    return Buffer.concat([bytes.subarray(0,33),exif,bytes.subarray(33)]);
+  }
   return bytes;
 }
+
+test('Apple landscape EXIF is interpreted without modifying original native pixels', () => {
+  const bytes = png(1284,2778,8);
+  const original = Buffer.from(bytes);
+  assert.deepEqual(nativePngGeometry(bytes), {pixelDimensions:[1284,2778],exifOrientation:8,displayDimensions:[2778,1284]});
+  assert.deepEqual(validateOrientedPng(bytes,'iphone','landscape'),[2778,1284]);
+  assert.deepEqual(bytes,original);
+  assert.deepEqual(validateOrientedPng(png(1284,2778,1),'iphone','portrait'),[1284,2778]);
+  assert.throws(()=>validateOrientedPng(bytes,'iphone','portrait'),/Wrong native/);
+  assert.throws(()=>nativePngGeometry(png(1284,2778,9)),/Invalid EXIF/);
+});
 
 test('four captures use native portrait and landscape dimensions, never resized pixels', () => {
   assert.deepEqual(orientations, ['portrait','landscape']);
