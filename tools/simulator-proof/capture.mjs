@@ -1,7 +1,8 @@
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { mkdirSync, readFileSync, readdirSync, writeFileSync, copyFileSync, statSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync, copyFileSync, statSync } from 'node:fs';
 import { basename, join, resolve } from 'node:path';
+import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 
 export const acceptedDimensions = {
@@ -48,7 +49,7 @@ export function validateDimensions(bytes, family) {
 function command(program, args, timeout = 120000) {
   const result = spawnSync(program, args, { encoding: 'utf8', timeout, maxBuffer: 16 * 1024 * 1024 });
   if (result.error || result.status !== 0) {
-    throw new Error(`${program} ${args.join(' ')} failed: ${result.error?.message ?? result.stderr ?? result.status}`);
+    throw new Error(`${program} ${args.join(' ')} failed: ${result.error?.message ?? result.status}\n${result.stderr?.slice(-4000)}\n${result.stdout?.slice(-4000)}`);
   }
   return result.stdout.trim();
 }
@@ -89,6 +90,53 @@ function preserve() {
   console.log(`Preserved ${basename(archive)} before capture (${statSync(archive).size} bytes).`);
 }
 
+function restore() {
+  const retained = resolve('artifacts/reuse');
+  const receipt = JSON.parse(readFileSync(join(retained, 'receipt.json'), 'utf8'));
+  if (!/^[a-f0-9]{40}$/.test(receipt.sourceCommit) || receipt.bundleId !== process.env.BUNDLE_ID || receipt.configuration !== 'Debug' || receipt.runtime !== 'iossimulator-arm64') {
+    throw new Error('Retained product identity is not this public Debug Simulator canary.');
+  }
+  if (receipt.archive !== 'DapperDan-Debug-iossimulator-arm64.tar.gz') throw new Error('Unexpected archive name.');
+  const archive = join(retained, receipt.archive);
+  if (sha256(archive) !== receipt.sha256) throw new Error('Retained app SHA-256 mismatch.');
+  const output = resolve('artifacts/extracted');
+  if (existsSync(output)) throw new Error('Reuse extraction destination must be new.');
+  const entries = command('tar', ['-tzf', archive]).split('\n');
+  if (entries.some(entry => !entry.startsWith('CodeCrafty.DapperDan.app/') || entry.split('/').includes('..'))) {
+    throw new Error('Unexpected archive paths; extraction refused.');
+  }
+  mkdirSync(output, { recursive: true });
+  command('tar', ['-xzf', archive, '-C', output]);
+  writeFileSync(process.env.GITHUB_ENV, `SIMULATOR_APP_DIRECTORY=${output}\nSIMULATOR_SOURCE_SHA=${receipt.sourceCommit}\n`, { flag: 'a' });
+  mkdirSync('artifacts/captures', { recursive: true });
+  saveJson('artifacts/captures/reused-product-receipt.json', receipt);
+  console.log(`Reused hash-verified Simulator app from ${receipt.sourceCommit}; no .NET SDK, restore, or compilation required.`);
+}
+
+function captureDiagnostics(udid, output, family, record) {
+  const bundleId = process.env.BUNDLE_ID;
+  try {
+    const services = command('xcrun', ['simctl', 'spawn', udid, 'launchctl', 'list']);
+    record.processRows = services.split('\n').filter(line => line.includes(bundleId));
+    record.appProcessAlive = record.processRows.some(line => /^\d+\s/.test(line.trim()));
+    writeFileSync(join(output, `${family}-process.txt`), `${record.processRows.join('\n')}\n`);
+  } catch (error) { record.processCheckError = error.message; }
+  try {
+    const log = command('xcrun', ['simctl', 'spawn', udid, 'log', 'show', '--style', 'compact', '--last', '2m', '--predicate', `process == "CodeCrafty.DapperDan" OR eventMessage CONTAINS "${bundleId}"`], 60000);
+    writeFileSync(join(output, `${family}-runtime.log`), log);
+  } catch (error) { record.runtimeLogError = error.message; }
+  try {
+    const container = command('xcrun', ['simctl', 'get_app_container', udid, bundleId, 'data']);
+    const journal = join(container, 'Library', 'Application Support', 'DapperDan', 'CrashJournal');
+    record.journalPresent = existsSync(journal);
+    if (record.journalPresent) {
+      for (const name of readdirSync(journal).filter(name => name.endsWith('.jsonl'))) {
+        copyFileSync(join(journal, name), join(output, `${family}-${name}`));
+      }
+    }
+  } catch (error) { record.journalError = error.message; }
+}
+
 async function capture() {
   const output = resolve('artifacts/captures');
   mkdirSync(output, { recursive: true });
@@ -96,12 +144,17 @@ async function capture() {
   const appNames = readdirSync(appDirectory).filter(name => name.endsWith('.app'));
   if (appNames.length !== 1) throw new Error('Expected exactly one reusable Simulator app.');
   const app = join(appDirectory, appNames[0]);
+  const signature = spawnSync('codesign', ['-dv', '--verbose=4', app], { encoding: 'utf8', timeout: 30000 });
+  writeFileSync(join(output, 'app-signature.txt'), `status=${signature.status}\n${signature.stdout ?? ''}\n${signature.stderr ?? ''}\n`);
   const inventory = JSON.parse(command('xcrun', ['simctl', 'list', '-j']));
   const runtime = selectRuntime(inventory.runtimes);
-  const evidence = { sourceCommit: process.env.GITHUB_SHA, runId: process.env.GITHUB_RUN_ID, runtime: runtime.identifier, captures: [] };
+  const evidence = { sourceCommit: process.env.SIMULATOR_SOURCE_SHA ?? process.env.GITHUB_SHA, automationCommit: process.env.GITHUB_SHA, runId: process.env.GITHUB_RUN_ID, runtime: runtime.identifier, captures: [] };
   let failures = 0;
   for (const family of ['iphone', 'ipad']) {
     let udid;
+    let runtimeLog;
+    const runtimeChunks = [];
+    let runtimeBytes = 0;
     const record = { family, startedUtc: new Date().toISOString() };
     const start = Date.now();
     try {
@@ -114,6 +167,15 @@ async function capture() {
       command('xcrun', ['simctl', 'status_bar', udid, 'override', '--time', '9:41', '--batteryState', 'charged', '--batteryLevel', '100']);
       command('xcrun', ['simctl', 'ui', udid, 'appearance', 'light']);
       command('xcrun', ['simctl', 'install', udid, app], 120000);
+      // Start the filtered diagnostic stream BEFORE launch; short-lived failures must survive.
+      runtimeLog = spawn('xcrun', ['simctl', 'spawn', udid, 'log', 'stream', '--style', 'compact', '--level', 'debug', '--predicate', `process == "CodeCrafty.DapperDan" OR eventMessage CONTAINS "${process.env.BUNDLE_ID}" OR eventMessage CONTAINS "CodeCrafty.DapperDan"`], { stdio: ['ignore', 'pipe', 'pipe'] });
+      const collect = bytes => {
+        if (runtimeBytes < 8 * 1024 * 1024) runtimeChunks.push(bytes);
+        runtimeBytes += bytes.length;
+      };
+      runtimeLog.stdout.on('data', collect);
+      runtimeLog.stderr.on('data', collect);
+      runtimeLog.on('error', error => runtimeChunks.push(Buffer.from(error.message)));
       record.launch = command('xcrun', ['simctl', 'launch', udid, process.env.BUNDLE_ID], 60000);
       await new Promise(resolveWait => setTimeout(resolveWait, 12000));
       const image = join(output, `${family}.png`);
@@ -121,6 +183,8 @@ async function capture() {
       record.dimensions = validateDimensions(readFileSync(image), family);
       record.image = basename(image);
       record.sha256 = sha256(image);
+      captureDiagnostics(udid, output, family, record);
+      if (record.appProcessAlive !== true) throw new Error('App process did not remain running after launch. PNG retained for visual diagnosis, not accepted as app UI proof.');
       record.status = 'captured-awaiting-human-visual-check';
       console.log(`${family}: ${record.deviceName}, ${record.dimensions.join('x')}, successful launch and native capture.`);
     } catch (error) {
@@ -129,6 +193,17 @@ async function capture() {
       failures++;
       console.error(`${family}: ${error.message}`);
     } finally {
+      if (runtimeLog) {
+        runtimeLog.kill('SIGTERM');
+        await new Promise(resolveWait => setTimeout(resolveWait, 300));
+        writeFileSync(join(output, `${family}-launch-stream.log`), Buffer.concat(runtimeChunks));
+      }
+      const reports = join(homedir(), 'Library', 'Logs', 'DiagnosticReports');
+      if (existsSync(reports)) {
+        for (const name of readdirSync(reports).filter(name => name.startsWith('CodeCrafty.DapperDan') && name.endsWith('.ips'))) {
+          copyFileSync(join(reports, name), join(output, `${family}-${name}`));
+        }
+      }
       if (udid) {
         try { command('xcrun', ['simctl', 'shutdown', udid], 60000); }
         catch (error) { record.shutdownWarning = error.message; }
@@ -145,6 +220,7 @@ const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(imp
 if (isMain) {
   if (process.platform !== 'darwin') throw new Error('This operation requires macOS; local unit tests do not.');
   if (process.argv[2] === 'preserve') preserve();
+  else if (process.argv[2] === 'restore') restore();
   else if (process.argv[2] === 'capture') await capture();
   else throw new Error('Usage: node tools/simulator-proof/capture.mjs preserve|capture');
 }

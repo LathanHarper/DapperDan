@@ -36,6 +36,12 @@ node --test tools/simulator-proof/capture.test.mjs
 
 Runtime results and actual captured dimensions are recorded in each run's artifacts, not asserted by this implementation document.
 
+## First measured run: mechanics passed, app UI witness failed
+
+[Run 34551157760](https://github.com/LathanHarper/DapperDan/actions/runs/34551157760), source `1e26b6110b80b64a774f37cc2b98fa211fc8dc71`, completed its standard-runner job in 8 minutes 22 seconds: workload/locked restore 23 seconds, Debug build 36 seconds, preservation 5 seconds, early artifact upload 1 second, two sequential Simulator capture sessions 6 minutes 53 seconds. The app archive is 49,943,417 bytes with SHA-256 `494c9e94afc0bab3b843ddd23c32c371761d2d14ad8ec64d0b6cfab6ef7f3544`.
+
+Although launch commands returned PIDs and both native PNG sizes were correct, visual inspection found **SpringBoard/Home on both**, not the app UI. That is not a successful UI witness. The next diagnostic iteration adds retained-process, runtime-log and public canned-session journal evidence, and an optional `reuse_run_id` input that hash-verifies the original archive and skips every SDK/restore/build step. A successful command or PNG size is never a substitute for inspecting its content.
+
 ## Primary references checked 2026-09-10
 
 - [GitHub manual workflows and branch selection](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/manually-run-a-workflow)

@@ -3,9 +3,15 @@ name: Manual Debug Simulator capture proof
 # Branch-only proof: main's Release/device canary is unchanged.
 on:
   workflow_dispatch:
+    inputs:
+      reuse_run_id:
+        description: Optional prior public proof run; download its preserved app and skip all compilation
+        type: string
+        default: ''
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: dapperdan-debug-capture-proof
@@ -35,12 +41,38 @@ jobs:
       - name: Test capture-selection and image contracts
         run: node --test tools/simulator-proof/capture.test.mjs
 
+      - name: Validate optional public reuse request
+        env:
+          REUSE_RUN_ID: ${{ inputs.reuse_run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -n "$REUSE_RUN_ID" && ! "$REUSE_RUN_ID" =~ ^[1-9][0-9]{0,19}$ ]]; then
+            echo 'reuse_run_id must be an ordinary numeric public proof run ID.' >&2
+            exit 1
+          fi
+
+      - name: Download retained public app without compilation
+        if: ${{ inputs.reuse_run_id != '' }}
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          name: dapperdan-debug-reusable-${{ inputs.reuse_run_id }}
+          path: artifacts/reuse
+          run-id: ${{ inputs.reuse_run_id }}
+          github-token: ${{ github.token }}
+
+      - name: Verify and extract retained Simulator app
+        if: ${{ inputs.reuse_run_id != '' }}
+        run: node tools/simulator-proof/capture.mjs restore
+
       - name: Install pinned .NET SDK
+        if: ${{ inputs.reuse_run_id == '' }}
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           global-json-file: global.json
 
       - name: Record and verify public toolchain
+        if: ${{ inputs.reuse_run_id == '' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -59,6 +91,7 @@ jobs:
           xcrun simctl list -j > artifacts/recovery/simulators-before.json
 
       - name: Restore pinned workloads and packages
+        if: ${{ inputs.reuse_run_id == '' }}
         timeout-minutes: 15
         shell: bash
         run: |
@@ -72,6 +105,7 @@ jobs:
             2>&1 | tee artifacts/recovery/package-restore.log
 
       - name: Build one unsigned Debug Simulator app
+        if: ${{ inputs.reuse_run_id == '' }}
         timeout-minutes: 20
         shell: bash
         run: |
@@ -87,6 +121,7 @@ jobs:
 
       - name: Preserve reusable app before Simulator operations
         id: preserve
+        if: ${{ inputs.reuse_run_id == '' }}
         run: node tools/simulator-proof/capture.mjs preserve
 
       - name: Retain app and public provenance before capture
