@@ -2,6 +2,8 @@
 
 This independently authored public automation answers a narrow platform question: can one unsigned .NET MAUI Debug Simulator app be preserved and reused to capture native large-iPhone and large-iPad images on a standard Apple Silicon GitHub runner?
 
+**Verified outcome:** yes, after credential-free local re-sealing of the copied native Simulator binaries. [Passing run 34553339801](https://github.com/LathanHarper/DapperDan/actions/runs/34553339801) used the retained app without recompilation and produced independently visually inspected, fully rendered Dapper Dan UI on both required device families. There were no screenshot-command warnings in this final run. This is generic capture/reuse evidence, not a signed-device release proof.
+
 It uses only the existing public Dapper Dan app. It imports no private source, assets, configuration, credentials, screenshots, or logs. These generic images are **not screenshots of any other app and cannot be submitted as another app's store assets**.
 
 ## Scope and dispatch
@@ -11,10 +13,12 @@ The `codex/simulator-capture-proof` branch alone replaces `.github/workflows/ios
 GitHub requires a manually dispatched workflow to exist on the default branch. The existing registered workflow ID is reused with the explicit proof branch; the proof branch has no automatic triggers. Confirm repository visibility is PUBLIC and inspect the exact branch workflow before running:
 
 ```powershell
-gh workflow run ios-unsigned.yml --repo LathanHarper/DapperDan --ref codex/simulator-capture-proof
+gh workflow run ios-unsigned.yml --repo LathanHarper/DapperDan --ref codex/simulator-capture-proof -f reuse_run_id=34551157760 -f repair_adhoc=true
 ```
 
 The job additionally rejects every repository/ref other than this public proof branch. It uses standard `macos-26`, not a larger runner. No environment, signing material, App Store upload, or secret references are present. Standard public-repository hosted compute is free under GitHub's current policy; artifact storage is a separate account meter, so these proof artifacts use one-day retention.
+
+The command above requires the original retained artifact to remain available. Both original and transformed products were also downloaded and hash-verified locally for safekeeping. This branch remains a controlled laboratory: a blank `reuse_run_id` rebuilds the original signing-disabled fixture used to reproduce the loader failure, not a recommended production capture configuration. Do not dispatch that failing baseline just to repeat the successful capture proof. The tested path reuses the retained original, seals a copy and captures it; downstream capture lanes must include the proven signature completion/verification before launch.
 
 ## Preservation and evidence
 
@@ -50,6 +54,28 @@ The optional `repair_adhoc` input operates on a fresh copy of the retained gener
 
 - [Apple: ad-hoc signatures have no signing identity](https://developer.apple.com/documentation/security/seccodesignatureflags/adhoc)
 - [Apple: sign nested components inside-out, verify recursively](https://developer.apple.com/library/archive/technotes/tn2206/)
+
+## Final passing receipt
+
+- App source: `1e26b6110b80b64a774f37cc2b98fa211fc8dc71`.
+- Executed automation: `c9ab6ef55d6402a55eb1f3b4d31fb65ce4a9fca9`.
+- Run: `34553339801`, standard `macos-26`, 2026-09-11 02:06:52–02:16:23 UTC, **9 minutes 31 seconds** total.
+- Download: 2 seconds; archive verification/extraction: 1 second; signature-copy/verification/preservation: 11 seconds; transformed artifact upload: 1 second; sequential native capture step: 9 minutes 4 seconds.
+- SDK install, workloads, package restore and app compilation: **all skipped**. Across these four controlled experiments, the generic app was compiled only once (36 seconds); later attempts reused it.
+- Runtime: iOS 26.5, Xcode 26.6, Apple Silicon.
+
+| Device | Native PNG | Session time | Verified witness |
+| --- | --- | --- | --- |
+| iPhone 14 Plus | 1284 × 2778 | 288 seconds | Full Dapper Dan page, surviving process, app journal |
+| iPad Pro 13-inch (M4) | 2064 × 2752 | 248 seconds | Full Dapper Dan page, surviving process, app journal |
+
+Phone PNG SHA-256: `2d0f9e91ad8c4afb0ae937647006efa0cdc6ec82932ab9858b565b7f998b4011`.
+
+iPad PNG SHA-256: `f5769a6c5a9c4df9bac5271d45b0b1006bf06f521dc0531dc759569a403d181d`.
+
+Final transformed app archive: 49,939,700 bytes; SHA-256 `c24471ddb2b1bfda868d1eb972f240aafebcc018fd3061b519ca77fe707ef0d3`. Its receipt records the exact inside-out signature transformation and confirms all 246 managed/data files remained unchanged. The original retained archive and its SHA-256 remain unchanged. Original and transformed receipts plus screenshots/logs were saved locally.
+
+Five local automation contracts passed. The original app build had zero errors and 141 existing warnings; this narrow automation task did not modify app business logic or attempt unrelated warning cleanup. No private source or signing credential entered this repository, no default-branch change or pull request was made, and no further proof runs were needed after the final visual verification.
 
 ## Primary references checked 2026-09-10
 
