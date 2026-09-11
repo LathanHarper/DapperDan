@@ -1,0 +1,611 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Name="PageRoot" AutomationId="Squishy_Page" Title="Content-sized chrome" BackgroundColor="#102A3A"
+    x:Class="CodeCrafty.DapperDan.Views.SquishyCanary.SquishyCanaryPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:controls="clr-namespace:CodeCrafty.DapperDan.Controls"
+    xmlns:panelViews="clr-namespace:CodeCrafty.DapperDan.PanelBossKit.Views"
+    xmlns:pb="clr-namespace:CodeCrafty.DapperDan.PanelBossKit"
+    xmlns:vm="clr-namespace:CodeCrafty.DapperDan.ViewModels"
+    x:DataType="vm:SquishyCanaryViewModel"
+    NavigationPage.HasNavigationBar="False"
+    >
+    <ContentPage.Resources>
+        <x:Double x:Key="MinimumActionHeight"
+            >
+            56
+        </x:Double>
+    </ContentPage.Resources>
+    <panelViews:PanelBossBody_DefaultView x:Name="PanelBossRoot" AutomationId="Squishy_Host" BackgroundColor="#EAF2F5" PanelBossInstance="{Binding ActivePanelBoss}"
+        HorizontalOptions="Fill"
+        VerticalOptions="Fill"
+        >
+        <!--
+            This host owns top/side safe areas. Android's existing PanelBoss bottom
+            lane owns navigation-bar clearance; on iOS the host owns the bottom too.
+        -->
+        <panelViews:PanelBossBody_DefaultView.SafeAreaEdges>
+            <OnPlatform
+                x:TypeArguments="SafeAreaEdges"
+                Default="Container"
+                >
+                <On
+                    Platform="Android"
+                    Value="Container,Container,Container,None"
+                    />
+            </OnPlatform>
+        </panelViews:PanelBossBody_DefaultView.SafeAreaEdges>
+        <panelViews:PanelBossBody_DefaultView.TopHeaderPanels>
+            <Grid x:Name="HeaderPanel" AutomationId="Squishy_Header" BackgroundColor="#C5DCE6"
+                Padding="12,8"
+                pb:PanelBoss.PanelIsVisible="True"
+                pb:PanelBoss.PanelName="SquishyHeader"
+                pb:PanelBoss.PanelPriority="10"
+                pb:PanelBoss.PanelTransitionIn="None"
+                pb:PanelBoss.PanelTransitionOut="None"
+                ColumnDefinitions="*,*,*"
+                RowDefinitions="Auto,Auto"
+                RowSpacing="6"
+                SafeAreaEdges="None"
+                >
+                <Label
+                    Grid.ColumnSpan="3"
+                    FontAttributes="Bold"
+                    FontSize="20"
+                    Text="Content-sized chrome"
+                    TextColor="#102A3A"
+                    />
+                <controls:RichButton AutomationId="Squishy_FontNormal"
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    AutoResetIsBusyMilliseconds="100"
+                    Command="{Binding SetTextSizeCommand}"
+                    CommandParameter="Normal"
+                    MinimumHeightRequest="44"
+                    >
+                    <Border BackgroundColor="#FFFFFF"
+                        Margin="2"
+                        Padding="8"
+                        SafeAreaEdges="None"
+                        Stroke="#486171"
+                        StrokeShape="RoundRectangle 6"
+                        InputTransparent="True"
+                        >
+                        <Label
+                            HorizontalTextAlignment="Center"
+                            VerticalTextAlignment="Center"
+                            FontSize="14"
+                            Text="Normal text"
+                            TextColor="#102A3A"
+                            InputTransparent="True"
+                            />
+                    </Border>
+                </controls:RichButton>
+                <controls:RichButton AutomationId="Squishy_FontLarge"
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    AutoResetIsBusyMilliseconds="100"
+                    Command="{Binding SetTextSizeCommand}"
+                    CommandParameter="Large"
+                    MinimumHeightRequest="44"
+                    >
+                    <Border BackgroundColor="#FFFFFF"
+                        Margin="2"
+                        Padding="8"
+                        SafeAreaEdges="None"
+                        Stroke="#486171"
+                        StrokeShape="RoundRectangle 6"
+                        InputTransparent="True"
+                        >
+                        <Label
+                            HorizontalTextAlignment="Center"
+                            VerticalTextAlignment="Center"
+                            FontSize="14"
+                            Text="Large text"
+                            TextColor="#102A3A"
+                            InputTransparent="True"
+                            />
+                    </Border>
+                </controls:RichButton>
+                <controls:RichButton AutomationId="Squishy_ToggleTongue"
+                    Grid.Row="1"
+                    Grid.Column="2"
+                    AutoResetIsBusyMilliseconds="100"
+                    Command="{Binding ToggleTongueCommand}"
+                    MinimumHeightRequest="44"
+                    >
+                    <Border BackgroundColor="#FFFFFF"
+                        Margin="2"
+                        Padding="8"
+                        SafeAreaEdges="None"
+                        Stroke="#486171"
+                        StrokeShape="RoundRectangle 6"
+                        InputTransparent="True"
+                        >
+                        <Label
+                            HorizontalTextAlignment="Center"
+                            VerticalTextAlignment="Center"
+                            FontSize="14"
+                            Text="Toggle tongue"
+                            TextColor="#102A3A"
+                            InputTransparent="True"
+                            />
+                    </Border>
+                </controls:RichButton>
+            </Grid>
+        </panelViews:PanelBossBody_DefaultView.TopHeaderPanels>
+        <panelViews:PanelBossBody_DefaultView.ContentPanels>
+            <!--
+                Independent overlay: these Auto rows FOLLOW the chrome.
+                No PanelClearanceFor cache owns these rows. The star row is the give.
+            -->
+            <Grid x:Name="BodyPanel" AutomationId="Squishy_Body"
+                pb:PanelBoss.PanelIsVisible="True"
+                pb:PanelBoss.PanelName="SquishyBody"
+                pb:PanelBoss.PanelPriority="10"
+                pb:PanelBoss.PanelTransitionIn="None"
+                pb:PanelBoss.PanelTransitionOut="None"
+                RowDefinitions="Auto,*,Auto,Auto"
+                RowSpacing="0"
+                SafeAreaEdges="None"
+                >
+                <BoxView x:Name="HeaderClearance" AutomationId="Squishy_HeaderClearance"
+                    x:DataType="Grid"
+                    IsVisible="{Binding IsVisible,
+                                        Source={x:Reference HeaderPanel},
+                                        Mode=OneWay}"
+                    Grid.Row="0"
+                    HeightRequest="{Binding Height,
+                                            Source={x:Reference HeaderPanel},
+                                            Mode=OneWay}"
+                    Color="Transparent"
+                    InputTransparent="True"
+                    />
+                <Grid x:Name="BodyViewport" AutomationId="Squishy_Viewport" BackgroundColor="#D9EFE8"
+                    Grid.Row="1"
+                    RowDefinitions="Auto,*,Auto"
+                    RowSpacing="0"
+                    SafeAreaEdges="None"
+                    >
+                    <Label BackgroundColor="#146F56"
+                        Grid.Row="0"
+                        FontSize="11"
+                        Text="TOP OF CONTENT VIEWPORT"
+                        TextColor="#FFFFFF"
+                        />
+                    <ScrollView x:Name="BodyScroll" AutomationId="Squishy_Scroll"
+                        Grid.Row="1"
+                        SafeAreaEdges="None"
+                        >
+                        <VerticalStackLayout
+                            Padding="12"
+                            BindableLayout.ItemsSource="{Binding SampleRows}"
+                            SafeAreaEdges="None"
+                            Spacing="12"
+                            >
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate
+                                    x:DataType="x:String"
+                                    >
+                                    <Grid BackgroundColor="#FFFFFF"
+                                        Padding="12"
+                                        SafeAreaEdges="None"
+                                        >
+                                        <Label
+                                            FontSize="{Binding BindingContext.SampleFontSize,
+                                                               Source={x:Reference PageRoot},
+                                                               x:DataType={x:Null}}"
+                                            LineBreakMode="WordWrap"
+                                            Text="{Binding .}"
+                                            TextColor="#102A3A"
+                                            />
+                                    </Grid>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                    </ScrollView>
+                    <Label BackgroundColor="#146F56"
+                        Grid.Row="2"
+                        FontSize="11"
+                        Text="BOTTOM OF CONTENT VIEWPORT"
+                        TextColor="#FFFFFF"
+                        />
+                </Grid>
+                <BoxView x:Name="ActionClearance" AutomationId="Squishy_ActionClearance"
+                    x:DataType="Grid"
+                    IsVisible="{Binding IsVisible,
+                                        Source={x:Reference ActionPanel},
+                                        Mode=OneWay}"
+                    Grid.Row="2"
+                    HeightRequest="{Binding Height,
+                                            Source={x:Reference ActionPanel},
+                                            Mode=OneWay}"
+                    Color="Transparent"
+                    InputTransparent="True"
+                    />
+                <BoxView x:Name="SystemClearance" AutomationId="Squishy_SystemClearance"
+                    Grid.Row="3"
+                    HeightRequest="{Binding ActivePanelBoss.PlatformBottomClearance,
+                                            Mode=OneWay}"
+                    Color="Transparent"
+                    InputTransparent="True"
+                    />
+            </Grid>
+            <Grid x:Name="MorePanel" AutomationId="Squishy_MorePanel" BackgroundColor="#F3E8D1"
+                pb:PanelBoss.PanelIsVisible="False"
+                pb:PanelBoss.PanelName="SquishyMorePanel"
+                pb:PanelBoss.PanelPriority="0"
+                pb:PanelBoss.PanelTransitionIn="None"
+                pb:PanelBoss.PanelTransitionOut="None"
+                RowDefinitions="Auto,*,Auto,Auto"
+                RowSpacing="0"
+                SafeAreaEdges="None"
+                >
+                <Grid x:Name="MoreHeader"
+                    Grid.Row="0"
+                    Padding="12,8"
+                    RowDefinitions="Auto,Auto"
+                    SafeAreaEdges="None"
+                    >
+                    <Label
+                        FontSize="20"
+                        Text="More owns this header"
+                        TextColor="#102A3A"
+                        />
+                    <controls:RichButton AutomationId="Squishy_CloseMore"
+                        Grid.Row="1"
+                        AutoResetIsBusyMilliseconds="100"
+                        Command="{Binding SelectActionCommand}"
+                        CommandParameter="Alpha"
+                        MinimumHeightRequest="44"
+                        >
+                        <Border BackgroundColor="#FFFFFF"
+                            Padding="8"
+                            SafeAreaEdges="None"
+                            Stroke="#486171"
+                            InputTransparent="True"
+                            >
+                            <Label
+                                HorizontalTextAlignment="Center"
+                                FontSize="14"
+                                Text="Restore the main panel"
+                                TextColor="#102A3A"
+                                InputTransparent="True"
+                                />
+                        </Border>
+                    </controls:RichButton>
+                </Grid>
+                <Grid x:Name="MoreViewport" AutomationId="Squishy_MoreViewport"
+                    Grid.Row="1"
+                    RowDefinitions="Auto,*,Auto"
+                    RowSpacing="0"
+                    SafeAreaEdges="None"
+                    >
+                    <Label BackgroundColor="#805A20"
+                        Grid.Row="0"
+                        FontSize="11"
+                        Text="TOP OF MORE VIEWPORT"
+                        TextColor="#FFFFFF"
+                        />
+                    <ScrollView x:Name="MoreScroll" AutomationId="Squishy_MoreScroll"
+                        Grid.Row="1"
+                        SafeAreaEdges="None"
+                        >
+                        <VerticalStackLayout
+                            Padding="12"
+                            BindableLayout.ItemsSource="{Binding SampleRows}"
+                            SafeAreaEdges="None"
+                            Spacing="12"
+                            >
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate
+                                    x:DataType="x:String"
+                                    >
+                                    <Grid BackgroundColor="#FFFFFF"
+                                        Padding="12"
+                                        SafeAreaEdges="None"
+                                        >
+                                        <Label
+                                            FontSize="{Binding BindingContext.SampleFontSize,
+                                                               Source={x:Reference PageRoot},
+                                                               x:DataType={x:Null}}"
+                                            LineBreakMode="WordWrap"
+                                            Text="{Binding .}"
+                                            TextColor="#102A3A"
+                                            />
+                                    </Grid>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                    </ScrollView>
+                    <Label BackgroundColor="#805A20"
+                        Grid.Row="2"
+                        FontSize="11"
+                        Text="BOTTOM OF MORE VIEWPORT"
+                        TextColor="#FFFFFF"
+                        />
+                </Grid>
+                <BoxView
+                    x:DataType="Grid"
+                    IsVisible="{Binding IsVisible,
+                                        Source={x:Reference ActionPanel},
+                                        Mode=OneWay}"
+                    Grid.Row="2"
+                    HeightRequest="{Binding Height,
+                                            Source={x:Reference ActionPanel},
+                                            Mode=OneWay}"
+                    Color="Transparent"
+                    InputTransparent="True"
+                    />
+                <BoxView
+                    Grid.Row="3"
+                    HeightRequest="{Binding ActivePanelBoss.PlatformBottomClearance,
+                                            Mode=OneWay}"
+                    Color="Transparent"
+                    InputTransparent="True"
+                    />
+            </Grid>
+        </panelViews:PanelBossBody_DefaultView.ContentPanels>
+        <panelViews:PanelBossBody_DefaultView.BottomInputPanels>
+            <!--  Natural height is owned HERE. Followers never constrain this Grid.  -->
+            <Grid x:Name="ActionPanel" AutomationId="Squishy_Actions" BackgroundColor="#C5DCE6"
+                pb:PanelBoss.PanelIsVisible="True"
+                pb:PanelBoss.PanelName="SquishyActions"
+                pb:PanelBoss.PanelPriority="20"
+                pb:PanelBoss.PanelTransitionIn="None"
+                pb:PanelBoss.PanelTransitionOut="None"
+                ColumnDefinitions="*,*,*,*,*"
+                ColumnSpacing="0"
+                RowDefinitions="Auto,Auto"
+                RowSpacing="0"
+                SafeAreaEdges="None"
+                >
+                <Label x:Name="Tongue" AutomationId="Squishy_Tongue"
+                    IsVisible="{Binding IsTongueVisible}"
+                    Grid.ColumnSpan="5"
+                    Padding="8"
+                    HorizontalTextAlignment="Center"
+                    FontSize="{Binding ActionFontSize}"
+                    Text="{Binding Status}"
+                    TextColor="#102A3A"
+                    />
+
+                <controls:RichButton x:Name="AlphaButton" AutomationId="Squishy_Alpha"
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    AutoResetIsBusyMilliseconds="100"
+                    Command="{Binding SelectActionCommand}"
+                    CommandParameter="Alpha"
+                    MinimumHeightRequest="{StaticResource MinimumActionHeight}"
+                    >
+                    <Border x:Name="AlphaBorder" BackgroundColor="#F8C15C"
+                        Margin="2"
+                        Padding="8"
+                        SafeAreaEdges="None"
+                        Stroke="#486171"
+                        StrokeShape="RoundRectangle 10"
+                        StrokeThickness="1"
+                        InputTransparent="True"
+                        >
+                        <Grid
+                            VerticalOptions="Center"
+                            RowDefinitions="Auto,Auto"
+                            RowSpacing="2"
+                            SafeAreaEdges="None"
+                            InputTransparent="True"
+                            >
+                            <Label x:Name="AlphaGlyph"
+                                Grid.Row="0"
+                                HorizontalTextAlignment="Center"
+                                FontAutoScalingEnabled="True"
+                                FontSize="{Binding ActionGlyphSize}"
+                                Text="A"
+                                TextColor="#102A3A"
+                                InputTransparent="True"
+                                />
+                            <Label x:Name="AlphaText"
+                                Grid.Row="1"
+                                HorizontalTextAlignment="Center"
+                                FontAutoScalingEnabled="True"
+                                FontSize="{Binding ActionFontSize}"
+                                LineBreakMode="WordWrap"
+                                Text="Alpha"
+                                TextColor="#102A3A"
+                                InputTransparent="True"
+                                />
+                        </Grid>
+                    </Border>
+                </controls:RichButton>
+
+                <controls:RichButton x:Name="BravoButton" AutomationId="Squishy_Bravo"
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    AutoResetIsBusyMilliseconds="100"
+                    Command="{Binding SelectActionCommand}"
+                    CommandParameter="Bravo"
+                    MinimumHeightRequest="{StaticResource MinimumActionHeight}"
+                    >
+                    <Border x:Name="BravoBorder" BackgroundColor="#EAF2F5"
+                        Margin="2"
+                        Padding="8"
+                        SafeAreaEdges="None"
+                        Stroke="#486171"
+                        StrokeShape="RoundRectangle 10"
+                        StrokeThickness="1"
+                        InputTransparent="True"
+                        >
+                        <Grid
+                            VerticalOptions="Center"
+                            RowDefinitions="Auto,Auto"
+                            RowSpacing="2"
+                            SafeAreaEdges="None"
+                            InputTransparent="True"
+                            >
+                            <Label x:Name="BravoGlyph"
+                                Grid.Row="0"
+                                HorizontalTextAlignment="Center"
+                                FontAutoScalingEnabled="True"
+                                FontSize="{Binding ActionGlyphSize}"
+                                Text="B"
+                                TextColor="#102A3A"
+                                InputTransparent="True"
+                                />
+                            <Label x:Name="BravoText"
+                                Grid.Row="1"
+                                HorizontalTextAlignment="Center"
+                                FontAutoScalingEnabled="True"
+                                FontSize="{Binding ActionFontSize}"
+                                LineBreakMode="WordWrap"
+                                Text="Bravo"
+                                TextColor="#102A3A"
+                                InputTransparent="True"
+                                />
+                        </Grid>
+                    </Border>
+                </controls:RichButton>
+
+                <controls:RichButton x:Name="CharlieButton" AutomationId="Squishy_Charlie"
+                    Grid.Row="1"
+                    Grid.Column="2"
+                    AutoResetIsBusyMilliseconds="100"
+                    Command="{Binding SelectActionCommand}"
+                    CommandParameter="Charlie"
+                    MinimumHeightRequest="{StaticResource MinimumActionHeight}"
+                    >
+                    <Border x:Name="CharlieBorder" BackgroundColor="#EAF2F5"
+                        Margin="2"
+                        Padding="8"
+                        SafeAreaEdges="None"
+                        Stroke="#486171"
+                        StrokeShape="RoundRectangle 10"
+                        StrokeThickness="1"
+                        InputTransparent="True"
+                        >
+                        <Grid
+                            VerticalOptions="Center"
+                            RowDefinitions="Auto,Auto"
+                            RowSpacing="2"
+                            SafeAreaEdges="None"
+                            InputTransparent="True"
+                            >
+                            <Label x:Name="CharlieGlyph"
+                                Grid.Row="0"
+                                HorizontalTextAlignment="Center"
+                                FontAutoScalingEnabled="True"
+                                FontSize="{Binding ActionGlyphSize}"
+                                Text="C"
+                                TextColor="#102A3A"
+                                InputTransparent="True"
+                                />
+                            <Label x:Name="CharlieText"
+                                Grid.Row="1"
+                                HorizontalTextAlignment="Center"
+                                FontAutoScalingEnabled="True"
+                                FontSize="{Binding ActionFontSize}"
+                                LineBreakMode="WordWrap"
+                                Text="Charlie"
+                                TextColor="#102A3A"
+                                InputTransparent="True"
+                                />
+                        </Grid>
+                    </Border>
+                </controls:RichButton>
+
+                <controls:RichButton x:Name="DeltaButton" AutomationId="Squishy_Delta"
+                    Grid.Row="1"
+                    Grid.Column="3"
+                    AutoResetIsBusyMilliseconds="100"
+                    Command="{Binding SelectActionCommand}"
+                    CommandParameter="Delta"
+                    MinimumHeightRequest="{StaticResource MinimumActionHeight}"
+                    >
+                    <Border x:Name="DeltaBorder" BackgroundColor="#EAF2F5"
+                        Margin="2"
+                        Padding="8"
+                        SafeAreaEdges="None"
+                        Stroke="#486171"
+                        StrokeShape="RoundRectangle 10"
+                        StrokeThickness="1"
+                        InputTransparent="True"
+                        >
+                        <Grid
+                            VerticalOptions="Center"
+                            RowDefinitions="Auto,Auto"
+                            RowSpacing="2"
+                            SafeAreaEdges="None"
+                            InputTransparent="True"
+                            >
+                            <Label x:Name="DeltaGlyph"
+                                Grid.Row="0"
+                                HorizontalTextAlignment="Center"
+                                FontAutoScalingEnabled="True"
+                                FontSize="{Binding ActionGlyphSize}"
+                                Text="D"
+                                TextColor="#102A3A"
+                                InputTransparent="True"
+                                />
+                            <Label x:Name="DeltaText"
+                                Grid.Row="1"
+                                HorizontalTextAlignment="Center"
+                                FontAutoScalingEnabled="True"
+                                FontSize="{Binding ActionFontSize}"
+                                LineBreakMode="WordWrap"
+                                Text="Delta"
+                                TextColor="#102A3A"
+                                InputTransparent="True"
+                                />
+                        </Grid>
+                    </Border>
+                </controls:RichButton>
+
+                <controls:RichButton x:Name="MoreButton" AutomationId="Squishy_More"
+                    Grid.Row="1"
+                    Grid.Column="4"
+                    AutoResetIsBusyMilliseconds="100"
+                    Command="{Binding SelectActionCommand}"
+                    CommandParameter="More"
+                    MinimumHeightRequest="{StaticResource MinimumActionHeight}"
+                    >
+                    <Border x:Name="MoreBorder" BackgroundColor="#EAF2F5"
+                        Margin="2"
+                        Padding="8"
+                        SafeAreaEdges="None"
+                        Stroke="#486171"
+                        StrokeShape="RoundRectangle 10"
+                        StrokeThickness="1"
+                        InputTransparent="True"
+                        >
+                        <Grid
+                            VerticalOptions="Center"
+                            RowDefinitions="Auto,Auto"
+                            RowSpacing="2"
+                            SafeAreaEdges="None"
+                            InputTransparent="True"
+                            >
+                            <Label x:Name="MoreGlyph"
+                                Grid.Row="0"
+                                HorizontalTextAlignment="Center"
+                                FontAutoScalingEnabled="True"
+                                FontSize="{Binding ActionGlyphSize}"
+                                Text="•••"
+                                TextColor="#102A3A"
+                                InputTransparent="True"
+                                />
+                            <Label x:Name="MoreText"
+                                Grid.Row="1"
+                                HorizontalTextAlignment="Center"
+                                FontAutoScalingEnabled="True"
+                                FontSize="{Binding ActionFontSize}"
+                                LineBreakMode="WordWrap"
+                                Text="More"
+                                TextColor="#102A3A"
+                                InputTransparent="True"
+                                />
+                        </Grid>
+                    </Border>
+                </controls:RichButton>
+            </Grid>
+        </panelViews:PanelBossBody_DefaultView.BottomInputPanels>
+    </panelViews:PanelBossBody_DefaultView>
+</ContentPage>
+

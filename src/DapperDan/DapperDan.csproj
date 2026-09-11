@@ -47,6 +47,16 @@
 		<DefineConstants>$(DefineConstants);DAPPERDAN_BOTTOM_PANEL_CANARY</DefineConstants>
 	</PropertyGroup>
 
+	<PropertyGroup Condition="'$(DapperDanSquishyCanary)' == 'true' And '$(Configuration)' == 'Debug'">
+		<DefineConstants>$(DefineConstants);DAPPERDAN_SQUISHY_CANARY</DefineConstants>
+	</PropertyGroup>
+
+	<!-- Local VS SDK 303 injects its own ILLink patch. Keep its generated lock out
+	     of the frozen SDK 302 iOS graph; explicit CI lock projections still win. -->
+	<PropertyGroup Condition="'$(NETCoreSdkVersion)' == '10.0.303' And '$(NuGetLockFilePath)' == ''">
+		<NuGetLockFilePath>$(MSBuildProjectDirectory)/obj/packages.sdk-10.0.303.lock.json</NuGetLockFilePath>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<!-- App Icon -->
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />

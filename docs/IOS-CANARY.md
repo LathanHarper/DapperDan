@@ -1,5 +1,10 @@
 # iOS canary operating guide
 
+Branch note: `codex/panelboss-bottom-inset-canary` has a manual Debug Simulator
+comparison in place of main's automatic unsigned workflow described below.
+The newer content-sized chrome sample and its remaining platform gates are
+documented in [SQUISHY-CANARY.md](SQUISHY-CANARY.md).
+
 The two build lanes share source but never share trust.
 
 Both lanes restore Prism 9. The maintainer and every developer whose work is built must first be covered by a valid Prism Community or Commercial license. The workflow does not grant or silently accept a license; see [`PRISM-LICENSING.md`](PRISM-LICENSING.md).
@@ -99,7 +104,11 @@ Keep the default GitHub token read-only, protect `main`, require review for work
 
 ## Toolchain pin
 
-The repository pins .NET SDK `10.0.302` and workload set `10.0.302.1`. CI selects Xcode 26.6 on GitHub's ARM64 `macos-26` image. Upgrade the SDK, workload set, runner image, and Xcode selection as one reviewed change.
+The root `global.json` pins the local Android/Visual Studio lane to .NET SDK `10.0.303`, with roll-forward disabled and workload set `10.0.302.1`. This matches the existing local Visual Studio toolchain; it does not install or replace an Android SDK.
+
+The iOS lane remains frozen separately in `.github/ios-global.json`: .NET SDK `10.0.302`, roll-forward disabled, and workload set `10.0.302.1`. Both iOS workflows copy that file to root `global.json` before `setup-dotnet` and before any `dotnet` command. CI still selects Xcode 26.6 on GitHub's ARM64 `macos-26` image. A local Android pin change must not move those iOS inputs; any iOS SDK, workload, runner, or Xcode change requires its own review.
+
+The source contract tests read the frozen file directly for iOS assertions. On GitHub Actions, they read the committed root pin for the Android assertion so they remain valid even after a workflow has selected the frozen iOS pin in its working tree.
 
 ## Compute math
 

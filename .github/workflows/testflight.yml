@@ -48,6 +48,10 @@ jobs:
           persist-credentials: false
           ref: ${{ github.sha }}
 
+      - name: Select frozen iOS toolchain
+        shell: bash
+        run: cp .github/ios-global.json global.json
+
       - name: Install pinned .NET SDK
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:

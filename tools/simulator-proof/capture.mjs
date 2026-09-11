@@ -39,12 +39,19 @@ export function validateMeasurements(value, expectedCase) {
   return value;
 }
 
-export function validateProductReceipt(receipt, expectedRunId) {
-  if (receipt?.schema !== 2 || receipt.canary !== 'bottom-panel-v1' || receipt.repository !== 'LathanHarper/DapperDan' || receipt.workflow !== '.github/workflows/ios-unsigned.yml' || receipt.sourceRef !== sourceRef ||
+export function scenarioContract(scenario = 'bottom-panel') {
+  if (scenario === 'bottom-panel') return { canary: 'bottom-panel-v1', cases: panelCases };
+  if (scenario === 'squishy') return { canary: 'squishy-v1', cases: ['portrait', 'landscape'] };
+  throw new Error('Unknown Simulator capture scenario.');
+}
+
+export function validateProductReceipt(receipt, expectedRunId, scenario = 'bottom-panel') {
+  const contract = scenarioContract(scenario);
+  if (receipt?.schema !== 2 || receipt.canary !== contract.canary || receipt.repository !== 'LathanHarper/DapperDan' || receipt.workflow !== '.github/workflows/ios-unsigned.yml' || receipt.sourceRef !== sourceRef ||
       !/^[a-f0-9]{40}$/.test(receipt.sourceCommit) || !/^[1-9][0-9]{0,19}$/.test(receipt.runId) || !/^[1-9][0-9]*$/.test(receipt.runAttempt) || (expectedRunId && receipt.runId !== expectedRunId) ||
       receipt.bundleId !== 'net.codecrafty.dapperdan' || receipt.configuration !== 'Debug' || receipt.runtime !== 'iossimulator-arm64' ||
       receipt.archive !== archiveName || !/^[a-f0-9]{64}$/.test(receipt.sha256) || !/^[a-f0-9]{64}$/.test(receipt.binarySha256) ||
-      !Number.isSafeInteger(receipt.archiveBytes) || receipt.archiveBytes <= 0 || JSON.stringify(receipt.cases) !== JSON.stringify(panelCases))
+      !Number.isSafeInteger(receipt.archiveBytes) || receipt.archiveBytes <= 0 || JSON.stringify(receipt.cases) !== JSON.stringify(contract.cases))
     throw new Error('Retained product is not the expected public bottom-panel Simulator canary.');
   return receipt;
 }
@@ -105,7 +112,7 @@ export function validateDimensions(bytes, family) {
   return size;
 }
 
-function command(program, args, timeout = 120000, env = process.env) {
+export function command(program, args, timeout = 120000, env = process.env) {
   const result = spawnSync(program, args, { encoding: 'utf8', timeout, env, maxBuffer: 16 * 1024 * 1024 });
   if (result.error || result.status !== 0) {
     throw new Error(`${program} ${args.join(' ')} failed: ${result.error?.message ?? result.status}\n${result.stderr?.slice(-4000)}\n${result.stdout?.slice(-4000)}`);
@@ -113,7 +120,7 @@ function command(program, args, timeout = 120000, env = process.env) {
   return result.stdout.trim();
 }
 
-function sha256(path) {
+export function sha256(path) {
   return createHash('sha256').update(readFileSync(path)).digest('hex');
 }
 
@@ -138,7 +145,7 @@ function preserve() {
   copyFileSync('THIRD-PARTY-LICENSES/DryIoc-MIT.txt', join(output, 'DRYIOC-LICENSE.txt'));
   copyFileSync('src/DapperDan/packages.lock.json', join(output, 'packages.lock.json'));
   saveJson(join(output, 'receipt.json'), {
-    schema: 2, canary: 'bottom-panel-v1', cases: panelCases,
+    schema: 2, ...scenarioContract(process.env.DAPPERDAN_CAPTURE_SCENARIO),
     repository: process.env.GITHUB_REPOSITORY, workflow: '.github/workflows/ios-unsigned.yml', sourceRef: process.env.GITHUB_REF,
     sourceCommit: process.env.GITHUB_SHA,
     runId: process.env.GITHUB_RUN_ID, runAttempt: process.env.GITHUB_RUN_ATTEMPT,
@@ -155,7 +162,7 @@ function preserve() {
 
 function restore() {
   const retained = resolve('artifacts/reuse');
-  const receipt = validateProductReceipt(JSON.parse(readFileSync(join(retained, 'receipt.json'), 'utf8')), process.env.REUSE_RUN_ID);
+  const receipt = validateProductReceipt(JSON.parse(readFileSync(join(retained, 'receipt.json'), 'utf8')), process.env.REUSE_RUN_ID, process.env.DAPPERDAN_CAPTURE_SCENARIO);
   const archive = join(retained, receipt.archive);
   if (statSync(archive).size !== receipt.archiveBytes || sha256(archive) !== receipt.sha256) throw new Error('Retained app SHA-256/size mismatch.');
   const output = resolve('artifacts/extracted');
@@ -174,7 +181,7 @@ function restore() {
 
 function signSimulator() {
   const retained = resolve(process.env.SIMULATOR_PRODUCT_DIRECTORY);
-  const receipt = validateProductReceipt(JSON.parse(readFileSync(join(retained, 'receipt.json'), 'utf8')));
+  const receipt = validateProductReceipt(JSON.parse(readFileSync(join(retained, 'receipt.json'), 'utf8')), undefined, process.env.DAPPERDAN_CAPTURE_SCENARIO);
   const originalArchive = join(retained, receipt.archive);
   if (sha256(originalArchive) !== receipt.sha256) throw new Error('Original retained archive changed.');
   const original = resolve(process.env.SIMULATOR_APP_DIRECTORY, 'CodeCrafty.DapperDan.app');
