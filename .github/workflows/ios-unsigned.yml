@@ -1,20 +1,15 @@
-name: iOS unsigned proof
+name: Manual Debug Simulator capture proof
 
+# Branch-only proof: main's Release/device canary is unchanged.
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: ios-unsigned-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  group: dapperdan-debug-capture-proof
+  cancel-in-progress: false
 
 env:
   BUNDLE_ID: net.codecrafty.dapperdan
@@ -22,252 +17,101 @@ env:
   DOTNET_CLI_TELEMETRY_OPTOUT: "1"
   DOTNET_NOLOGO: "1"
   PROJECT_PATH: src/DapperDan/DapperDan.csproj
-  SEED_ASSET: dapper-dan-seed-v1.db3
   WORKLOAD_VERSION: 10.0.302.1
 
 jobs:
-  data-canary:
-    name: Compiled model and packaged SQLite
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    env:
-      # This job builds only plain net10.0 tools/tests. The Apple job below
-      # restores and verifies the pinned MAUI workload set before mobile builds.
-      MSBuildEnableWorkloadResolver: "false"
-
-    steps:
-      - name: Check out source
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 1
-          persist-credentials: false
-
-      - name: Install pinned .NET SDK
-        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
-        with:
-          global-json-file: global.json
-
-      - name: Regenerate public database artifacts
-        shell: pwsh
-        run: ./tools/DapperDan.DatabaseTool/Generate.ps1
-
-      - name: Verify generated artifacts are current
-        shell: bash
-        run: |
-          set -euo pipefail
-          git diff --exit-code -- \
-            src/DapperDan/Data/CompiledModels \
-            "src/DapperDan/Resources/Raw/$SEED_ASSET"
-          test -z "$(git status --porcelain --untracked-files=all -- \
-            src/DapperDan/Data/CompiledModels \
-            "src/DapperDan/Resources/Raw/$SEED_ASSET")"
-          test "$(sqlite3 "src/DapperDan/Resources/Raw/$SEED_ASSET" 'PRAGMA application_id;')" = "1145131088"
-          test "$(sqlite3 "src/DapperDan/Resources/Raw/$SEED_ASSET" 'PRAGMA user_version;')" = "1"
-          test "$(sqlite3 "src/DapperDan/Resources/Raw/$SEED_ASSET" 'PRAGMA integrity_check;')" = "ok"
-          test -z "$(sqlite3 "src/DapperDan/Resources/Raw/$SEED_ASSET" 'PRAGMA foreign_key_check;')"
-
-      - name: Run public data regression tests
-        shell: bash
-        run: |
-          set -euo pipefail
-          dotnet restore tests/DapperDan.Tests/DapperDan.Tests.csproj --locked-mode
-          dotnet test tests/DapperDan.Tests/DapperDan.Tests.csproj \
-            -c Release \
-            --no-restore
-
-  build:
-    name: Simulator and device binaries
-    needs: data-canary
+  capture:
+    if: ${{ github.repository == 'LathanHarper/DapperDan' && github.event.repository.private == false && github.ref == 'refs/heads/codex/simulator-capture-proof' }}
     runs-on: macos-26
-    # This proof lane AOT-compiles both simulator and device bundles. The first
-    # interpreter canary measured 64 minutes for the simulator bundle alone.
-    timeout-minutes: 180
-
+    timeout-minutes: 45
     steps:
-      - name: Check out source
+      - name: Check out exact public proof source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ github.sha }}
           fetch-depth: 1
           persist-credentials: false
+
+      - name: Test capture-selection and image contracts
+        run: node --test tools/simulator-proof/capture.test.mjs
 
       - name: Install pinned .NET SDK
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           global-json-file: global.json
 
-      - name: Verify Apple and .NET toolchains
+      - name: Record and verify public toolchain
         shell: bash
         run: |
           set -euo pipefail
+          mkdir -p artifacts/recovery artifacts/captures
           test "$(uname -m)" = "arm64"
           test -d "$DEVELOPER_DIR"
           test "$(dotnet --version)" = "10.0.302"
-          xcodebuild -version
-          xcrun --sdk iphoneos --show-sdk-version
-          xcrun --sdk iphonesimulator --show-sdk-version
-          dotnet --info
-
-      - name: Restore pinned MAUI workloads
-        shell: bash
-        run: |
-          set -euo pipefail
-          dotnet workload restore "$PROJECT_PATH"
-          test "$(dotnet workload --version)" = "$WORKLOAD_VERSION"
-          dotnet workload list
-
-      - name: Restore full package graph for pinned toolchain
-        shell: bash
-        run: |
-          set -euo pipefail
-          dotnet restore "$PROJECT_PATH" --locked-mode
-
-      - name: Build unsigned simulator binary
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p artifacts
-          dotnet build "$PROJECT_PATH" \
-            -f net10.0-ios \
-            -c Release \
-            -r iossimulator-arm64 \
-            --no-restore \
-            -p:ApplicationId="$BUNDLE_ID" \
-            -p:ApplicationTitle="Dapper Dan - UNSIGNED PROOF" \
-            -p:ArchiveOnBuild=false \
-            -p:ContinuousIntegrationBuild=true \
-            -p:EnableCodeSigning=false \
-            -bl:artifacts/iossimulator-arm64.binlog
-
-      - name: Build unsigned device binary
-        shell: bash
-        run: |
-          set -euo pipefail
-          dotnet build "$PROJECT_PATH" \
-            -f net10.0-ios \
-            -c Release \
-            -r ios-arm64 \
-            --no-restore \
-            -p:ApplicationId="$BUNDLE_ID" \
-            -p:ApplicationTitle="Dapper Dan - UNSIGNED PROOF" \
-            -p:ArchiveOnBuild=false \
-            -p:ContinuousIntegrationBuild=true \
-            -p:EnableCodeSigning=false \
-            -bl:artifacts/ios-arm64.binlog
-
-      - name: Package proof artifacts
-        shell: bash
-        run: |
-          set -euo pipefail
-          shopt -s nullglob
-
-          project_dir="$(dirname "$PROJECT_PATH")"
-          simulator_root="$project_dir/bin/Release/net10.0-ios/iossimulator-arm64"
-          device_root="$project_dir/bin/Release/net10.0-ios/ios-arm64"
-          simulator_apps=("$simulator_root"/*.app)
-          device_apps=("$device_root"/*.app)
-
-          if [[ ${#simulator_apps[@]} -ne 1 ]]; then
-            echo "Expected exactly one simulator .app under $simulator_root; found ${#simulator_apps[@]}." >&2
-            exit 1
-          fi
-          if [[ ${#device_apps[@]} -ne 1 ]]; then
-            echo "Expected exactly one device .app under $device_root; found ${#device_apps[@]}." >&2
-            exit 1
-          fi
-
-          simulator_bundle_id="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "${simulator_apps[0]}/Info.plist")"
-          device_bundle_id="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "${device_apps[0]}/Info.plist")"
-          simulator_display_name="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleDisplayName' "${simulator_apps[0]}/Info.plist")"
-          device_display_name="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleDisplayName' "${device_apps[0]}/Info.plist")"
-          test "$simulator_bundle_id" = "$BUNDLE_ID"
-          test "$device_bundle_id" = "$BUNDLE_ID"
-          test "$simulator_display_name" = "Dapper Dan - UNSIGNED PROOF"
-          test "$device_display_name" = "Dapper Dan - UNSIGNED PROOF"
-
-          verify_diagnostic_files_access() {
-            local app_bundle="$1"
-            test "$(/usr/libexec/PlistBuddy -c 'Print :UIFileSharingEnabled' "$app_bundle/Info.plist")" = "true"
-            test "$(/usr/libexec/PlistBuddy -c 'Print :LSSupportsOpeningDocumentsInPlace' "$app_bundle/Info.plist")" = "true"
-          }
-
-          verify_diagnostic_files_access "${simulator_apps[0]}"
-          verify_diagnostic_files_access "${device_apps[0]}"
-
-          verify_seed() {
-            local app_bundle="$1"
-            local seed_count
-            local bundled_seed
-
-            seed_count="$(find "$app_bundle" -type f -name "$SEED_ASSET" | wc -l | tr -d ' ')"
-            test "$seed_count" = "1"
-            bundled_seed="$(find "$app_bundle" -type f -name "$SEED_ASSET" -print -quit)"
-            cmp -s "src/DapperDan/Resources/Raw/$SEED_ASSET" "$bundled_seed"
-            test "$(/usr/bin/sqlite3 "$bundled_seed" 'PRAGMA application_id;')" = "1145131088"
-            test "$(/usr/bin/sqlite3 "$bundled_seed" 'PRAGMA user_version;')" = "1"
-            test "$(/usr/bin/sqlite3 "$bundled_seed" 'PRAGMA integrity_check;')" = "ok"
-            test -z "$(/usr/bin/sqlite3 "$bundled_seed" 'PRAGMA foreign_key_check;')"
-            if find "$app_bundle" -type f \( -name "$SEED_ASSET-wal" -o -name "$SEED_ASSET-shm" \) | grep -q .; then
-              echo "SQLite sidecars must not be packaged." >&2
-              exit 1
-            fi
-          }
-
-          verify_seed "${simulator_apps[0]}"
-          verify_seed "${device_apps[0]}"
-
-          ditto -c -k --sequesterRsrc --keepParent \
-            "${simulator_apps[0]}" artifacts/DapperDan-iossimulator-arm64-unsigned.zip
-          ditto -c -k --sequesterRsrc --keepParent \
-            "${device_apps[0]}" artifacts/DapperDan-ios-arm64-unsigned.zip
-
-          (
-            cd artifacts
-            shasum -a 256 \
-              DapperDan-iossimulator-arm64-unsigned.zip \
-              DapperDan-ios-arm64-unsigned.zip > SHA256SUMS.txt
-          )
-
           {
-            echo "commit=$GITHUB_SHA"
-            echo "bundle_id=$BUNDLE_ID"
-            echo "dotnet_sdk=$(dotnet --version)"
-            echo "workload_set=$(dotnet workload --version)"
-            echo "simulator_archive_bytes=$(stat -f '%z' artifacts/DapperDan-iossimulator-arm64-unsigned.zip)"
-            echo "device_archive_bytes=$(stat -f '%z' artifacts/DapperDan-ios-arm64-unsigned.zip)"
-            xcodebuild -version | tr '\n' ' '
-            echo
-          } > artifacts/build-info.txt
-
-          cp LICENSE artifacts/DAPPERDAN-LICENSE.txt
-          cp THIRD-PARTY-NOTICES.md artifacts/THIRD-PARTY-NOTICES.md
-          cp THIRD-PARTY-LICENSES/Prism-9-package-notice.txt artifacts/PRISM-9-PACKAGE-NOTICE.txt
-          cp THIRD-PARTY-LICENSES/DryIoc-MIT.txt artifacts/DRYIOC-MIT.txt
-          cp "$project_dir/packages.lock.json" artifacts/packages.lock.pinned-toolchain.json
-
-          {
-            printf '%s\n' 'DAPPER DAN iOS BUILD PROOF — RETURN TO SENDER'
-            printf '%s\n' 'UNSIGNED: not accepted by TestFlight and not installable on a physical iPhone or iPad.'
-            printf '%s\n' 'The simulator archive is only for compatible Apple simulator tooling.'
-            printf 'commit=%s\n' "$GITHUB_SHA"
+            printf 'source_commit=%s\nrun_id=%s\nconfiguration=Debug\nruntime=iossimulator-arm64\n' "$GITHUB_SHA" "$GITHUB_RUN_ID"
             printf 'bundle_id=%s\n' "$BUNDLE_ID"
-          } > artifacts/RETURN-TO-SENDER.txt
+            date -u '+started_utc=%Y-%m-%dT%H:%M:%SZ'
+            xcodebuild -version
+            xcrun --sdk iphonesimulator --show-sdk-version
+            dotnet --info
+          } | tee artifacts/recovery/toolchain.txt
+          xcrun simctl list -j > artifacts/recovery/simulators-before.json
 
-      - name: Upload unsigned application proof
+      - name: Restore pinned workloads and packages
+        timeout-minutes: 15
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet workload install maui-ios 2>&1 | tee artifacts/recovery/workload-restore.log
+          test "$(dotnet workload --version)" = "$WORKLOAD_VERSION"
+          node tools/simulator-proof/project-lock.mjs
+          dotnet restore "$PROJECT_PATH" --locked-mode \
+            -p:TargetFrameworks=net10.0-ios -r iossimulator-arm64 \
+            -p:NuGetLockFilePath="$GITHUB_WORKSPACE/artifacts/recovery/packages.iossimulator.lock.json" \
+            2>&1 | tee artifacts/recovery/package-restore.log
+
+      - name: Build one unsigned Debug Simulator app
+        timeout-minutes: 20
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet build "$PROJECT_PATH" \
+            -f net10.0-ios -c Debug -r iossimulator-arm64 --no-restore \
+            -p:TargetFrameworks=net10.0-ios \
+            -p:ApplicationId="$BUNDLE_ID" \
+            -p:EnableCodeSigning=false -p:ArchiveOnBuild=false -p:BuildIpa=false \
+            -p:ContinuousIntegrationBuild=true \
+            -bl:artifacts/recovery/simulator-debug.binlog \
+            2>&1 | tee artifacts/recovery/build.log
+
+      - name: Preserve reusable app before Simulator operations
+        id: preserve
+        run: node tools/simulator-proof/capture.mjs preserve
+
+      - name: Retain app and public provenance before capture
+        if: ${{ steps.preserve.outcome == 'success' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: dapperdan-ios-return-to-sender-${{ github.sha }}
-          path: |
-            artifacts/DapperDan-iossimulator-arm64-unsigned.zip
-            artifacts/DapperDan-ios-arm64-unsigned.zip
-            artifacts/SHA256SUMS.txt
-            artifacts/build-info.txt
-            artifacts/DAPPERDAN-LICENSE.txt
-            artifacts/THIRD-PARTY-NOTICES.md
-            artifacts/PRISM-9-PACKAGE-NOTICE.txt
-            artifacts/DRYIOC-MIT.txt
-            artifacts/packages.lock.pinned-toolchain.json
-            artifacts/RETURN-TO-SENDER.txt
-            artifacts/*.binlog
+          name: dapperdan-debug-reusable-${{ github.run_id }}
+          path: artifacts/recovery/
           if-no-files-found: error
-          include-hidden-files: false
-          retention-days: 14
+          compression-level: 0
+          retention-days: 1
+
+      - name: Capture native iPhone and iPad proof sequentially
+        timeout-minutes: 12
+        run: node tools/simulator-proof/capture.mjs capture
+
+      - name: Retain screenshots and partial logs even after failure
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: dapperdan-debug-capture-evidence-${{ github.run_id }}
+          path: |
+            artifacts/captures/
+            artifacts/recovery/toolchain.txt
+            artifacts/recovery/receipt.json
+            artifacts/recovery/*.log
+          if-no-files-found: warn
+          retention-days: 1
