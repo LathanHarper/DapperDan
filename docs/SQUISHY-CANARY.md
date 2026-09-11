@@ -141,5 +141,35 @@ Keep the public-repository/standard-runner gates, one-day remote artifact
 retention, and frozen iOS inputs. Download products and evidence locally while
 available. Do not dispatch a paid/private Release or TestFlight run.
 
-Do not port the layout to a production app or describe the pattern as
-cross-platform-proven until the tablet and native iOS gates are complete.
+## Four-view iOS receipt — 2026-09-11
+
+[Capture-only run 34646312703](https://github.com/LathanHarper/DapperDan/actions/runs/34646312703)
+completed successfully. It reused source `e233eb4` from build run `34645540341`;
+automation source was `69d6f46`. SDK installation, workload restore, and the Dapper
+application build were skipped in the follow-up. All four captures share the same
+prepared executable SHA-256:
+`d255ce5a70c2eb97d6f8d27793651bad949a300fb6d4e46da743923f93944efe`.
+
+| Native device, iOS 26.5 | View | Display pixels | Viewport height | Button height |
+| --- | --- | --- | --- | --- |
+| iPhone 14 Plus | Portrait | 1284 x 2778 | 648.33 pt | 68 pt |
+| iPhone 14 Plus | Landscape | 2778 x 1284 | 211.33 pt | 68 pt |
+| iPad Pro 13-inch (M4) | Portrait | 2064 x 2752 | 1126.5 pt | 68.5 pt |
+| iPad Pro 13-inch (M4) | Landscape | 2752 x 2064 | 782.5 pt | 68.5 pt |
+
+Every header/viewport/action adjacency passed with zero gap within tolerance;
+native top/side/bottom safe-area ownership and five equal-height contained buttons
+passed. All four PNGs were visually reviewed after download: full available
+viewport, visible button content, no stale rotation space. Image and measurement
+hashes were re-verified locally. PNGs are untouched, including native EXIF.
+
+The follow-up took 14m52s overall, not 54 seconds: the app compiled once in 54.36s
+in the producer run; Simulator startup and UI-runner overhead dominated capture.
+Both runs' GitHub timing APIs reported zero billable macOS milliseconds. Source,
+original/prepared products, licenses, measurements, XCTest results, images, billing
+receipts, and the separate visual review were retained locally under the two
+`DapperDan-BuildProof/squishy-<run-id>` folders before remote artifact expiry.
+
+This completes the requested default-text iPhone/iPad portrait/landscape proof.
+Android tablet and larger-text iOS stress remain untested; this is not a production
+release/AOT claim. Production layout changes remain a separate owner-approved step.
