@@ -1,6 +1,6 @@
 import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync, copyFileSync, statSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync, copyFileSync, statSync } from 'node:fs';
 import { basename, join, resolve } from 'node:path';
 import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -113,6 +113,53 @@ function restore() {
   console.log(`Reused hash-verified Simulator app from ${receipt.sourceCommit}; no .NET SDK, restore, or compilation required.`);
 }
 
+function signSimulator() {
+  const receipt = JSON.parse(readFileSync('artifacts/reuse/receipt.json', 'utf8'));
+  const originalArchive = resolve('artifacts/reuse', receipt.archive);
+  if (sha256(originalArchive) !== receipt.sha256) throw new Error('Original retained archive changed.');
+  const original = resolve(process.env.SIMULATOR_APP_DIRECTORY, 'CodeCrafty.DapperDan.app');
+  const copiedRoot = resolve('artifacts/adhoc-app');
+  if (existsSync(copiedRoot)) throw new Error('Ad-hoc copy destination must be new.');
+  mkdirSync(copiedRoot, { recursive: true });
+  const copied = join(copiedRoot, basename(original));
+  cpSync(original, copied, { recursive: true, preserveTimestamps: true });
+  const output = resolve('artifacts/adhoc-recovery');
+  mkdirSync(output, { recursive: true });
+  const files = readdirSync(copied, { recursive: true }).filter(name => statSync(join(copied, name)).isFile());
+  const nativeFiles = files.filter(name => command('file', ['-b', join(copied, name)]).includes('Mach-O'));
+  const managedFiles = files.filter(name => /\.(dll|json|xaml|db3|bin)$/.test(name));
+  const dataHashes = Object.fromEntries(managedFiles.map(name => [name, sha256(join(copied, name))]));
+  const changes = [];
+  for (const name of nativeFiles.filter(name => name !== 'CodeCrafty.DapperDan').sort((a, b) => b.split('/').length - a.split('/').length)) {
+    const path = join(copied, name);
+    const before = sha256(path);
+    command('codesign', ['--force', '--sign', '-', '--timestamp=none', '--preserve-metadata=entitlements', path]);
+    command('codesign', ['--verify', '--strict', path]);
+    changes.push({ path: name, before, after: sha256(path) });
+  }
+  const executable = join(copied, 'CodeCrafty.DapperDan');
+  const executableBefore = sha256(executable);
+  command('codesign', ['--force', '--sign', '-', '--timestamp=none', '--preserve-metadata=entitlements', copied]);
+  command('codesign', ['--verify', '--deep', '--strict', copied]);
+  changes.push({ path: 'CodeCrafty.DapperDan', before: executableBefore, after: sha256(executable) });
+  for (const [name, expected] of Object.entries(dataHashes)) {
+    if (sha256(join(copied, name)) !== expected) throw new Error(`Non-native content changed during signing: ${name}`);
+  }
+  if (sha256(originalArchive) !== receipt.sha256) throw new Error('Original archive changed during transformation.');
+  const archive = join(output, 'DapperDan-Debug-iossimulator-arm64-adhoc.tar.gz');
+  command('tar', ['-czf', archive, '-C', copiedRoot, basename(copied)], 180000);
+  for (const name of ['LICENSE.txt', 'THIRD-PARTY-NOTICES.md', 'PRISM-NOTICE.txt', 'DRYIOC-LICENSE.txt']) copyFileSync(join('artifacts/reuse', name), join(output, name));
+  saveJson(join(output, 'transformation-receipt.json'), {
+    sourceCommit: receipt.sourceCommit, automationCommit: process.env.GITHUB_SHA, runId: process.env.GITHUB_RUN_ID,
+    sourceArchiveSha256: receipt.sha256, originalArchiveUnchanged: true,
+    transformation: 'Fresh copy only. Sign nested Mach-O binaries inside-out, then app, using codesign --force --sign - --timestamp=none --preserve-metadata=entitlements. Verify every nested native file and app --deep --strict. No identity, certificate, profile, secret, SDK install, restore, compilation, or new entitlement.',
+    nativeChanges: changes, unchangedManagedAndDataFiles: managedFiles.length,
+    archive: basename(archive), archiveBytes: statSync(archive).size, sha256: sha256(archive),
+  });
+  writeFileSync(process.env.GITHUB_ENV, `SIMULATOR_APP_DIRECTORY=${copiedRoot}\n`, { flag: 'a' });
+  console.log('Ad-hoc Simulator copy verified; original archive unchanged and transformed product preserved.');
+}
+
 function captureDiagnostics(udid, output, family, record) {
   const bundleId = process.env.BUNDLE_ID;
   try {
@@ -212,6 +259,8 @@ async function capture() {
       evidence.captures.push(record);
       saveJson(join(output, 'capture-receipt.json'), evidence);
     }
+    // A launch failure is enough evidence: do not spend another cold boot on the same failure.
+    if (failures) break;
   }
   if (failures) throw new Error(`${failures} capture family failed; partial evidence retained.`);
 }
@@ -221,6 +270,7 @@ if (isMain) {
   if (process.platform !== 'darwin') throw new Error('This operation requires macOS; local unit tests do not.');
   if (process.argv[2] === 'preserve') preserve();
   else if (process.argv[2] === 'restore') restore();
+  else if (process.argv[2] === 'sign-simulator') signSimulator();
   else if (process.argv[2] === 'capture') await capture();
   else throw new Error('Usage: node tools/simulator-proof/capture.mjs preserve|capture');
 }

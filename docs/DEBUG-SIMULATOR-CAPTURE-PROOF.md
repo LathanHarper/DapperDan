@@ -42,6 +42,13 @@ Runtime results and actual captured dimensions are recorded in each run's artifa
 
 Although launch commands returned PIDs and both native PNG sizes were correct, visual inspection found **SpringBoard/Home on both**, not the app UI. That is not a successful UI witness. The next diagnostic iteration adds retained-process, runtime-log and public canned-session journal evidence, and an optional `reuse_run_id` input that hash-verifies the original archive and skips every SDK/restore/build step. A successful command or PNG size is never a substitute for inspecting its content.
 
+[Capture-only diagnostic run 34551985540](https://github.com/LathanHarper/DapperDan/actions/runs/34551985540) reproduced the exit on both devices without compilation. Both native crash reports identify `SIGKILL (Code Signature Invalid)` with `CODESIGNING / Invalid Page` before managed entry; no app journal was created. Signature display showed only an ad-hoc linker signature with unbound Info.plist and no sealed resources. This evidence points at the forced signing-disabled Simulator output, not business logic or a debugger wait.
+
+The optional `repair_adhoc` input operates on a fresh copy of the retained generic app, explicitly signs each nested Mach-O binary inside-out and the app last with the pseudo-identity `-`, preserves existing entitlements without inventing new ones, and verifies signatures. It preserves a transformed archive and a before/after receipt before capture, checks managed/data files did not change, and re-checks the original archive's hash. This is **Sign to Run Locally**, not Apple account signing or Ad Hoc device distribution. No certificate, provisioning profile, private key, or App Store upload is involved. First-phone process survival gates the second cold boot; images still require visual review.
+
+- [Apple: ad-hoc signatures have no signing identity](https://developer.apple.com/documentation/security/seccodesignatureflags/adhoc)
+- [Apple: sign nested components inside-out, verify recursively](https://developer.apple.com/library/archive/technotes/tn2206/)
+
 ## Primary references checked 2026-09-10
 
 - [GitHub manual workflows and branch selection](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/manually-run-a-workflow)

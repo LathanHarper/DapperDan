@@ -8,6 +8,10 @@ on:
         description: Optional prior public proof run; download its preserved app and skip all compilation
         type: string
         default: ''
+      repair_adhoc:
+        description: Re-seal a fresh copy of retained Simulator app with credential-free ad-hoc signatures
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -64,6 +68,21 @@ jobs:
       - name: Verify and extract retained Simulator app
         if: ${{ inputs.reuse_run_id != '' }}
         run: node tools/simulator-proof/capture.mjs restore
+
+      - name: Repair local Simulator signatures on a fresh app copy
+        id: repair
+        if: ${{ inputs.reuse_run_id != '' && inputs.repair_adhoc }}
+        run: node tools/simulator-proof/capture.mjs sign-simulator
+
+      - name: Preserve re-sealed Simulator product before capture
+        if: ${{ steps.repair.outcome == 'success' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: dapperdan-adhoc-simulator-${{ github.run_id }}
+          path: artifacts/adhoc-recovery/
+          compression-level: 0
+          if-no-files-found: error
+          retention-days: 1
 
       - name: Install pinned .NET SDK
         if: ${{ inputs.reuse_run_id == '' }}
