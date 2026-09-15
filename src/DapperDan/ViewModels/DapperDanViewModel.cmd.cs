@@ -11,6 +11,7 @@ public partial class DapperDanViewModel
     private AsyncDelegateCommand<string>? _executePanelDemoCommand;
     private AsyncDelegateCommand? _loadKeikiCommand;
     private AsyncDelegateCommand? _openBillboardCanaryCommand;
+    private AsyncDelegateCommand? _openFlexlerShowcaseCommand;
     private AsyncDelegateCommand? _openRotationCanaryCommand;
     private AsyncDelegateCommand<string>? _runVoiceCanaryCommand;
     private AsyncDelegateCommand<DapperDanPageAction>? _selectPageActionCommand;
@@ -33,6 +34,9 @@ public partial class DapperDanViewModel
 
     public AsyncDelegateCommand OpenBillboardCanaryCommand =>
         _openBillboardCanaryCommand ??= new AsyncDelegateCommand(OpenBillboardCanaryAsync);
+
+    public AsyncDelegateCommand OpenFlexlerShowcaseCommand =>
+        _openFlexlerShowcaseCommand ??= new AsyncDelegateCommand(OpenFlexlerShowcaseAsync);
 
     public AsyncDelegateCommand OpenRotationCanaryCommand =>
         _openRotationCanaryCommand ??= new AsyncDelegateCommand(OpenRotationCanaryAsync);

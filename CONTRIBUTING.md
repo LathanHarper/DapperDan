@@ -8,6 +8,8 @@ This repository's MIT license covers CodeCrafty-authored source only. It does no
 
 ## Bringing over an iOS quirk
 
+The general steps below apply to private features without a specific public-transfer authorization. CodeCrafty authorized the complete FleXler showcase on September 15, 2026: its developer-tool source, XAML, look and feel, semantic values, supporting components and approved brand images. Preserve that fidelity under `src/DapperDan/Features/Flexler`; it does not need to be replaced with an independently authored abstraction. Keep the host's Dapper Dan application identity and release configuration. This exception does not authorize unrelated private code, private Git history, standalone-app account identifiers, signing assets or personal logs. See [PROVENANCE.md](PROVENANCE.md).
+
 1. Describe the observable behavior without private product names or workflows.
 2. Recreate only the platform seam with neutral code and data in Dapper Dan.
 3. Record the Android result as the known-good baseline.
@@ -17,7 +19,7 @@ This repository's MIT license covers CodeCrafty-authored source only. It does no
 
 Before opening an issue or pull request, remove credentials, tokens, account identifiers, customer data, internal URLs, private package feeds, workstation paths, proprietary screenshots, production logs, and signing files. If safe redaction would make the report ambiguous, keep the evidence private and submit only the independently authored reproduction.
 
-Audio, images, fonts, and other assets must be original CodeCrafty work or carry an explicit redistribution license recorded in `THIRD-PARTY-NOTICES.md`.
+Audio, images, fonts, and other assets must be original CodeCrafty work, approved FleXler artwork within the authorization above, or carry an explicit redistribution license recorded in `THIRD-PARTY-NOTICES.md`. Keep the Instrument Sans, Geist Mono, Open Sans and upstream MAUI notices with the resources they cover. Publishing the showcase does not relicense Prism or other third-party dependencies.
 
 After changing the public Keiki entities or `DapperDanDbContext`, regenerate and review both database artifacts:
 

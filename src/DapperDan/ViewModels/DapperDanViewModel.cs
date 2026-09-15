@@ -182,6 +182,19 @@ public partial class DapperDanViewModel : BindableBase
         private set => SetProperty(ref _voiceCanaryReport, value);
     }
 
+    private async Task OpenFlexlerShowcaseAsync()
+    {
+        CrashJournal.Checkpoint(CrashPoint.FlexlerNavigationEnter);
+        var result = await _navigationService.NavigateAsync("FlexlerShowcasePage");
+        if (!result.Success)
+        {
+            if (result.Exception is { } exception)
+                CrashJournal.Capture(CrashSource.GuardedSeam,
+                    CrashPoint.FlexlerNavigationFailed, exception, terminating: false);
+            StatusMessage = $"FleXler navigation failed: {result.Exception?.Message ?? "unknown navigation error"}";
+        }
+    }
+
     private async Task OpenRotationCanaryAsync()
     {
         var result = await _navigationService.NavigateAsync("RotationCanaryPage");

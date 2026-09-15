@@ -1,0 +1,146 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    >
+    <!--
+        Values only. Controls declare how they use these roles in their owning XAML.
+        Equal numbers may serve independent roles; never replace them with numeric aliases.
+    -->
+    <x:String x:Key="Flexler.BodyFontFamily"
+        >
+        InstrumentSans
+    </x:String>
+    <x:String x:Key="Flexler.CodeFontFamily"
+        >
+        GeistMono
+    </x:String>
+    <x:String x:Key="Flexler.EmphasisFontFamily"
+        >
+        InstrumentSansSemibold
+    </x:String>
+    <x:Double x:Key="Flexler.AddGlyphFontSize"
+        >
+        25
+    </x:Double>
+    <x:Double x:Key="Flexler.BadgeTracking"
+        >
+        1
+    </x:Double>
+    <x:Double x:Key="Flexler.BrandSpringHeight"
+        >
+        48
+    </x:Double>
+    <x:Double x:Key="Flexler.BrandSpringWidth"
+        >
+        32
+    </x:Double>
+    <x:Double x:Key="Flexler.BrandWordmarkWidth"
+        >
+        120
+    </x:Double>
+    <x:Double x:Key="Flexler.BrandWordmarkHeight"
+        >
+        40
+    </x:Double>
+    <x:Double x:Key="Flexler.CompactBrandSpringHeight"
+        >
+        44
+    </x:Double>
+    <x:Double x:Key="Flexler.CompactBrandSpringWidth"
+        >
+        30
+    </x:Double>
+    <x:Double x:Key="Flexler.CompactWordmarkWidth"
+        >
+        96
+    </x:Double>
+    <x:Double x:Key="Flexler.CompactWordmarkHeight"
+        >
+        32
+    </x:Double>
+    <x:Double x:Key="Flexler.CaptionFontSize"
+        >
+        11
+    </x:Double>
+    <x:Double x:Key="Flexler.CaptionTracking"
+        >
+        1.25
+    </x:Double>
+    <x:Double x:Key="Flexler.CommandFontSize"
+        >
+        12
+    </x:Double>
+    <x:Double x:Key="Flexler.CommandTracking"
+        >
+        0.8
+    </x:Double>
+    <x:Double x:Key="Flexler.ControlMinimumHeight"
+        >
+        44
+    </x:Double>
+    <x:Double x:Key="Flexler.BusyActionOpacity"
+        >
+        0.65
+    </x:Double>
+    <x:Double x:Key="Flexler.EmptyStateFontSize"
+        >
+        15
+    </x:Double>
+    <x:Double x:Key="Flexler.FacetFontSize"
+        >
+        15
+    </x:Double>
+    <x:Double x:Key="Flexler.FacetMinimumHeight"
+        >
+        32
+    </x:Double>
+    <x:Double x:Key="Flexler.FeedbackFontSize"
+        >
+        12
+    </x:Double>
+    <x:Double x:Key="Flexler.FieldFontSize"
+        >
+        12
+    </x:Double>
+    <x:Double x:Key="Flexler.PanelTitleFontSize"
+        >
+        14
+    </x:Double>
+    <x:Double x:Key="Flexler.PrimaryActionMinimumHeight"
+        >
+        48
+    </x:Double>
+    <x:Double x:Key="Flexler.RailTracking"
+        >
+        1.2
+    </x:Double>
+    <x:Double x:Key="Flexler.RecipeFontSize"
+        >
+        12
+    </x:Double>
+    <x:Double x:Key="Flexler.SectionTitleTracking"
+        >
+        1.4
+    </x:Double>
+    <x:Double x:Key="Flexler.SelectedStrokeThickness"
+        >
+        2
+    </x:Double>
+    <x:Double x:Key="Flexler.StatusFontSize"
+        >
+        11
+    </x:Double>
+    <x:Double x:Key="Flexler.SurfaceStrokeThickness"
+        >
+        1
+    </x:Double>
+    <x:Double x:Key="Flexler.PanelBrandMarkSize"
+        >
+        36
+    </x:Double>
+    <x:Double x:Key="Flexler.ShowcaseBackGlyphFontSize"
+        >
+        24
+    </x:Double>
+</ResourceDictionary>

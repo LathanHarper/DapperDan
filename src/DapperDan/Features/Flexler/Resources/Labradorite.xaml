@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    >
+
+    <!--  Flexler brand grammar: quiet stone, earned flash.  -->
+    <Color x:Key="Flexler.LabradoriteVoid">#070A0E</Color>
+    <Color x:Key="Flexler.RawMatrix">#0B1117</Color>
+    <Color x:Key="Flexler.Cleavage">#121B22</Color>
+    <Color x:Key="Flexler.PolishedStone">#18242C</Color>
+    <Color x:Key="Flexler.MineralSeam">#2C3D46</Color>
+
+    <Color x:Key="Flexler.Frost">#E7EEEA</Color>
+    <Color x:Key="Flexler.FrostShade">#C8D6D4</Color>
+    <Color x:Key="Flexler.MineralInk">#10171B</Color>
+    <Color x:Key="Flexler.IceText">#F2F7F5</Color>
+    <Color x:Key="Flexler.SilverText">#A9B9BA</Color>
+    <Color x:Key="Flexler.AshText">#708388</Color>
+
+    <Color x:Key="Flexler.FlashAqua">#63E6D0</Color>
+    <Color x:Key="Flexler.FlashBlue">#55A7FF</Color>
+    <Color x:Key="Flexler.FlashViolet">#A482FF</Color>
+    <Color x:Key="Flexler.OpalAction">#FF7856</Color>
+    <Color x:Key="Flexler.OpalLight">#FFAC88</Color>
+    <Color x:Key="Flexler.ReefRed">#E86167</Color>
+
+    <SolidColorBrush x:Key="Flexler.VoidBrush"
+        Color="{StaticResource Flexler.LabradoriteVoid}"
+        />
+    <SolidColorBrush x:Key="Flexler.RawMatrixBrush"
+        Color="{StaticResource Flexler.RawMatrix}"
+        />
+    <SolidColorBrush x:Key="Flexler.CleavageBrush"
+        Color="{StaticResource Flexler.Cleavage}"
+        />
+    <SolidColorBrush x:Key="Flexler.PolishedStoneBrush"
+        Color="{StaticResource Flexler.PolishedStone}"
+        />
+    <SolidColorBrush x:Key="Flexler.MineralSeamBrush"
+        Color="{StaticResource Flexler.MineralSeam}"
+        />
+    <SolidColorBrush x:Key="Flexler.IceTextBrush"
+        Color="{StaticResource Flexler.IceText}"
+        />
+    <SolidColorBrush x:Key="Flexler.SilverTextBrush"
+        Color="{StaticResource Flexler.SilverText}"
+        />
+    <SolidColorBrush x:Key="Flexler.AshTextBrush"
+        Color="{StaticResource Flexler.AshText}"
+        />
+    <SolidColorBrush x:Key="Flexler.FlashAquaBrush"
+        Color="{StaticResource Flexler.FlashAqua}"
+        />
+    <SolidColorBrush x:Key="Flexler.OpalActionBrush"
+        Color="{StaticResource Flexler.OpalAction}"
+        />
+    <SolidColorBrush x:Key="Flexler.FlexItemSelectedGlowBrush"
+        Color="#8055A7FF"
+        />
+    <SolidColorBrush x:Key="Flexler.WorkplaneShadowBrush"
+        Color="#B3000000"
+        />
+    <SolidColorBrush x:Key="Flexler.ChromeShadowBrush"
+        Color="#CC000000"
+        />
+    <SolidColorBrush x:Key="Flexler.InspectorShadowBrush"
+        Color="#DD000000"
+        />
+    <SolidColorBrush x:Key="Flexler.ContainerRailShadowBrush"
+        Color="#D9000000"
+        />
+
+    <!--
+        Jewelry-case chrome. Flat colors remain available for typography and
+        platform APIs that require Color, but visible material surfaces use Brush.
+    -->
+    <LinearGradientBrush x:Key="Flexler.ChromeShellBrush" StartPoint="0,0" EndPoint="1,0.82">
+        <GradientStop Offset="0" Color="#FF080D12" />
+        <GradientStop Offset="0.34" Color="#FF10252D" />
+        <GradientStop Offset="0.62" Color="#FF131D28" />
+        <GradientStop Offset="1" Color="#FF090C13" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="Flexler.FlexStageChromeBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="#FA080C11" />
+        <GradientStop Offset="0.28" Color="#F512242B" />
+        <GradientStop Offset="0.58" Color="#F90A1016" />
+        <GradientStop Offset="0.82" Color="#F5151725" />
+        <GradientStop Offset="1" Color="#FC080B10" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="Flexler.JewelerRailBrush" StartPoint="0,0.75" EndPoint="1,0.25">
+        <GradientStop Offset="0" Color="#5C718188" />
+        <GradientStop Offset="0.22" Color="#C5DDF5F1" />
+        <GradientStop Offset="0.43" Color="#C163E6D0" />
+        <GradientStop Offset="0.68" Color="#B455A7FF" />
+        <GradientStop Offset="0.84" Color="#B7A482FF" />
+        <GradientStop Offset="1" Color="#5C718188" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="Flexler.ChromeControlBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="#FF121A21" />
+        <GradientStop Offset="0.42" Color="#FF19313A" />
+        <GradientStop Offset="0.72" Color="#FF171D2A" />
+        <GradientStop Offset="1" Color="#FF0D1218" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="Flexler.GhostControlBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="#B3121A20" />
+        <GradientStop Offset="0.48" Color="#C01A353C" />
+        <GradientStop Offset="0.78" Color="#B4161B2A" />
+        <GradientStop Offset="1" Color="#B20D1218" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="Flexler.DrawerFieldBrush" StartPoint="0,0" EndPoint="1,0.9">
+        <GradientStop Offset="0" Color="#FA0D1319" />
+        <GradientStop Offset="0.5" Color="#F5162B33" />
+        <GradientStop Offset="0.82" Color="#F5121722" />
+        <GradientStop Offset="1" Color="#FA0B1016" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="Flexler.CounterPillBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="#D9112025" />
+        <GradientStop Offset="0.55" Color="#D4193D43" />
+        <GradientStop Offset="1" Color="#D3162331" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="Flexler.LivePillBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="#E50C1717" />
+        <GradientStop Offset="0.58" Color="#E0183834" />
+        <GradientStop Offset="1" Color="#E00E1C24" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="Flexler.LivePillStrokeBrush" StartPoint="0,1" EndPoint="1,0">
+        <GradientStop Offset="0" Color="#38506A61" />
+        <GradientStop Offset="0.5" Color="#B263E6D0" />
+        <GradientStop Offset="1" Color="#3855A7FF" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="Flexler.FlexDisplayCaseBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="#FFE5ECEA" />
+        <GradientStop Offset="0.26" Color="#FFCFDEDB" />
+        <GradientStop Offset="0.54" Color="#FFC3D3D5" />
+        <GradientStop Offset="0.82" Color="#FFC8CCDC" />
+        <GradientStop Offset="1" Color="#FFDDD9E4" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="Flexler.PrimoRadoDotsFieldBaseBrush" StartPoint="0.04,0" EndPoint="0.94,1">
+        <GradientStop Offset="0" Color="#FF111E25" />
+        <GradientStop Offset="0.24" Color="#FF29434A" />
+        <GradientStop Offset="0.52" Color="#FF24313D" />
+        <GradientStop Offset="0.78" Color="#FF352D43" />
+        <GradientStop Offset="1" Color="#FF181D25" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="Flexler.PrimoRadoDotsFieldFireBrush" StartPoint="0,0.88" EndPoint="1,0.12">
+        <GradientStop Offset="0" Color="#FF08292D" />
+        <GradientStop Offset="0.23" Color="#FF16758A" />
+        <GradientStop Offset="0.47" Color="#FF1555A0" />
+        <GradientStop Offset="0.70" Color="#FF553E96" />
+        <GradientStop Offset="0.87" Color="#FFC46B35" />
+        <GradientStop Offset="1" Color="#FF1C2C32" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="Flexler.FlexDisplayStoneVeilBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="#60E5ECEA" />
+        <GradientStop Offset="0.24" Color="#30CFDEDB" />
+        <GradientStop Offset="0.56" Color="#0CFFFFFF" />
+        <GradientStop Offset="0.78" Color="#20C8CCDC" />
+        <GradientStop Offset="1" Color="#44DDD9E4" />
+    </LinearGradientBrush>
+
+    <RadialGradientBrush x:Key="Flexler.FlexDisplayGlowBrush" Center="0.82,0.16" Radius="0.82">
+        <GradientStop Offset="0" Color="#7AFFFFFF" />
+        <GradientStop Offset="0.24" Color="#3A5DF2DA" />
+        <GradientStop Offset="0.54" Color="#1855A7FF" />
+        <GradientStop Offset="1" Color="#00A482FF" />
+    </RadialGradientBrush>
+
+    <RadialGradientBrush x:Key="Flexler.FlexDisplaySpectrumBrush" Center="0.14,0.92" Radius="0.92">
+        <GradientStop Offset="0" Color="#3CA482FF" />
+        <GradientStop Offset="0.28" Color="#1855A7FF" />
+        <GradientStop Offset="0.58" Color="#0E63E6D0" />
+        <GradientStop Offset="1" Color="#00FFFFFF" />
+    </RadialGradientBrush>
+
+    <LinearGradientBrush x:Key="Flexler.FlexItemSurfaceBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="#FF182229" />
+        <GradientStop Offset="0.34" Color="#FF1B343B" />
+        <GradientStop Offset="0.62" Color="#FF192431" />
+        <GradientStop Offset="0.84" Color="#FF211D35" />
+        <GradientStop Offset="1" Color="#FF11171D" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="Flexler.FlexItemStrokeBrush" StartPoint="0,0.8" EndPoint="1,0.2">
+        <GradientStop Offset="0" Color="#8672868E" />
+        <GradientStop Offset="0.3" Color="#B4C9DEDA" />
+        <GradientStop Offset="0.62" Color="#936B8DA3" />
+        <GradientStop Offset="1" Color="#867B688F" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="Flexler.FlexItemSelectedBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="#FF163036" />
+        <GradientStop Offset="0.22" Color="#FF27756F" />
+        <GradientStop Offset="0.48" Color="#FF376F95" />
+        <GradientStop Offset="0.76" Color="#FF625485" />
+        <GradientStop Offset="1" Color="#FF18232D" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="Flexler.FlexItemSelectedStrokeBrush" StartPoint="0,0.85" EndPoint="1,0.15">
+        <GradientStop Offset="0" Color="#FFBFFEF3" />
+        <GradientStop Offset="0.25" Color="{StaticResource Flexler.FlashAqua}" />
+        <GradientStop Offset="0.62" Color="{StaticResource Flexler.FlashBlue}" />
+        <GradientStop Offset="1" Color="{StaticResource Flexler.FlashViolet}" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="Flexler.FlexFacetBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="#FFF8FFFD" />
+        <GradientStop Offset="0.3" Color="#FF90F0DF" />
+        <GradientStop Offset="0.62" Color="#FF72B7FF" />
+        <GradientStop Offset="1" Color="#FFC0A8FF" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="Flexler.FireOpalActionBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="#FFFFB68E" />
+        <GradientStop Offset="0.24" Color="{StaticResource Flexler.OpalLight}" />
+        <GradientStop Offset="0.68" Color="{StaticResource Flexler.OpalAction}" />
+        <GradientStop Offset="1" Color="#FFE76577" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="Flexler.DangerActionBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="#A53B1C20" />
+        <GradientStop Offset="0.52" Color="#C647252D" />
+        <GradientStop Offset="1" Color="#A3211921" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="Flexler.DrawerGripBrush" StartPoint="0,1" EndPoint="1,0">
+        <GradientStop Offset="0" Color="#335E737A" />
+        <GradientStop Offset="0.34" Color="#B8CDE8E2" />
+        <GradientStop Offset="0.54" Color="#9C63E6D0" />
+        <GradientStop Offset="0.76" Color="#7A55A7FF" />
+        <GradientStop Offset="1" Color="#335E737A" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="Flexler.SpectralFlashBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="{StaticResource Flexler.FlashAqua}" />
+        <GradientStop Offset="0.52" Color="{StaticResource Flexler.FlashBlue}" />
+        <GradientStop Offset="1" Color="{StaticResource Flexler.FlashViolet}" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="Flexler.RawReadabilityVeilBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="#E6070A0E" />
+        <GradientStop Offset="0.48" Color="#B30B1720" />
+        <GradientStop Offset="1" Color="#EE0A0D13" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="Flexler.PolishedChromeVeilBrush" StartPoint="0,0" EndPoint="1,0.85">
+        <GradientStop Offset="0" Color="#F20A1016" />
+        <GradientStop Offset="0.48" Color="#D9102630" />
+        <GradientStop Offset="1" Color="#F40A0E14" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="Flexler.FrostWorkplaneBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="{StaticResource Flexler.Frost}" />
+        <GradientStop Offset="0.62" Color="{StaticResource Flexler.FrostShade}" />
+        <GradientStop Offset="1" Color="#D7DDF0" />
+    </LinearGradientBrush>
+</ResourceDictionary>

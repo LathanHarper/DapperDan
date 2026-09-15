@@ -8,6 +8,15 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      proof_scope:
+        description: Full unsigned builds or a focused Flexler Simulator startup check
+        type: choice
+        options:
+          - full
+          - flexler
+        default: full
+        required: true
 
 permissions:
   contents: read
@@ -28,6 +37,7 @@ env:
 jobs:
   data-canary:
     name: Compiled model and packaged SQLite
+    if: ${{ inputs.proof_scope != 'flexler' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     env:
@@ -77,6 +87,7 @@ jobs:
 
   build:
     name: Simulator and device binaries
+    if: ${{ inputs.proof_scope != 'flexler' }}
     needs: data-canary
     runs-on: macos-26
     # This proof lane AOT-compiles both simulator and device bundles. The first
@@ -271,3 +282,82 @@ jobs:
           if-no-files-found: error
           include-hidden-files: false
           retention-days: 14
+
+  flexler-startup:
+    name: Free public Flexler Release Simulator startup
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.proof_scope == 'flexler' && github.repository == 'LathanHarper/DapperDan' && github.event.repository.private == false }}
+    runs-on: macos-26
+    timeout-minutes: 35
+    # Standard public compute only. No retained artifacts, cache, secrets,
+    # Apple account signing, profile, upload or external testing service.
+    steps:
+      - name: Check out exact public source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Check device selection and journal gates locally
+        run: node --test tools/flexler-proof/*.test.mjs
+
+      - name: Install pinned .NET SDK
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+
+      - name: Verify pinned public toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(uname -m)" = "arm64"
+          test -d "$DEVELOPER_DIR"
+          test "$(dotnet --version)" = "10.0.302"
+          printf 'source_commit=%s\nconfiguration=Release\nruntime=iossimulator-arm64\ninterpreter=-all\nretained_artifacts=0\n' "$GITHUB_SHA"
+          xcodebuild -version
+          xcrun --sdk iphonesimulator --show-sdk-version
+
+      - name: Restore pinned workloads and locked packages
+        id: restore
+        timeout-minutes: 12
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet workload restore "$PROJECT_PATH"
+          test "$(dotnet workload --version)" = "$WORKLOAD_VERSION"
+          dotnet restore "$PROJECT_PATH" --locked-mode -p:FlexlerShowcaseProof=true
+
+      - name: Build complete public Release app with direct Flexler route
+        id: compile
+        timeout-minutes: 25
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet build "$PROJECT_PATH" \
+            -f net10.0-ios -c Release -r iossimulator-arm64 --no-restore \
+            -p:FlexlerShowcaseProof=true \
+            -p:ApplicationId="$BUNDLE_ID" \
+            -p:ApplicationTitle="Dapper Dan - Flexler Simulator Proof" \
+            -p:ArchiveOnBuild=false -p:BuildIpa=false \
+            -p:EnableCodeSigning=false -p:ContinuousIntegrationBuild=true
+
+      - name: Seal locally and verify Flexler startup on a stock iPad
+        id: boot
+        timeout-minutes: 6
+        run: node tools/flexler-proof/boot.mjs
+
+      - name: Record proof outcomes without retaining files
+        if: ${{ always() }}
+        shell: bash
+        env:
+          RESTORE_OUTCOME: ${{ steps.restore.outcome }}
+          COMPILE_OUTCOME: ${{ steps.compile.outcome }}
+          BOOT_OUTCOME: ${{ steps.boot.outcome }}
+        run: |
+          {
+            printf '### Public Flexler proof outcomes\n\n'
+            printf -- '- Restore: %s\n- Release build: %s\n- Native startup: %s\n' "$RESTORE_OUTCOME" "$COMPILE_OUTCOME" "$BOOT_OUTCOME"
+            printf -- '- Retained artifacts: **0**; cache: **none**; standard public runner.\n'
+            printf -- '- Local ad-hoc Simulator seals use no Apple credentials or provisioning profile.\n'
+            printf -- '- Dapper Dan interpreter setting is preserved: this is not standalone device AOT or UI interaction proof.\n'
+          } >> "$GITHUB_STEP_SUMMARY"

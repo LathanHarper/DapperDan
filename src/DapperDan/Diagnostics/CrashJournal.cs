@@ -58,6 +58,12 @@ internal enum CrashPoint
     IosMarshalManagedException,
     IosMarshalObjectiveCException,
     RichButtonCommandException,
+    FlexlerNavigationEnter,
+    FlexlerNavigationFailed,
+    FlexlerPageXamlEnter,
+    FlexlerPageXamlReady,
+    FlexlerPageLoaded,
+    FlexlerPageAppearing,
     ApplicationCompleted,
 }
 
