@@ -17,12 +17,20 @@ on:
           - flexler
         default: full
         required: true
+      proof_configuration:
+        description: Flexler scope only; Debug for quick startup checks, Release for the separate AOT comparison
+        type: choice
+        options:
+          - Debug
+          - Release
+        default: Debug
+        required: true
 
 permissions:
   contents: read
 
 concurrency:
-  group: ios-unsigned-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ios-unsigned-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}${{ github.event_name == 'workflow_dispatch' && inputs.proof_scope == 'flexler' && format('-flexler-{0}', inputs.proof_configuration) || '' }}
   cancel-in-progress: true
 
 env:
@@ -284,10 +292,12 @@ jobs:
           retention-days: 14
 
   flexler-startup:
-    name: Free public Flexler Release Simulator startup
+    name: Free public Flexler ${{ inputs.proof_configuration }} Simulator startup
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.proof_scope == 'flexler' && github.repository == 'LathanHarper/DapperDan' && github.event.repository.private == false }}
     runs-on: macos-26
     timeout-minutes: 35
+    env:
+      FLEXLER_PROOF_CONFIGURATION: ${{ inputs.proof_configuration }}
     # Standard public compute only. No retained artifacts, cache, secrets,
     # Apple account signing, profile, upload or external testing service.
     steps:
@@ -310,10 +320,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          case "$FLEXLER_PROOF_CONFIGURATION" in
+            Debug|Release) ;;
+            *) echo 'Select the explicit Debug or Release proof configuration.' >&2; exit 1 ;;
+          esac
           test "$(uname -m)" = "arm64"
           test -d "$DEVELOPER_DIR"
           test "$(dotnet --version)" = "10.0.302"
-          printf 'source_commit=%s\nconfiguration=Release\nruntime=iossimulator-arm64\ninterpreter=-all\nretained_artifacts=0\n' "$GITHUB_SHA"
+          printf 'source_commit=%s\nconfiguration=%s\nruntime=iossimulator-arm64\ninterpreter_override=none\nretained_artifacts=0\n' "$GITHUB_SHA" "$FLEXLER_PROOF_CONFIGURATION"
           xcodebuild -version
           xcrun --sdk iphonesimulator --show-sdk-version
 
@@ -325,16 +339,26 @@ jobs:
           set -euo pipefail
           dotnet workload restore "$PROJECT_PATH"
           test "$(dotnet workload --version)" = "$WORKLOAD_VERSION"
-          dotnet restore "$PROJECT_PATH" --locked-mode -p:FlexlerShowcaseProof=true
+          dotnet restore "$PROJECT_PATH" --locked-mode \
+            -p:Configuration="$FLEXLER_PROOF_CONFIGURATION" -p:FlexlerShowcaseProof=true
 
-      - name: Build complete public Release app with direct Flexler route
+      - name: Record evaluated iOS build settings
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet msbuild "$PROJECT_PATH" \
+            -p:TargetFramework=net10.0-ios -p:RuntimeIdentifier=iossimulator-arm64 \
+            -p:Configuration="$FLEXLER_PROOF_CONFIGURATION" -p:FlexlerShowcaseProof=true \
+            -getProperty:Configuration,UseInterpreter,MtouchInterpreter,TrimMode,MtouchUseLlvm
+
+      - name: Build complete public app with the selected configuration and direct Flexler route
         id: compile
         timeout-minutes: 25
         shell: bash
         run: |
           set -euo pipefail
           dotnet build "$PROJECT_PATH" \
-            -f net10.0-ios -c Release -r iossimulator-arm64 --no-restore \
+            -f net10.0-ios -c "$FLEXLER_PROOF_CONFIGURATION" -r iossimulator-arm64 --no-restore \
             -p:FlexlerShowcaseProof=true \
             -p:ApplicationId="$BUNDLE_ID" \
             -p:ApplicationTitle="Dapper Dan - Flexler Simulator Proof" \
@@ -356,8 +380,9 @@ jobs:
         run: |
           {
             printf '### Public Flexler proof outcomes\n\n'
-            printf -- '- Restore: %s\n- Release build: %s\n- Native startup: %s\n' "$RESTORE_OUTCOME" "$COMPILE_OUTCOME" "$BOOT_OUTCOME"
+            printf -- '- Configuration: %s\n- Restore: %s\n- Build: %s\n- Native startup: %s\n' "$FLEXLER_PROOF_CONFIGURATION" "$RESTORE_OUTCOME" "$COMPILE_OUTCOME" "$BOOT_OUTCOME"
             printf -- '- Retained artifacts: **0**; cache: **none**; standard public runner.\n'
             printf -- '- Local ad-hoc Simulator seals use no Apple credentials or provisioning profile.\n'
-            printf -- '- Dapper Dan interpreter setting is preserved: this is not standalone device AOT or UI interaction proof.\n'
+            printf -- '- Repository/SDK interpreter, trimming and LLVM settings are preserved and logged for the selected configuration.\n'
+            printf -- '- Debug startup cannot establish Release AOT correctness; neither Simulator configuration proves standalone device AOT or UI interactions.\n'
           } >> "$GITHUB_STEP_SUMMARY"

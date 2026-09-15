@@ -1,9 +1,26 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { evaluateJournal, sanitizeRecord, selectIpad } from './boot.mjs';
+import { evaluateJournal, proofSettings, sanitizeRecord, selectIpad } from './boot.mjs';
 
 const runtime = (version, available = true) => ({ identifier: `com.apple.CoreSimulator.SimRuntime.iOS-${version.replaceAll('.', '-')}`, version, isAvailable: available });
 const ipad = (name, overrides = {}) => ({ name, udid: '11111111-2222-3333-4444-555555555555', isAvailable: true, state: 'Shutdown', ...overrides });
+
+test('Debug and Release use separate outputs and honest interpreter labels', () => {
+  assert.deepEqual(proofSettings('Debug'), {
+    configuration: 'Debug', outputDirectory: 'src/DapperDan/bin/Debug/net10.0-ios/iossimulator-arm64',
+    interpreterSetting: 'MAUI Debug default; no workflow override',
+  });
+  assert.deepEqual(proofSettings('Release'), {
+    configuration: 'Release', outputDirectory: 'src/DapperDan/bin/Release/net10.0-ios/iossimulator-arm64',
+    interpreterSetting: 'Repository Release MtouchInterpreter=-all; no workflow override',
+  });
+});
+
+test('missing, misspelled and path-like configurations cannot select a different binary', () => {
+  for (const value of [undefined, '', 'debug', 'release', '../Release', 'Debug/../../Release', 'Debug;echo injected']) {
+    assert.throws(() => proofSettings(value), /explicit Debug or Release/);
+  }
+});
 
 test('chooses an existing available iPad from the newest installed usable runtime', () => {
   const older = runtime('18.5'), newer = runtime('26.5'), unavailable = runtime('27.0', false);

@@ -25,8 +25,10 @@ public sealed class WorkbenchTests
             ui.SetCompact(compact);
             ui.Count(5);
             ui.Click(UiTargets.ShowcaseBack);
-            ui.Wait(() => ui.Present(UiTargets.HostOpenFlexler) && !ui.Present(UiTargets.Add),
-                "returned Dapper Dan showcase launcher");
+            // The launcher is below the fold in landscape; Click reaches it through
+            // the native scroll viewport after the visible host confirms navigation.
+            ui.Wait(() => ui.Present(UiTargets.HostWitness) && !ui.Present(UiTargets.Add),
+                "returned Dapper Dan host");
             ui.Snapshot(compact ? "compact-host-return" : "wide-host-return");
             ui.Click(UiTargets.HostOpenFlexler);
             ui.Wait(() => ui.Present(UiTargets.Add) && ui.Present(UiTargets.ShowcaseBack),

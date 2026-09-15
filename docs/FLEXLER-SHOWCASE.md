@@ -28,7 +28,7 @@ From the repository root, with its pinned SDK available:
 dotnet test ./tests/Flexler.Showcase.Tests/Flexler.Showcase.Tests.csproj -c Release --nologo
 ```
 
-The local import check passed all 72 tests using installed SDK **10.0.303**. Both new test lock files were also checked against fresh NuGet.org packages in an isolated cache with machine fallback folders disabled; their contents were unchanged, and all 72 tests passed again. The repository remains pinned to **10.0.302** and workload set **10.0.302.1**. Record this local SDK difference; it is not a result from the pinned SDK or native Apple tooling.
+The local import check passed all 72 tests using installed SDK **10.0.303**; the existing Dapper Dan host suite also passed all **41 tests**. Both new test lock files were checked against fresh NuGet.org packages in an isolated cache with machine fallback folders disabled; their contents were unchanged, and all 72 feature tests passed again. The repository remains pinned to **10.0.302** and workload set **10.0.302.1**. A child-tool SDK diagnostic is recorded in the [validation receipt](validation/flexler-showcase-2026-09-15.md), alongside the tested Android payload and remaining checks. These local results do not claim execution with the pinned SDK or native Apple tooling.
 
 ## Android Appium verification
 
@@ -53,14 +53,18 @@ The suite uses `noReset=true` and cleans up only its uniquely named synthetic fa
 
 On emulator, adb or Appium connectivity failure, preserve the first error and stop the affected run. Recognized connection errors latch the suite against additional sessions and create `NEEDS-CRAFTY.txt`. Contact the operator to repair the same environment. Maintainers with the local **Hollar out loud** skill should use its audible help request; that workstation skill is not bundled here. Do not substitute another emulator, SDK or renderer, restart shared adb, or enter reconnect loops. Resume after the operator confirms the agreed environment is ready. Ordinary assertions with healthy connectivity remain product debugging.
 
-The Android test project compiles without warnings or errors. **Native functionality verification is still pending**; compiling the suite is not a device pass.
+The corrected Android test project compiled with zero warnings and errors. The original full run finished with six passes and one test viewport assertion failure. After correcting the off-screen launcher wait, a targeted return/reopen rerun passed in both orientations against the unchanged Debug fast-deployed candidate. **All seven scenarios are covered as six plus one across two executions**, not a single clean seven-test run. See the [validation receipt](validation/flexler-showcase-2026-09-15.md) for the exact payload, SDK diagnostic and release limitations.
 
 ## Current host startup check
 
-Local Android diagnosis found a Dapper Dan host startup hang at `CompiledModelEnter`, before the Flexler showcase opened. Android now selects `Microsoft.EntityFrameworkCore.Issue31751=true` before building MAUI, matching the existing iOS entry point's inline compiled-model initialization path. Native validation of that change remains pending. This is a host EF startup issue, separate from the feature's UI behavior; it does not establish the cause of a standalone Flexler device crash.
+Local Android diagnosis found a Dapper Dan host startup hang at `CompiledModelEnter`, before the Flexler showcase opened. Android now selects `Microsoft.EntityFrameworkCore.Issue31751=true` before building MAUI, matching the existing iOS entry point's inline compiled-model initialization path. Before/after launch evidence and the six original Appium workbench scenarios confirm that this unblocked the recorded Android Debug candidate. This is a host EF startup issue, separate from the feature's UI behavior; it does not establish the cause of a standalone Flexler device crash.
 
 ## Free public iOS startup proof
 
 The [public Flexler Simulator proof guide](../tools/flexler-proof/README.md) describes the manual `proof_scope: flexler` lane: one bounded standard GitHub-hosted macOS job in the public repository, no credentials or release signing, and no retained artifacts. It launches the complete showcase and checks native startup checkpoints.
 
+Select `proof_configuration: Debug` for the default startup diagnostic or `Release` for its separate comparison. Each uses its own configuration's output and reports the evaluated interpreter, trimming and LLVM settings. Both remain full Mac builds. Neither consumes a Windows-built native binary.
+
 That lane provides Simulator startup evidence only. It does not replace Android Appium interaction checks, physical-device validation, visual review or a signed release check. Dapper Dan retains its existing iOS interpreter configuration; a Simulator result is not proof of another app's device AOT behavior.
+
+The referenced showcase run is still pending at the [recorded validation checkpoint](validation/flexler-showcase-2026-09-15.md#public-ios-proof); no iOS pass is claimed there.

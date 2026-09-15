@@ -8,6 +8,17 @@ const bundleId = 'net.codecrafty.dapperdan';
 const executableName = 'CodeCrafty.DapperDan';
 const delay = milliseconds => new Promise(done => setTimeout(done, milliseconds));
 
+export function proofSettings(configuration) {
+  if (!['Debug', 'Release'].includes(configuration)) throw new Error('Select the explicit Debug or Release proof configuration.');
+  return {
+    configuration,
+    outputDirectory: `src/DapperDan/bin/${configuration}/net10.0-ios/iossimulator-arm64`,
+    interpreterSetting: configuration === 'Debug'
+      ? 'MAUI Debug default; no workflow override'
+      : 'Repository Release MtouchInterpreter=-all; no workflow override',
+  };
+}
+
 export function selectIpad(inventory) {
   const runtimes = (inventory.runtimes ?? [])
     .filter(runtime => runtime.isAvailable === true && /^com\.apple\.CoreSimulator\.SimRuntime\.iOS-/.test(runtime.identifier))
@@ -89,14 +100,18 @@ async function boot() {
   if (process.platform !== 'darwin' || process.env.GITHUB_REPOSITORY !== 'LathanHarper/DapperDan'
       || process.env.GITHUB_EVENT_NAME !== 'workflow_dispatch' || !process.env.RUNNER_TEMP)
     throw new Error('This boot helper only runs in the public manual macOS proof job.');
-  const report = { scope: 'Flexler Release Simulator startup', retainedArtifacts: 0, interpreter: '-all', stage: 'inspect-app', passed: false };
+  const settings = proofSettings(process.env.FLEXLER_PROOF_CONFIGURATION);
+  const report = {
+    scope: `Flexler ${settings.configuration} Simulator startup`, configuration: settings.configuration,
+    retainedArtifacts: 0, interpreterSetting: settings.interpreterSetting, stage: 'inspect-app', passed: false,
+  };
   const local = join(process.env.RUNNER_TEMP, 'flexler-proof');
   mkdirSync(local, { recursive: true });
   let device, bootedHere = false, pid, journalDirectory, baseline, records = [];
   try {
-    const output = resolve('src/DapperDan/bin/Release/net10.0-ios/iossimulator-arm64');
+    const output = resolve(settings.outputDirectory);
     const apps = readdirSync(output).filter(name => name.endsWith('.app'));
-    if (apps.length !== 1) throw new Error('Expected one freshly built Release Simulator app.');
+    if (apps.length !== 1) throw new Error(`Expected one freshly built ${settings.configuration} Simulator app.`);
     const app = join(output, apps[0]);
     if (command('/usr/libexec/PlistBuddy', ['-c', 'Print :CFBundleIdentifier', join(app, 'Info.plist')], 'Read bundle ID') !== bundleId)
       throw new Error('Unexpected app identity.');
@@ -157,7 +172,8 @@ async function boot() {
     if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY,
       `\n### Flexler native startup: ${report.passed ? 'passed' : 'failed'}\n\n` +
       `\x60\x60\x60json\n${JSON.stringify(report, null, 2)}\n\x60\x60\x60\n\n` +
-      'Release iPad Simulator with Dapper Dan\'s `MtouchInterpreter=-all`. Ephemeral local ad-hoc seals only; no Apple credentials, profile or distributable release. No retained artifacts or cache. This does not prove standalone Flexler device AOT, interactions, rendering or store screenshots.\n');
+      `${settings.configuration} iPad Simulator. ${settings.interpreterSetting}. ` +
+      'Ephemeral local ad-hoc seals only; no Apple credentials, profile or distributable release. No retained artifacts or cache. Debug startup does not prove Release AOT; neither Simulator configuration proves standalone Flexler device AOT, interactions, rendering or store screenshots.\n');
     if (pid && device) spawnSync('xcrun', ['simctl', 'terminate', device.udid, bundleId], { timeout: 15000, stdio: 'ignore' });
     if (bootedHere) spawnSync('xcrun', ['simctl', 'shutdown', device.udid], { timeout: 30000, stdio: 'ignore' });
   }
