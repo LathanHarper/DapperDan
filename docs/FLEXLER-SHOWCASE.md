@@ -67,4 +67,6 @@ Select `proof_configuration: Debug` for the default startup diagnostic or `Relea
 
 That lane provides Simulator startup evidence only. It does not replace Android Appium interaction checks, physical-device validation, visual review or a signed release check. Dapper Dan retains its existing iOS interpreter configuration; a Simulator result is not proof of another app's device AOT behavior.
 
-The referenced showcase run is still pending at the [recorded validation checkpoint](validation/flexler-showcase-2026-09-15.md#public-ios-proof); no iOS pass is claimed there.
+The [recorded Debug proof](validation/flexler-showcase-2026-09-15.md#public-ios-proof) passed at commit `d3349b8ab504964258cef549309c9c8ad46ff44f`: 55 seconds to compile, 6 minutes 34 seconds for the complete job, and `FlexlerPageLoaded` at 6,408 ms on an iPad (A16) Simulator running iOS 26.5, with no recorded exceptions and eight further seconds alive. The evaluated settings were `UseInterpreter=True`, `MtouchInterpreter=all`, `TrimMode=copy` and an empty `MtouchUseLlvm` value.
+
+The separate earlier Release run **failed at its 25-minute build timeout**, with assembly-size optimization as its last reported progress. It never ran native startup, so Release remains unverified; no Release application crash was reproduced. The Debug pass does not establish Release AOT or physical-iPad behavior.

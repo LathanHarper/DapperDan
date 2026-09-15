@@ -1,6 +1,6 @@
 # FleXler showcase validation — September 15, 2026
 
-This receipt records the public showcase checks completed at this checkpoint. All seven Android scenarios have passed across the original run and one corrected targeted rerun; the public iOS Simulator result remains pending. Local paths, device identifiers, screenshots and personal diagnostic logs are intentionally excluded.
+All seven Android scenarios have passed across the original run and one corrected targeted rerun. The public **iOS Debug Simulator startup proof passed**. The separate Release build timed out before native startup, leaving the Release check incomplete. Local paths, device identifiers, screenshots and personal diagnostic logs are excluded.
 
 ## Source and payload
 
@@ -11,7 +11,7 @@ The Android Debug fast-deployment candidate was built from commit `11c8dadaddcd0
 | `net.codecrafty.dapperdan-Signed.apk` | 16,779,805 | `D3B7AAEAC5872D4595D5E59F133FACD52886284CAD5C6D2D53593DD314B4B30B` |
 | `CodeCrafty.DapperDan.dll` | 1,570,304 | `D4AAA2F4A9E573367500C59317380D2D7C96766F7C6C770071B5686D8B94D7BF` |
 
-Local build and test commands used installed SDK **10.0.303**. The repository's `global.json` still pins SDK **10.0.302** and workload set **10.0.302.1**. A child `dotnet nuget` invocation also reported that the pinned SDK was unavailable, despite the parent build and test commands completing with 10.0.303. These results do not claim execution with the pinned SDK or entirely diagnostic-free logs.
+Local build and test commands used installed SDK **10.0.303**. The repository's `global.json` still pins SDK **10.0.302** and workload set **10.0.302.1**. A child `dotnet nuget` invocation also reported that the pinned SDK was unavailable, despite the parent build and test commands completing with 10.0.303. The local Android and unit results do not claim execution with the pinned SDK or entirely diagnostic-free logs. The public iOS Debug run below used the pinned SDK/workload.
 
 ## Confirmed local results
 
@@ -39,13 +39,24 @@ The before/after launch evidence and subsequent six original workbench scenarios
 
 ## Public iOS proof
 
-[Public iOS run 35035330116](https://github.com/LathanHarper/DapperDan/actions/runs/35035330116) was still running at this checkpoint. It uses commit `2cde0e7a0940a2c510ebfd64b9712495335e084a`, which differs from the Android candidate above. **No iOS result is claimed yet.**
+[Debug run 35036551463](https://github.com/LathanHarper/DapperDan/actions/runs/35036551463) **passed** at exact commit `d3349b8ab504964258cef549309c9c8ad46ff44f`.
 
-The [free Simulator lane](../../tools/flexler-proof/README.md) uses one standard public-repository macOS job, no Apple release credentials and no retained artifacts. Its eventual result can establish only the startup checks described by that lane.
+| Evidence | Observed result |
+| --- | --- |
+| Toolchain | SDK `10.0.302`, workload set `10.0.302.1`, Xcode `26.6`; `iossimulator-arm64`. |
+| Timing | Compile step **55 seconds**; complete job **6 minutes 34 seconds**. |
+| Evaluated properties | `Configuration=Debug`, `UseInterpreter=True`, `MtouchInterpreter=all`, `TrimMode=copy`, `MtouchUseLlvm=""` (empty). No workflow override of these interpreter/trimming/LLVM settings. |
+| Native startup | Stock **iPad (A16), iOS 26.5** Simulator; `FlexlerPageLoaded` at **6,408 ms**, **zero recorded exceptions**, and the process alive for the following **eight seconds**. |
+| Local seals | **12 native files** received ad-hoc seals before installation. No Apple release identity or profile was used. |
+| Sealed app executable SHA-256 | `bea04964cfb8fed1912f7a75d4e1be682865c0601e7e5b26b914de1c8ba83a23` |
+
+The [free Simulator lane](../../tools/flexler-proof/README.md) used one standard public-repository macOS job with no retained artifacts. This result establishes the lane's Debug startup checks, not interactions or Release AOT behavior.
+
+**Release build timeout:** [run 35035330116](https://github.com/LathanHarper/DapperDan/actions/runs/35035330116), commit `2cde0e7a0940a2c510ebfd64b9712495335e084a`, failed when its build step reached the 25-minute timeout. The step ran from **23:23:03 to 23:48:16 UTC**; its last reported build progress was **“Optimizing assemblies for size” at 23:23:32 UTC**. The native sealing/startup step was skipped. This is an incomplete Release check, not a Release startup pass or a reproduced application crash. Its earlier commit also differs from the passing Debug and Android candidates.
 
 ## Remaining validation boundaries
 
-- Record the public iOS run's actual outcome against its own commit.
+- Release compilation and native startup remain unverified after the build timeout.
 - Debug fast-deployment results do not prove packaged Release linking, AOT, clean installation or release behavior.
 - Simulator startup does not prove physical iPad launch, interaction, rendering or the standalone app's different release configuration.
 - No Windows target or Windows native validation is added by this showcase.
