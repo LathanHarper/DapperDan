@@ -2,7 +2,7 @@
 
 Manually select `proof_scope: flexler` in **iOS unsigned proof**. That selection
 skips the normal data/device jobs and runs one standard `macos-26` job. The
-default `full` selection and push/PR behavior are unchanged. The focused inputs
+default `full` selection and push/PR builds continue separately. The focused inputs
 select separate comparisons:
 
 | Configuration | Runtime profile | Purpose |
@@ -88,8 +88,12 @@ The focused lane has no artifact upload, cache or external test service. Origina
 journals and build files remain on the ephemeral runner, so it creates no
 retained-artifact storage charge. Standard public-repository runner compute is
 free under [GitHub's billing policy](https://docs.github.com/en/billing/concepts/product-billing/github-actions).
-This statement applies to the focused lane: the unchanged `full` workflow
-retains unsigned bundles and build evidence for 14 days.
+The `full` lane also retains no artifacts by default, including push/PR runs.
+Only manual `proof_scope: full` with `retain_unsigned_artifacts: true` uploads
+unsigned bundles and build evidence for 14 days. The owner must verify free
+storage capacity or authorize that expense before opting in; public compute
+eligibility does not guarantee free artifact storage. The retention input never
+enables uploads for the focused Flexler proof.
 
 ## Native startup and diagnostics
 
@@ -101,8 +105,9 @@ profile. It produces neither a TestFlight upload nor a distributable release.
 The helper selects one stock available iPad from the newest installed available
 iOS runtime with a matching device. It creates no replacement device and
 downloads no runtime. It prints each stage with elapsed time, then requires the
-exact `FlexlerPageLoaded` and `FlexlerViewModelReady` checkpoints, no recorded exception, and eight more seconds
-with the launched process alive, within a 60-second observation window. Missing
+exact `FlexlerPageLoaded` and `FlexlerViewModelReady` checkpoints in every profile,
+no recorded exception, and eight more seconds with the launched process alive
+after both checkpoints, within a 60-second observation window. Missing
 journals, ambiguous multiple launches, unrelated page checkpoints and early
 process death fail. `aot-trim` additionally applies the runtime flag gate above.
 

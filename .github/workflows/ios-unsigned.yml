@@ -33,6 +33,11 @@ on:
           - aot-trim
         default: host
         required: true
+      retain_unsigned_artifacts:
+        description: Full manual proof only; retain large files for 14 days after verifying free storage or spending authorization
+        type: boolean
+        default: false
+        required: true
 
 permissions:
   contents: read
@@ -280,6 +285,8 @@ jobs:
           } > artifacts/RETURN-TO-SENDER.txt
 
       - name: Upload unsigned application proof
+        id: unsigned_artifacts
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.proof_scope == 'full' && inputs.retain_unsigned_artifacts == true }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: dapperdan-ios-return-to-sender-${{ github.sha }}
@@ -298,6 +305,23 @@ jobs:
           if-no-files-found: error
           include-hidden-files: false
           retention-days: 14
+
+      - name: Report unsigned proof without requiring retained files
+        if: ${{ always() }}
+        shell: bash
+        env:
+          UPLOAD_OUTCOME: ${{ steps.unsigned_artifacts.outcome }}
+        run: |
+          {
+            printf '### Unsigned proof evidence\n\n'
+            printf -- '- Source commit: `%s`\n- Artifact upload: %s\n' "$GITHUB_SHA" "$UPLOAD_OUTCOME"
+            printf -- '- Retention is disabled by default; an explicit manual full-scope upload retains files for 14 days and may incur storage charges.\n\n'
+            printf '```text\n'
+            for receipt in artifacts/build-info.txt artifacts/SHA256SUMS.txt; do
+              if [[ -f "$receipt" ]]; then cat "$receipt"; fi
+            done
+            printf '```\n'
+          } >> "$GITHUB_STEP_SUMMARY"
 
   flexler-startup:
     name: Free public Flexler ${{ inputs.proof_configuration }} ${{ inputs.proof_runtime_profile }} Simulator startup

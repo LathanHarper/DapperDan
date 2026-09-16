@@ -69,7 +69,9 @@ dotnet build src/DapperDan/DapperDan.csproj \
 
 ## Two Apple lanes
 
-The public workflow is automatic and has no secrets. A cheap Linux gate regenerates the compiled model and SQLite seed, rejects drift, and runs the data tests before macOS minutes begin. The Apple job creates unsigned simulator and device `.app` bundles with the build-only display name `Dapper Dan - UNSIGNED PROOF`, verifies the packaged seed inside both bundles, records hashes and sizes, and uploads the complete application builds with binary logs, license notices, and a `RETURN-TO-SENDER.txt` warning for 14 days. These are app products, not Prism packages, loose framework binaries, SDKs, wrappers, or development tooling.
+The public workflow is automatic and has no secrets. A cheap Linux gate regenerates the compiled model and SQLite seed, rejects drift, and runs the data tests before macOS minutes begin. The Apple job creates unsigned simulator and device `.app` bundles with the build-only display name `Dapper Dan - UNSIGNED PROOF`, verifies the packaged seed inside both bundles, and reports hashes, sizes and toolchain details. Pushes, pull requests and default manual runs retain no artifacts.
+
+To retain the complete unsigned builds, binary logs, license notices and `RETURN-TO-SENDER.txt` warning, manually select `proof_scope: full` and explicitly enable `retain_unsigned_artifacts`. That opt-in retains files for 14 days; it may incur storage charges even though standard public-runner compute is free. Before enabling it, the owner must verify available free storage or authorize the storage expense. The focused Flexler proof never uploads artifacts. These are app products, not Prism packages, loose framework binaries, SDKs, wrappers, or development tooling.
 
 The TestFlight workflow is manual, rebuilds trusted `main` from source, waits behind a protected GitHub environment, signs with CodeCrafty.net's Apple material, and uploads directly to App Store Connect. It never publishes the signed IPA as a GitHub artifact.
 
