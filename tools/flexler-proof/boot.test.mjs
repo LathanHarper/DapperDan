@@ -4,16 +4,29 @@ import { evaluateJournal, proofSettings, sanitizeRecord, selectIpad } from './bo
 
 const runtime = (version, available = true) => ({ identifier: `com.apple.CoreSimulator.SimRuntime.iOS-${version.replaceAll('.', '-')}`, version, isAvailable: available });
 const ipad = (name, overrides = {}) => ({ name, udid: '11111111-2222-3333-4444-555555555555', isAvailable: true, state: 'Shutdown', ...overrides });
+const ready = () => ['FlexlerPageLoaded', 'FlexlerViewModelReady'].map(point => ({ kind: 'checkpoint', point }));
 
 test('Debug and Release use separate outputs and honest interpreter labels', () => {
   assert.deepEqual(proofSettings('Debug'), {
-    configuration: 'Debug', outputDirectory: 'src/DapperDan/bin/Debug/net10.0-ios/iossimulator-arm64',
+    configuration: 'Debug', runtimeProfile: 'host', outputDirectory: 'src/DapperDan/bin/Debug/net10.0-ios/iossimulator-arm64',
     interpreterSetting: 'MAUI Debug default; no workflow override',
   });
   assert.deepEqual(proofSettings('Release'), {
-    configuration: 'Release', outputDirectory: 'src/DapperDan/bin/Release/net10.0-ios/iossimulator-arm64',
+    configuration: 'Release', runtimeProfile: 'host', outputDirectory: 'src/DapperDan/bin/Release/net10.0-ios/iossimulator-arm64',
     interpreterSetting: 'Repository Release MtouchInterpreter=-all; no workflow override',
   });
+});
+
+test('strict runtime proof requires Release and observed dynamic-code support disabled', () => {
+  assert.throws(() => proofSettings('Debug', 'aot-trim'), /requires Release/);
+  assert.throws(() => proofSettings('Release', 'typo'), /runtime profile/);
+  assert.equal(proofSettings('Release', 'aot-trim').runtimeProfile, 'aot-trim');
+  const loaded = ready();
+  assert.equal(evaluateJournal(loaded, true, 'aot-trim').passed, false);
+  assert.equal(evaluateJournal([...loaded, { kind: 'launch', isDynamicCodeSupported: true,
+    isDynamicCodeCompiled: false }], true, 'aot-trim').passed, false);
+  assert.equal(evaluateJournal([...loaded, { kind: 'launch', isDynamicCodeSupported: false,
+    isDynamicCodeCompiled: false }], true, 'aot-trim').passed, true);
 });
 
 test('missing, misspelled and path-like configurations cannot select a different binary', () => {
@@ -48,8 +61,10 @@ test('a live process alone and unrelated page readiness never pass', () => {
   assert.equal(evaluateJournal([{ kind: 'checkpoint', point: 'PageLoaded' }], true).passed, false);
 });
 
-test('only the exact Flexler checkpoint plus a live process can pass', () => {
-  const loaded = [{ kind: 'checkpoint', point: 'FlexlerPageLoaded' }];
+test('exact Flexler page and ViewModel readiness plus a live process are required', () => {
+  const loaded = ready();
+  assert.equal(evaluateJournal(loaded.slice(0, 1), true).passed, false);
+  assert.equal(evaluateJournal(loaded.slice(1), true).passed, false);
   assert.equal(evaluateJournal(loaded, true).passed, true);
   assert.equal(evaluateJournal(loaded, false).passed, false);
   assert.equal(evaluateJournal([{ kind: 'exception', point: 'FlexlerPageLoaded' }], true).passed, false);
@@ -57,7 +72,7 @@ test('only the exact Flexler checkpoint plus a live process can pass', () => {
 
 test('exceptions veto readiness, including emergency records', () => {
   for (const kind of ['exception', 'emergency-exception']) {
-    const result = evaluateJournal([{ kind: 'checkpoint', point: 'FlexlerPageLoaded' }, { kind, terminating: false }], true);
+    const result = evaluateJournal([...ready(), { kind, terminating: false }], true);
     assert.equal(result.passed, false);
     assert.equal(result.exceptionCount, 1);
   }
@@ -72,6 +87,6 @@ test('published journal fields exclude text, paths, identities and arbitrary val
   });
   assert.deepEqual(safe, {
     seq: 5, elapsedMs: 1200, kind: 'exception', point: 'FlexlerPageXamlEnter',
-    exceptionType: 'System.InvalidOperationException', terminating: true, isDynamicCodeSupported: true,
+    terminating: true, isDynamicCodeSupported: true,
   });
 });

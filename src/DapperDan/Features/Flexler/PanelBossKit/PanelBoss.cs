@@ -1,5 +1,6 @@
 using Flexler.PanelBossKit.Views;
 using Prism.Mvvm;
+using CodeCrafty.DapperDan.Diagnostics;
 
 namespace Flexler.PanelBossKit;
 
@@ -8,6 +9,11 @@ public sealed class PanelBoss : BindableBase
     private readonly SemaphoreSlim _transitionGate = new(1, 1);
     private WeakReference<PanelBossBody_DefaultView>? _hostReference;
     private bool _useSidePanelLayout;
+
+    public PanelBoss()
+    {
+        CrashJournal.Checkpoint(CrashPoint.FlexlerPanelBossCreated);
+    }
 
     public event EventHandler<View>? PanelShown;
 

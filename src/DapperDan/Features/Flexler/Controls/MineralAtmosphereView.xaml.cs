@@ -1,3 +1,4 @@
+using CodeCrafty.DapperDan.Diagnostics;
 namespace Flexler.Controls;
 
 public partial class MineralAtmosphereView : Grid
@@ -7,9 +8,20 @@ public partial class MineralAtmosphereView : Grid
 
     public MineralAtmosphereView()
     {
-        InitializeComponent();
-        Loaded += OnLoaded;
-        Unloaded += OnUnloaded;
+        CrashJournal.Checkpoint(CrashPoint.FlexlerAtmosphereXamlEnter);
+        try
+        {
+            InitializeComponent();
+            Loaded += OnLoaded;
+            Unloaded += OnUnloaded;
+            CrashJournal.Checkpoint(CrashPoint.FlexlerAtmosphereXamlReady);
+        }
+        catch (Exception exception)
+        {
+            CrashJournal.Capture(CrashSource.GuardedSeam,
+                CrashPoint.FlexlerAtmosphereXamlEnter, exception, terminating: false);
+            throw;
+        }
     }
 
     private void OnLoaded(object? sender, EventArgs e)

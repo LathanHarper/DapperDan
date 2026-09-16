@@ -5,6 +5,7 @@ using CoreImage;
 using Foundation;
 using Microsoft.Maui.Handlers;
 using UIKit;
+using CodeCrafty.DapperDan.Diagnostics;
 
 namespace PrimoMaterial;
 
@@ -22,12 +23,38 @@ internal sealed class CrossFadeRadoDotsHandler
     {
     }
 
-    protected override CrossFadeRadoDotsPlatformView CreatePlatformView() => new();
+    protected override CrossFadeRadoDotsPlatformView CreatePlatformView()
+    {
+        CrashJournal.Checkpoint(CrashPoint.FlexlerIosMaterialViewEnter);
+        try
+        {
+            var platformView = new CrossFadeRadoDotsPlatformView();
+            CrashJournal.Checkpoint(CrashPoint.FlexlerIosMaterialViewReady);
+            return platformView;
+        }
+        catch (Exception exception)
+        {
+            CrashJournal.Capture(CrashSource.GuardedSeam,
+                CrashPoint.FlexlerIosMaterialViewEnter, exception, terminating: false);
+            throw;
+        }
+    }
 
     protected override void ConnectHandler(CrossFadeRadoDotsPlatformView platformView)
     {
-        base.ConnectHandler(platformView);
-        platformView.Connect(VirtualView);
+        CrashJournal.Checkpoint(CrashPoint.FlexlerIosMaterialConnectEnter);
+        try
+        {
+            base.ConnectHandler(platformView);
+            platformView.Connect(VirtualView);
+            CrashJournal.Checkpoint(CrashPoint.FlexlerIosMaterialConnectReady);
+        }
+        catch (Exception exception)
+        {
+            CrashJournal.Capture(CrashSource.GuardedSeam,
+                CrashPoint.FlexlerIosMaterialConnectEnter, exception, terminating: false);
+            throw;
+        }
     }
 
     protected override void DisconnectHandler(CrossFadeRadoDotsPlatformView platformView)
@@ -50,7 +77,7 @@ internal sealed class CrossFadeRadoDotsPlatformView : UIView
     private const uint DotSeed = 0x5241444Fu;
     private static readonly TimeSpan ResizeIdleDelay = TimeSpan.FromMilliseconds(90);
 
-    private static readonly CIContext SharedImageContext = CIContext.Create();
+    private static readonly CIContext SharedImageContext = CreateSharedImageContext();
 
     private readonly UIImageView _imageView;
 
@@ -76,6 +103,23 @@ internal sealed class CrossFadeRadoDotsPlatformView : UIView
     private bool _premiumUnavailable;
     private bool _isDisconnected = true;
     private bool _isDisposed;
+
+    private static CIContext CreateSharedImageContext()
+    {
+        CrashJournal.Checkpoint(CrashPoint.FlexlerIosMaterialContextEnter);
+        try
+        {
+            var context = CIContext.Create();
+            CrashJournal.Checkpoint(CrashPoint.FlexlerIosMaterialContextReady);
+            return context;
+        }
+        catch (Exception exception)
+        {
+            CrashJournal.Capture(CrashSource.GuardedSeam,
+                CrashPoint.FlexlerIosMaterialContextEnter, exception, terminating: false);
+            throw;
+        }
+    }
 
     public CrossFadeRadoDotsPlatformView()
     {

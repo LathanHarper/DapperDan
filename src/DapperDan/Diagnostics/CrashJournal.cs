@@ -65,6 +65,19 @@ internal enum CrashPoint
     FlexlerPageLoaded,
     FlexlerPageAppearing,
     ApplicationCompleted,
+    FlexlerPanelBossCreated,
+    FlexlerPanelHostEnter,
+    FlexlerPanelHostReady,
+    FlexlerViewModelEnter,
+    FlexlerViewModelReady,
+    FlexlerAtmosphereXamlEnter,
+    FlexlerAtmosphereXamlReady,
+    FlexlerIosMaterialViewEnter,
+    FlexlerIosMaterialViewReady,
+    FlexlerIosMaterialConnectEnter,
+    FlexlerIosMaterialConnectReady,
+    FlexlerIosMaterialContextEnter,
+    FlexlerIosMaterialContextReady,
 }
 
 internal enum CrashSource

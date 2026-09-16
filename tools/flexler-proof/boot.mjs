@@ -3,17 +3,23 @@ import { createHash } from 'node:crypto';
 import { appendFileSync, copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { basename, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createExceptionSanitizer } from './diagnostics.mjs';
 
 const bundleId = 'net.codecrafty.dapperdan';
 const executableName = 'CodeCrafty.DapperDan';
 const delay = milliseconds => new Promise(done => setTimeout(done, milliseconds));
+let operationDeadline = Infinity;
 
-export function proofSettings(configuration) {
+export function proofSettings(configuration, runtimeProfile = 'host') {
   if (!['Debug', 'Release'].includes(configuration)) throw new Error('Select the explicit Debug or Release proof configuration.');
+  if (!['host', 'aot-trim'].includes(runtimeProfile)) throw new Error('Select the explicit host or aot-trim runtime profile.');
+  if (runtimeProfile === 'aot-trim' && configuration !== 'Release') throw new Error('The aot-trim diagnostic requires Release.');
   return {
-    configuration,
+    configuration, runtimeProfile,
     outputDirectory: `src/DapperDan/bin/${configuration}/net10.0-ios/iossimulator-arm64`,
-    interpreterSetting: configuration === 'Debug'
+    interpreterSetting: runtimeProfile === 'aot-trim'
+      ? 'Explicit Mono AOT; interpreter disabled; partial trimming; managed-static registrar'
+      : configuration === 'Debug'
       ? 'MAUI Debug default; no workflow override'
       : 'Repository Release MtouchInterpreter=-all; no workflow override',
   };
@@ -38,7 +44,7 @@ export function sanitizeRecord(record) {
   for (const key of ['seq', 'elapsedMs', 'hresult']) {
     if (Number.isSafeInteger(record[key])) safe[key] = record[key];
   }
-  for (const key of ['kind', 'point', 'source', 'exceptionType']) {
+  for (const key of ['kind', 'point', 'source']) {
     if (typeof record[key] === 'string' && /^[A-Za-z_][A-Za-z0-9_.`+-]{0,180}$/.test(record[key])) safe[key] = record[key];
   }
   for (const key of ['terminating', 'isDynamicCodeSupported', 'isDynamicCodeCompiled']) {
@@ -47,13 +53,30 @@ export function sanitizeRecord(record) {
   return safe; // Never print exception text, stacks, identities, paths or arbitrary journal fields.
 }
 
-export function evaluateJournal(records, alive) {
+export function evaluateJournal(records, alive, runtimeProfile = 'host') {
   const loaded = records.some(record => record.kind === 'checkpoint' && record.point === 'FlexlerPageLoaded');
+  const viewModelReady = records.some(record => record.kind === 'checkpoint' && record.point === 'FlexlerViewModelReady');
   const exceptions = records.filter(record => ['exception', 'emergency-exception'].includes(record.kind));
-  return { loaded, alive, exceptionCount: exceptions.length, passed: alive && loaded && exceptions.length === 0 };
+  const launch = records.find(record => record.kind === 'launch');
+  const runtimeConfirmed = runtimeProfile === 'host'
+    || (runtimeProfile === 'aot-trim' && launch?.isDynamicCodeSupported === false && launch?.isDynamicCodeCompiled === false);
+  return { loaded, viewModelReady, alive, exceptionCount: exceptions.length, runtimeConfirmed,
+    passed: alive && loaded && viewModelReady && exceptions.length === 0 && runtimeConfirmed };
+}
+
+function publicExceptionSanitizer() {
+  const paths = command('git', ['ls-files', '--', 'src/DapperDan'], 'Read public source catalog')
+    .split('\n').filter(path => /\.(cs|xaml)$/.test(path));
+  const sourceFiles = paths.map(path => ({ path, lineCount: readFileSync(path, 'utf8').split('\n').length }));
+  const resourceKeys = paths.filter(path => /^src\/DapperDan\/Features\/Flexler\/Resources\/[^/]+\.xaml$/.test(path))
+    .flatMap(path => [...readFileSync(path, 'utf8').matchAll(/\bx:Key="([^"]+)"/g)].map(match => match[1]));
+  return createExceptionSanitizer({ sourceFiles, resourceKeys });
 }
 
 function command(program, args, label, timeout = 60000) {
+  const remaining = operationDeadline - Date.now();
+  if (remaining <= 0) throw new Error('Simulator diagnostic budget exhausted; preserving the current stage.');
+  timeout = Math.min(timeout, remaining);
   const result = spawnSync(program, args, { encoding: 'utf8', timeout, maxBuffer: 4 * 1024 * 1024 });
   if (result.error || result.status !== 0) throw new Error(`${label} failed (exit ${result.status ?? 'none'}, ${result.error?.code ?? 'command'}).`);
   return result.stdout.trim();
@@ -100,74 +123,91 @@ async function boot() {
   if (process.platform !== 'darwin' || process.env.GITHUB_REPOSITORY !== 'LathanHarper/DapperDan'
       || process.env.GITHUB_EVENT_NAME !== 'workflow_dispatch' || !process.env.RUNNER_TEMP)
     throw new Error('This boot helper only runs in the public manual macOS proof job.');
-  const settings = proofSettings(process.env.FLEXLER_PROOF_CONFIGURATION);
+  const settings = proofSettings(process.env.FLEXLER_PROOF_CONFIGURATION, process.env.FLEXLER_PROOF_RUNTIME_PROFILE);
+  const startedAt = Date.now();
+  operationDeadline = startedAt + 9 * 60 * 1000;
   const report = {
     scope: `Flexler ${settings.configuration} Simulator startup`, configuration: settings.configuration,
+    runtimeProfile: settings.runtimeProfile,
     retainedArtifacts: 0, interpreterSetting: settings.interpreterSetting, stage: 'inspect-app', passed: false,
+  };
+  const stage = name => {
+    report.stage = name;
+    console.log(`Flexler stage ${JSON.stringify({ stage: name, elapsedMs: Date.now() - startedAt })}`);
   };
   const local = join(process.env.RUNNER_TEMP, 'flexler-proof');
   mkdirSync(local, { recursive: true });
   let device, bootedHere = false, pid, journalDirectory, baseline, records = [];
+  let sanitizeException = createExceptionSanitizer();
   try {
+    stage('load-public-diagnostic-catalog');
+    sanitizeException = publicExceptionSanitizer();
+    stage('inspect-app');
     const output = resolve(settings.outputDirectory);
     const apps = readdirSync(output).filter(name => name.endsWith('.app'));
     if (apps.length !== 1) throw new Error(`Expected one freshly built ${settings.configuration} Simulator app.`);
     const app = join(output, apps[0]);
     if (command('/usr/libexec/PlistBuddy', ['-c', 'Print :CFBundleIdentifier', join(app, 'Info.plist')], 'Read bundle ID') !== bundleId)
       throw new Error('Unexpected app identity.');
-    report.stage = 'ephemeral-simulator-seal';
+    stage('ephemeral-simulator-seal');
     report.sealedNativeFiles = sealSimulator(app);
     report.binarySha256 = createHash('sha256').update(readFileSync(join(app, executableName))).digest('hex');
-    report.stage = 'select-stock-ipad';
+    stage('select-stock-ipad');
     device = selectIpad(JSON.parse(command('xcrun', ['simctl', 'list', '-j'], 'Read Simulator inventory')));
     report.device = device.name;
     report.runtime = device.runtime;
-    report.stage = 'boot-stock-ipad';
+    stage('boot-stock-ipad');
     if (device.state === 'Shutdown') {
       command('xcrun', ['simctl', 'boot', device.udid], 'Boot selected iPad');
       bootedHere = true;
     }
     command('xcrun', ['simctl', 'bootstatus', device.udid, '-b'], 'Wait for iPad boot', 180000);
-    report.stage = 'install';
+    stage('install');
     command('xcrun', ['simctl', 'install', device.udid, app], 'Install local Simulator app', 120000);
     const container = command('xcrun', ['simctl', 'get_app_container', device.udid, bundleId, 'data'], 'Locate local app container');
     journalDirectory = join(container, 'Library', 'Application Support', 'DapperDan', 'CrashJournal');
     baseline = new Set(journalNames(journalDirectory));
-    report.stage = 'launch';
+    stage('launch');
     const launch = command('xcrun', ['simctl', 'launch', device.udid, bundleId], 'Launch Flexler route');
     const match = launch.match(/^net\.codecrafty\.dapperdan:\s*(\d+)$/);
     if (!match) throw new Error('Launch did not return the expected application PID.');
     pid = Number(match[1]);
-    report.stage = 'wait-for-flexler-loaded';
-    const deadline = Date.now() + 60000;
+    stage('wait-for-flexler-loaded');
+    const deadline = Math.min(Date.now() + 60000, operationDeadline);
     let loadedAt;
     while (Date.now() < deadline) {
       records = readNewJournal(journalDirectory, baseline);
-      const state = evaluateJournal(records, processAlive(pid));
+      const state = evaluateJournal(records, processAlive(pid), settings.runtimeProfile);
       if (!state.alive) throw new Error('Simulator app process exited before the startup proof completed.');
       if (state.exceptionCount) throw new Error('The local launch journal recorded an exception.');
-      if (state.loaded) loadedAt ??= Date.now();
+      if (records.some(record => record.kind === 'launch') && !state.runtimeConfirmed)
+        throw new Error('Runtime dynamic-code flags do not match the strict proof.');
+      if (state.loaded && state.viewModelReady) loadedAt ??= Date.now();
       if (loadedAt !== undefined && Date.now() - loadedAt >= 8000) {
         report.passed = state.passed;
-        report.stage = 'loaded-and-alive';
+        stage('loaded-and-alive');
         break;
       }
       await delay(1000);
     }
-    if (!report.passed) throw new Error('No FlexlerPageLoaded checkpoint with eight seconds of process survival within 60 seconds.');
+    if (!report.passed) throw new Error('No Flexler page and ViewModel readiness with eight seconds of process survival within 60 seconds.');
   } catch (error) {
     report.failure = error instanceof SyntaxError ? 'Malformed local JSON response.'
       : error.code ? `${report.stage} failed (${String(error.code).replace(/[^A-Z0-9_]/g, '')}).`
         : error.message;
     process.exitCode = 1;
   } finally {
+    report.observationElapsedMs = Date.now() - startedAt;
     if (journalDirectory && baseline) {
       try { records = readNewJournal(journalDirectory, baseline, local); }
       catch { report.journalCaptureFailed = true; report.passed = false; process.exitCode = 1; }
     }
-    report.journal = evaluateJournal(records, pid ? processAlive(pid) : false);
+    report.journal = evaluateJournal(records, pid ? processAlive(pid) : false, settings.runtimeProfile);
     if (!report.journal.passed) { report.passed = false; process.exitCode = 1; }
-    for (const record of records.slice(-256)) console.log(`Flexler journal ${JSON.stringify(sanitizeRecord(record))}`);
+    for (const record of records.slice(-256)) {
+      const diagnostic = sanitizeException(record);
+      console.log(`Flexler journal ${JSON.stringify({ ...sanitizeRecord(record), ...(diagnostic ? { diagnostic } : {}) })}`);
+    }
     console.log(`Flexler proof ${JSON.stringify(report)}`);
     if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY,
       `\n### Flexler native startup: ${report.passed ? 'passed' : 'failed'}\n\n` +

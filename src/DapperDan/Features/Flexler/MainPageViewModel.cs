@@ -1,3 +1,4 @@
+using CodeCrafty.DapperDan.Diagnostics;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -50,45 +51,56 @@ public sealed partial class MainPageViewModel : BindableBase, INavigationAware
         IFavoriteRecipeStore favoriteStore,
         INavigationService? navigationService = null)
     {
-        _recipeExporter = recipeExporter;
-        ActivePanelBoss = activePanelBoss;
-        _favoriteStore = favoriteStore;
-        _showcaseNavigation = navigationService;
+        CrashJournal.Checkpoint(CrashPoint.FlexlerViewModelEnter);
+        try
+        {
+            _recipeExporter = recipeExporter;
+            ActivePanelBoss = activePanelBoss;
+            _favoriteStore = favoriteStore;
+            _showcaseNavigation = navigationService;
 
-        BasisOptions =
-        [
-            new FlexBasisOption("Auto", FlexBasis.Auto),
-            new FlexBasisOption("25%", new FlexBasis(0.25f, true)),
-            new FlexBasisOption("50%", new FlexBasis(0.50f, true)),
-            new FlexBasisOption("75%", new FlexBasis(0.75f, true)),
-            new FlexBasisOption("100%", new FlexBasis(1f, true)),
-            new FlexBasisOption("64", new FlexBasis(64)),
-            new FlexBasisOption("128", new FlexBasis(128))
-        ];
+            BasisOptions =
+            [
+                new FlexBasisOption("Auto", FlexBasis.Auto),
+                new FlexBasisOption("25%", new FlexBasis(0.25f, true)),
+                new FlexBasisOption("50%", new FlexBasis(0.50f, true)),
+                new FlexBasisOption("75%", new FlexBasis(0.75f, true)),
+                new FlexBasisOption("100%", new FlexBasis(1f, true)),
+                new FlexBasisOption("64", new FlexBasis(64)),
+                new FlexBasisOption("128", new FlexBasis(128))
+            ];
 
-        AddItemCommand = new DelegateCommand(AddItem);
-        CloseContainerControlsCommand = new AsyncDelegateCommand(CloseContainerControlsAsync);
-        CloseInspectorCommand = new AsyncDelegateCommand(CloseInspectorAsync);
-        CloseRecipeCommand = new AsyncDelegateCommand(CloseRecipeAsync);
-        EditItemCommand = new AsyncDelegateCommand<FlexItemViewModel>(
-            OpenInspectorAsync,
-            item => item is not null && Items.Contains(item));
-        ExportCommand = new AsyncDelegateCommand(ExportAsync);
-        PreviewRecipeCommand = new AsyncDelegateCommand(PreviewRecipeAsync);
-        RemoveSelectedCommand = new AsyncDelegateCommand(RemoveSelectedAsync, () => SelectedItem is not null);
-        ShapeSelectedCommand = new AsyncDelegateCommand(
-            () => SelectedItem is { } item ? OpenInspectorAsync(item) : Task.CompletedTask,
-            () => SelectedItem is not null);
-        ResetCommand = new AsyncDelegateCommand(ResetAsync);
-        ToggleContainerControlsCommand = new AsyncDelegateCommand(ToggleContainerControlsAsync);
-        OpenFavoritesCommand = new AsyncDelegateCommand(OpenFavoritesAsync);
-        SaveFavoriteCommand = new AsyncDelegateCommand(SaveFavoriteAsync,
-            () => !_favoriteOperationRunning && _favoritesLoaded && !string.IsNullOrWhiteSpace(FavoriteName));
-        LoadFavoriteCommand = new AsyncDelegateCommand(LoadFavoriteAsync, CanUseSelectedFavorite);
-        DeleteFavoriteCommand = new AsyncDelegateCommand(DeleteFavoriteAsync, CanUseSelectedFavorite);
+            AddItemCommand = new DelegateCommand(AddItem);
+            CloseContainerControlsCommand = new AsyncDelegateCommand(CloseContainerControlsAsync);
+            CloseInspectorCommand = new AsyncDelegateCommand(CloseInspectorAsync);
+            CloseRecipeCommand = new AsyncDelegateCommand(CloseRecipeAsync);
+            EditItemCommand = new AsyncDelegateCommand<FlexItemViewModel>(
+                OpenInspectorAsync,
+                item => item is not null && Items.Contains(item));
+            ExportCommand = new AsyncDelegateCommand(ExportAsync);
+            PreviewRecipeCommand = new AsyncDelegateCommand(PreviewRecipeAsync);
+            RemoveSelectedCommand = new AsyncDelegateCommand(RemoveSelectedAsync, () => SelectedItem is not null);
+            ShapeSelectedCommand = new AsyncDelegateCommand(
+                () => SelectedItem is { } item ? OpenInspectorAsync(item) : Task.CompletedTask,
+                () => SelectedItem is not null);
+            ResetCommand = new AsyncDelegateCommand(ResetAsync);
+            ToggleContainerControlsCommand = new AsyncDelegateCommand(ToggleContainerControlsAsync);
+            OpenFavoritesCommand = new AsyncDelegateCommand(OpenFavoritesAsync);
+            SaveFavoriteCommand = new AsyncDelegateCommand(SaveFavoriteAsync,
+                () => !_favoriteOperationRunning && _favoritesLoaded && !string.IsNullOrWhiteSpace(FavoriteName));
+            LoadFavoriteCommand = new AsyncDelegateCommand(LoadFavoriteAsync, CanUseSelectedFavorite);
+            DeleteFavoriteCommand = new AsyncDelegateCommand(DeleteFavoriteAsync, CanUseSelectedFavorite);
 
-        Items.CollectionChanged += OnItemsChanged;
-        ResetState();
+            Items.CollectionChanged += OnItemsChanged;
+            ResetState();
+            CrashJournal.Checkpoint(CrashPoint.FlexlerViewModelReady);
+        }
+        catch (Exception exception)
+        {
+            CrashJournal.Capture(CrashSource.GuardedSeam,
+                CrashPoint.FlexlerViewModelEnter, exception, terminating: false);
+            throw;
+        }
     }
 
     public PanelBoss ActivePanelBoss { get; }

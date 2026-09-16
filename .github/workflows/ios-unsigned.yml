@@ -25,12 +25,20 @@ on:
           - Release
         default: Debug
         required: true
+      proof_runtime_profile:
+        description: Flexler scope only; preserve host defaults or probe trimmed Mono AOT without interpreter fallback
+        type: choice
+        options:
+          - host
+          - aot-trim
+        default: host
+        required: true
 
 permissions:
   contents: read
 
 concurrency:
-  group: ios-unsigned-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}${{ github.event_name == 'workflow_dispatch' && inputs.proof_scope == 'flexler' && format('-flexler-{0}', inputs.proof_configuration) || '' }}
+  group: ios-unsigned-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}${{ github.event_name == 'workflow_dispatch' && inputs.proof_scope == 'flexler' && format('-flexler-{0}-{1}', inputs.proof_configuration, inputs.proof_runtime_profile) || '' }}
   cancel-in-progress: true
 
 env:
@@ -292,12 +300,13 @@ jobs:
           retention-days: 14
 
   flexler-startup:
-    name: Free public Flexler ${{ inputs.proof_configuration }} Simulator startup
+    name: Free public Flexler ${{ inputs.proof_configuration }} ${{ inputs.proof_runtime_profile }} Simulator startup
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.proof_scope == 'flexler' && github.repository == 'LathanHarper/DapperDan' && github.event.repository.private == false }}
     runs-on: macos-26
-    timeout-minutes: 35
+    timeout-minutes: ${{ inputs.proof_configuration == 'Release' && 180 || 55 }}
     env:
       FLEXLER_PROOF_CONFIGURATION: ${{ inputs.proof_configuration }}
+      FLEXLER_PROOF_RUNTIME_PROFILE: ${{ inputs.proof_runtime_profile }}
     # Standard public compute only. No retained artifacts, cache, secrets,
     # Apple account signing, profile, upload or external testing service.
     steps:
@@ -320,14 +329,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          case "$FLEXLER_PROOF_CONFIGURATION" in
-            Debug|Release) ;;
-            *) echo 'Select the explicit Debug or Release proof configuration.' >&2; exit 1 ;;
-          esac
+          source tools/flexler-proof/build-options.sh
           test "$(uname -m)" = "arm64"
           test -d "$DEVELOPER_DIR"
           test "$(dotnet --version)" = "10.0.302"
-          printf 'source_commit=%s\nconfiguration=%s\nruntime=iossimulator-arm64\ninterpreter_override=none\nretained_artifacts=0\n' "$GITHUB_SHA" "$FLEXLER_PROOF_CONFIGURATION"
+          printf 'source_commit=%s\nconfiguration=%s\nruntime_profile=%s\nruntime=iossimulator-arm64\nretained_artifacts=0\n' "$GITHUB_SHA" "$FLEXLER_PROOF_CONFIGURATION" "$FLEXLER_PROOF_RUNTIME_PROFILE"
           xcodebuild -version
           xcrun --sdk iphonesimulator --show-sdk-version
 
@@ -339,27 +345,33 @@ jobs:
           set -euo pipefail
           dotnet workload restore "$PROJECT_PATH"
           test "$(dotnet workload --version)" = "$WORKLOAD_VERSION"
+          source tools/flexler-proof/build-options.sh
           dotnet restore "$PROJECT_PATH" --locked-mode \
-            -p:Configuration="$FLEXLER_PROOF_CONFIGURATION" -p:FlexlerShowcaseProof=true
+            -p:Configuration="$FLEXLER_PROOF_CONFIGURATION" "${proof_msbuild_args[@]}"
 
       - name: Record evaluated iOS build settings
         shell: bash
         run: |
           set -euo pipefail
+          source tools/flexler-proof/build-options.sh
           dotnet msbuild "$PROJECT_PATH" \
             -p:TargetFramework=net10.0-ios -p:RuntimeIdentifier=iossimulator-arm64 \
-            -p:Configuration="$FLEXLER_PROOF_CONFIGURATION" -p:FlexlerShowcaseProof=true \
-            -getProperty:Configuration,UseInterpreter,MtouchInterpreter,TrimMode,MtouchUseLlvm
+            -p:Configuration="$FLEXLER_PROOF_CONFIGURATION" "${proof_msbuild_args[@]}" \
+            -getProperty:Configuration,UseInterpreter,MtouchInterpreter,TrimMode,MtouchUseLlvm,Registrar,UseMonoRuntime,PublishAot,MauiXamlInflator \
+            > "$RUNNER_TEMP/flexler-build-settings.json"
+          cat "$RUNNER_TEMP/flexler-build-settings.json"
+          node tools/flexler-proof/check-build-settings.mjs "$RUNNER_TEMP/flexler-build-settings.json"
 
       - name: Build complete public app with the selected configuration and direct Flexler route
         id: compile
-        timeout-minutes: 25
+        timeout-minutes: ${{ inputs.proof_configuration == 'Release' && 150 || 25 }}
         shell: bash
         run: |
           set -euo pipefail
-          dotnet build "$PROJECT_PATH" \
+          source tools/flexler-proof/build-options.sh
+          node tools/flexler-proof/build-progress.mjs build "$PROJECT_PATH" \
             -f net10.0-ios -c "$FLEXLER_PROOF_CONFIGURATION" -r iossimulator-arm64 --no-restore \
-            -p:FlexlerShowcaseProof=true \
+            "${proof_msbuild_args[@]}" \
             -p:ApplicationId="$BUNDLE_ID" \
             -p:ApplicationTitle="Dapper Dan - Flexler Simulator Proof" \
             -p:ArchiveOnBuild=false -p:BuildIpa=false \
@@ -367,7 +379,7 @@ jobs:
 
       - name: Seal locally and verify Flexler startup on a stock iPad
         id: boot
-        timeout-minutes: 6
+        timeout-minutes: 12
         run: node tools/flexler-proof/boot.mjs
 
       - name: Record proof outcomes without retaining files
@@ -380,9 +392,9 @@ jobs:
         run: |
           {
             printf '### Public Flexler proof outcomes\n\n'
-            printf -- '- Configuration: %s\n- Restore: %s\n- Build: %s\n- Native startup: %s\n' "$FLEXLER_PROOF_CONFIGURATION" "$RESTORE_OUTCOME" "$COMPILE_OUTCOME" "$BOOT_OUTCOME"
+            printf -- '- Configuration: %s\n- Runtime profile: %s\n- Restore: %s\n- Build: %s\n- Native startup: %s\n' "$FLEXLER_PROOF_CONFIGURATION" "$FLEXLER_PROOF_RUNTIME_PROFILE" "$RESTORE_OUTCOME" "$COMPILE_OUTCOME" "$BOOT_OUTCOME"
             printf -- '- Retained artifacts: **0**; cache: **none**; standard public runner.\n'
             printf -- '- Local ad-hoc Simulator seals use no Apple credentials or provisioning profile.\n'
-            printf -- '- Repository/SDK interpreter, trimming and LLVM settings are preserved and logged for the selected configuration.\n'
+            printf -- '- The host profile preserves project defaults; aot-trim explicitly probes partial trimming, Mono AOT and managed-static registration without interpreter fallback.\n'
             printf -- '- Debug startup cannot establish Release AOT correctness; neither Simulator configuration proves standalone device AOT or UI interactions.\n'
           } >> "$GITHUB_STEP_SUMMARY"

@@ -1,3 +1,4 @@
+using CodeCrafty.DapperDan.Diagnostics;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 
@@ -27,34 +28,45 @@ public sealed class PanelBossBody_DefaultView : Grid
 
     public PanelBossBody_DefaultView()
     {
-        SafeAreaEdges = SafeAreaEdges.None;
-        _contentPanelsArea = CreateArea(LayoutOptions.Fill, LayoutOptions.Fill, 1);
-        _topHeaderPanelsArea = CreateArea(LayoutOptions.Fill, LayoutOptions.Start, 20);
-        _bottomInputPanelsArea = CreateArea(LayoutOptions.Fill, LayoutOptions.End, 30);
-        _leftSelectorPanelsArea = CreateArea(LayoutOptions.Start, LayoutOptions.Fill, 20);
-        _rightSelectorPanelsArea = CreateArea(LayoutOptions.End, LayoutOptions.Fill, 30);
+        CrashJournal.Checkpoint(CrashPoint.FlexlerPanelHostEnter);
+        try
+        {
+            SafeAreaEdges = SafeAreaEdges.None;
+            _contentPanelsArea = CreateArea(LayoutOptions.Fill, LayoutOptions.Fill, 1);
+            _topHeaderPanelsArea = CreateArea(LayoutOptions.Fill, LayoutOptions.Start, 20);
+            _bottomInputPanelsArea = CreateArea(LayoutOptions.Fill, LayoutOptions.End, 30);
+            _leftSelectorPanelsArea = CreateArea(LayoutOptions.Start, LayoutOptions.Fill, 20);
+            _rightSelectorPanelsArea = CreateArea(LayoutOptions.End, LayoutOptions.Fill, 30);
 
-        // Chrome is measured for its content; only the workspace takes the
-        // available viewport. A default star row would stretch an auto-sized
-        // drawer over the entire page before its clearance can follow it.
-        _topHeaderPanelsArea.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-        _bottomInputPanelsArea.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-        _leftSelectorPanelsArea.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
-        _rightSelectorPanelsArea.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
+            // Chrome is measured for its content; only the workspace takes the
+            // available viewport. A default star row would stretch an auto-sized
+            // drawer over the entire page before its clearance can follow it.
+            _topHeaderPanelsArea.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+            _bottomInputPanelsArea.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+            _leftSelectorPanelsArea.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
+            _rightSelectorPanelsArea.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
 
-        Children.Add(_contentPanelsArea);
-        Children.Add(_topHeaderPanelsArea);
-        Children.Add(_bottomInputPanelsArea);
-        Children.Add(_leftSelectorPanelsArea);
-        Children.Add(_rightSelectorPanelsArea);
+            Children.Add(_contentPanelsArea);
+            Children.Add(_topHeaderPanelsArea);
+            Children.Add(_bottomInputPanelsArea);
+            Children.Add(_leftSelectorPanelsArea);
+            Children.Add(_rightSelectorPanelsArea);
 
-        ContentPanels.CollectionChanged += OnContentPanelsChanged;
-        TopHeaderPanels.CollectionChanged += OnTopHeaderPanelsChanged;
-        BottomInputPanels.CollectionChanged += OnBottomInputPanelsChanged;
-        LeftSelectorPanels.CollectionChanged += OnLeftSelectorPanelsChanged;
-        RightSelectorPanels.CollectionChanged += OnRightSelectorPanelsChanged;
+            ContentPanels.CollectionChanged += OnContentPanelsChanged;
+            TopHeaderPanels.CollectionChanged += OnTopHeaderPanelsChanged;
+            BottomInputPanels.CollectionChanged += OnBottomInputPanelsChanged;
+            LeftSelectorPanels.CollectionChanged += OnLeftSelectorPanelsChanged;
+            RightSelectorPanels.CollectionChanged += OnRightSelectorPanelsChanged;
 
-        ApplyPanelAreaLayout();
+            ApplyPanelAreaLayout();
+            CrashJournal.Checkpoint(CrashPoint.FlexlerPanelHostReady);
+        }
+        catch (Exception exception)
+        {
+            CrashJournal.Capture(CrashSource.GuardedSeam,
+                CrashPoint.FlexlerPanelHostEnter, exception, terminating: false);
+            throw;
+        }
     }
 
     public ObservableCollection<View> ContentPanels { get; } = [];
