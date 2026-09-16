@@ -1,6 +1,12 @@
 # FleXler showcase validation — September 15, 2026
 
-All seven Android scenarios passed across the original run and one corrected targeted rerun. The public **iOS Release `aot-trim` Simulator startup proof passed**, including the runtime check that dynamic code support and compilation were both false. The earlier Debug pass and incomplete Release build remain separate historical evidence below. Local paths, device identifiers, screenshots and personal diagnostic logs are excluded.
+All seven Android scenarios passed across the original run and one corrected targeted rerun. The public **iOS Release `aot-trim` Simulator startup proof passed** for the earlier instrumented source, including the runtime check that dynamic code support and compilation were both false. The resource-scope correction below requires fresh native evidence. The earlier Debug pass and incomplete Release build remain separate historical evidence below. Local paths, device identifiers, screenshots and personal diagnostic logs are excluded.
+
+## Resource-scope correction after review
+
+The feature page now owns its anonymous Labradorite and Semantics dictionaries; the independently constructed atmosphere control owns a local Labradorite dictionary. Root backgrounds resolve after their resources are declared. Application resources no longer load the complete feature dictionaries. The host launcher has seven host-owned semantic values, checked against the original colors, fonts and gradients without visual value changes. No typed dictionary roots, interpreter changes, SDK/package changes or signing changes were introduced.
+
+All 72 feature tests and 41 host tests passed locally. The affected iOS managed Compile passed using installed SDK 10.0.303 (141 existing warnings, zero errors; subsequent incremental verification also passed). XML/source-path checks, exact launcher-value comparisons and diff whitespace checks passed. These checks do not establish native resource lookup or visual behavior; new full native CI and strict Release startup proof are required for this corrected source. Previous native results below remain evidence for their recorded commits only. Physical-device interaction and appearance checks remain pending.
 
 ## Source and payload
 

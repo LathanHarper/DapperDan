@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage AutomationId="Flexler_MainPage" Title="Flexler" Background="{StaticResource Flexler.VoidBrush}"
+<ContentPage AutomationId="Flexler_MainPage" Title="Flexler"
     x:Class="Flexler.Views.MainPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -16,39 +16,53 @@
     SafeAreaEdges="Container"
     >
     <ContentPage.Resources>
-        <!--
-            Host isolation only: empty styles shadow Dapper's application defaults.
-            All FleXler layout, materials, state and values remain on their owners.
-        -->
-        <Style
-            ApplyToDerivedTypes="True"
-            TargetType="Page"
-            />
-        <Style
-            TargetType="Border"
-            />
-        <Style
-            TargetType="BoxView"
-            />
-        <Style
-            TargetType="Entry"
-            />
-        <Style
-            TargetType="Label"
-            />
-        <Style
-            TargetType="Picker"
-            />
-        <Style
-            TargetType="ScrollView"
-            />
-        <Style
-            TargetType="Shadow"
-            />
-        <Style
-            TargetType="Switch"
-            />
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary
+                    Source="Resources/Labradorite.xaml"
+                    />
+                <ResourceDictionary
+                    Source="Resources/Semantics.xaml"
+                    />
+            </ResourceDictionary.MergedDictionaries>
+            <!--
+                Host isolation only: empty styles shadow Dapper's application defaults.
+                All FleXler layout, materials, state and values remain on their owners.
+            -->
+            <Style
+                ApplyToDerivedTypes="True"
+                TargetType="Page"
+                />
+            <Style
+                TargetType="Border"
+                />
+            <Style
+                TargetType="BoxView"
+                />
+            <Style
+                TargetType="Entry"
+                />
+            <Style
+                TargetType="Label"
+                />
+            <Style
+                TargetType="Picker"
+                />
+            <Style
+                TargetType="ScrollView"
+                />
+            <Style
+                TargetType="Shadow"
+                />
+            <Style
+                TargetType="Switch"
+                />
+        </ResourceDictionary>
     </ContentPage.Resources>
+    <ContentPage.Background>
+        <StaticResource Key="Flexler.VoidBrush"
+            />
+    </ContentPage.Background>
     <panelViews:PanelBossBody_DefaultView x:Name="PanelBossRoot" AutomationId="Flexler_PanelBossRoot" PanelBossInstance="{Binding ActivePanelBoss}"
         SafeAreaEdges="None"
         >

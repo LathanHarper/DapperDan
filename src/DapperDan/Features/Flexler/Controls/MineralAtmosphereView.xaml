@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<Grid x:Name="AtmosphereRoot" Background="{StaticResource Flexler.VoidBrush}"
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Grid x:Name="AtmosphereRoot"
     x:Class="Flexler.Controls.MineralAtmosphereView"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -7,6 +7,19 @@
     SafeAreaEdges="None"
     InputTransparent="True"
     >
+    <Grid.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary
+                    Source="../Resources/Labradorite.xaml"
+                    />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Grid.Resources>
+    <Grid.Background>
+        <StaticResource Key="Flexler.VoidBrush"
+            />
+    </Grid.Background>
 
     <Image x:Name="RawStoneLayer"
         Source="labradorite_raw.jpg"
