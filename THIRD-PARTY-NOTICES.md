@@ -23,6 +23,18 @@ The Android and iOS native primary-touch adapters under `src/DapperDan/Platforms
 
 ## Open Sans
 
-The bundled Open Sans font files are distributed under the SIL Open Font License 1.1. The upstream license is available in the [Open Sans repository](https://github.com/googlefonts/opensans/blob/main/OFL.txt).
+The actual bundled `OpenSans-Regular.ttf` and `OpenSans-Semibold.ttf` files identify the Apache License, Version 2.0 in their embedded name tables. Regular records digitized-data copyright 2010–2011 Google Corporation; Semibold records 2011 Google Corporation. Preserve the accompanying `OpenSans-Apache-2.0.txt` notice. These are older font files; a license for a newer upstream Open Sans release does not describe these binaries. The canonical license text is available from the [Apache Software Foundation](https://www.apache.org/licenses/LICENSE-2.0.txt).
+
+## Instrument Sans
+
+The FleXler showcase uses Instrument Sans Regular and SemiBold. Copyright 2022 The Instrument Sans Project Authors. These fonts use the SIL Open Font License 1.1; preserve the accompanying `InstrumentSans-OFL.txt` text. Upstream: [Instrument Sans](https://github.com/Instrument/instrument-sans).
+
+## Geist Mono
+
+The FleXler showcase uses Geist Mono Medium. Copyright 2024 The Geist Project Authors. This font uses the SIL Open Font License 1.1; preserve the accompanying `Geist-OFL.txt` text. Upstream: [Geist](https://github.com/vercel/geist-font).
+
+## FleXler showcase artwork and source
+
+CodeCrafty authorized the full faithful FleXler feature source, semantic resources and approved visual assets for this public showcase on September 15, 2026. The spring/wordmark identity and labradorite textures are original ImageGen artwork created for FleXler and transferred as approved existing assets. This authorization is limited to the showcase described in [PROVENANCE.md](PROVENANCE.md); it does not expose the standalone app's private history, identities, signing material or diagnostics. Keep upstream MAUI MIT notices with the feature's source-derived adapters. Font and dependency licenses remain separate from the authorization to publish the showcase.
 
 These notices cover third-party material. CodeCrafty-authored Dapper Dan source is licensed separately under the repository's [MIT License](LICENSE); that license does not relicense any third-party component.

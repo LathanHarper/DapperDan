@@ -8,6 +8,8 @@ Dapper Dan was cut from a stable, product-neutral .NET 10 MAUI suitcase containi
 - The core RichButton native-input implementation.
 - Android and iOS platform adapters needed by those components.
 - Dapper Dan page-owned sample XAML and ViewModel logic.
+- The owner-authorized, faithful FleXler developer-tool showcase under `src/DapperDan/Features/Flexler`: its XAML workbench, recipe/favorite functionality, semantic values, graphite/mineral appearance, required local components, and approved spring/wordmark and mineral artwork. CodeCrafty explicitly authorized this public source and visual transfer on September 15, 2026. This is a complete showcase of the approved feature, not an independently rewritten miniature.
+- Instrument Sans and Geist Mono fonts used by the FleXler showcase, with their accompanying SIL Open Font License texts. Font-specific and upstream component notices remain required.
 - The Keiki EF Core/SQLite example and focused tests.
 - The generated Keiki compiled model and deterministic SQLite v1 seed containing only fixed public canary rows. Their complete generation recipe lives in `tools/DapperDan.DatabaseTool`.
 - The generic crash-journal implementation, neutral startup checkpoint names, and tests. It has no upload endpoint or product-specific metadata.
@@ -18,13 +20,16 @@ Dapper Dan was cut from a stable, product-neutral .NET 10 MAUI suitcase containi
 
 ## Excluded from this export
 
-- Product business logic, routes, services, schemas, accounts, customer data, configuration, credentials, endpoints, branding, screenshots, and operational logs.
+- Except for the explicitly authorized FleXler showcase above, unrelated private product business logic, routes, services, schemas, accounts, customer data, configuration, credentials, endpoints, branding, screenshots, and operational logs.
+- The standalone Flexler repository's private Git history, application/account identifiers, signing configuration and release records. The repository remains private; publishing this showcase does not change its visibility.
 - Absolute workstation paths, user or machine names, private source hashes, transfer tooling, internal planning material, runtime diagnostic journals, and test artifacts.
 - IDE state, `bin`, `obj`, packages, app bundles, symbols, signing files, provisioning profiles, and cloud-device test output.
 - Preview-framework variants, abandoned experiments, construction/timing comparison probes, and inactive platform targets.
 - Three previously transferred feedback WAV files. They were excluded and replaced with fresh clips from a CodeCrafty recording; see `docs/ASSET-PROVENANCE.md`.
 
-Public bug reproductions must be newly minimized around platform behavior. Never paste a private implementation and call it a sample. The packaged database is not a product export: it is generated solely from the two public Keiki entities with fixed Kai sample values. Detailed private transfer records remain private; this summary is the public boundary.
+The FleXler showcase is the explicit exception to the general independent-reproduction rule. Preserve its approved source and visual fidelity while keeping its resources and navigation integrated with Dapper Dan. Other public bug reproductions must be newly minimized around platform behavior; do not treat this exception as permission to publish another private implementation. The packaged database is not a product export: it is generated solely from the two public Keiki entities with fixed Kai sample values. Detailed private transfer records remain private; this summary is the public boundary.
+
+Dapper Dan remains the standalone application. The FleXler page does not import another app's store identity, signing, network configuration, or private diagnostic history. Its approved original ImageGen artwork is transferred as existing artwork; font and dependency rights remain governed by their respective notices.
 
 ## Public license
 

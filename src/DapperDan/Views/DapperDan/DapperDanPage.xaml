@@ -544,6 +544,17 @@
                 <ScrollView Grid.Row="1" AutomationId="DapperDan_WitnessScrollView">
                     <VerticalStackLayout Padding="18" Spacing="16">
                         <Label Style="{StaticResource PageTitle}" Text="iOS canary" />
+                        <Grid Padding="16" RowDefinitions="Auto,Auto,Auto" RowSpacing="10">
+                            <Border Grid.RowSpan="3" Background="{StaticResource DapperDan.FlexlerLauncher.ShellBrush}" Stroke="{StaticResource DapperDan.FlexlerLauncher.BorderColor}" StrokeShape="RoundRectangle 18" InputTransparent="True" />
+                            <Label Margin="12,12,12,0" FontFamily="{StaticResource DapperDan.FlexlerLauncher.EmphasisFontFamily}" FontSize="18" Text="FleXler · Layout Recipe Studio" TextColor="{StaticResource DapperDan.FlexlerLauncher.TitleColor}" />
+                            <Label Grid.Row="1" Margin="12,0" FontFamily="{StaticResource DapperDan.FlexlerLauncher.BodyFontFamily}" FontSize="14" Text="Shape a live FlexLayout, keep favorite recipes, and copy ready-to-use XAML. The complete workbench, with its mineral materials and native controls." TextColor="{StaticResource DapperDan.FlexlerLauncher.BodyColor}" />
+                            <controls:RichButton Grid.Row="2" AutomationId="DapperDan_Canary_OpenFlexler" Command="{Binding OpenFlexlerShowcaseCommand}" IsBusy="{Binding IsOpeningFlexler, Mode=TwoWay}" Margin="12,0,12,12" MinimumHeightRequest="48">
+                                <Grid InputTransparent="True">
+                                    <Border Background="{StaticResource DapperDan.FlexlerLauncher.ControlBrush}" Stroke="{StaticResource DapperDan.FlexlerLauncher.BorderColor}" StrokeShape="RoundRectangle 8" InputTransparent="True" />
+                                    <Label Padding="12" FontFamily="{StaticResource DapperDan.FlexlerLauncher.EmphasisFontFamily}" FontSize="14" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" Text="Open FleXler" TextColor="{StaticResource DapperDan.FlexlerLauncher.TitleColor}" InputTransparent="True" />
+                                </Grid>
+                            </controls:RichButton>
+                        </Grid>
                         <Label Style="{StaticResource BodyCopy}" Text="This lean public surface checks the same stringer on Android and iOS: launch, native input, panel motion, and local SQLite persistence." />
                         <Border BackgroundColor="#FFFFFF" Padding="16" Stroke="#B9CED8" StrokeShape="RoundRectangle 18">
                             <VerticalStackLayout Spacing="8">

@@ -27,6 +27,25 @@
     <Color x:Key="Gray900">#212121</Color>
     <Color x:Key="Gray950">#141414</Color>
 
+    <!-- Host-owned launcher values; the complete FleXler dictionaries belong to the feature. -->
+    <Color x:Key="DapperDan.FlexlerLauncher.BorderColor">#2C3D46</Color>
+    <Color x:Key="DapperDan.FlexlerLauncher.TitleColor">#F2F7F5</Color>
+    <Color x:Key="DapperDan.FlexlerLauncher.BodyColor">#A9B9BA</Color>
+    <x:String x:Key="DapperDan.FlexlerLauncher.BodyFontFamily">InstrumentSans</x:String>
+    <x:String x:Key="DapperDan.FlexlerLauncher.EmphasisFontFamily">InstrumentSansSemibold</x:String>
+    <LinearGradientBrush x:Key="DapperDan.FlexlerLauncher.ShellBrush" StartPoint="0,0" EndPoint="1,0.82">
+        <GradientStop Offset="0" Color="#FF080D12" />
+        <GradientStop Offset="0.34" Color="#FF10252D" />
+        <GradientStop Offset="0.62" Color="#FF131D28" />
+        <GradientStop Offset="1" Color="#FF090C13" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="DapperDan.FlexlerLauncher.ControlBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="#FF121A21" />
+        <GradientStop Offset="0.42" Color="#FF19313A" />
+        <GradientStop Offset="0.72" Color="#FF171D2A" />
+        <GradientStop Offset="1" Color="#FF0D1218" />
+    </LinearGradientBrush>
+
     <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource Primary}"/>
     <SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource Secondary}"/>
     <SolidColorBrush x:Key="TertiaryBrush" Color="{StaticResource Tertiary}"/>

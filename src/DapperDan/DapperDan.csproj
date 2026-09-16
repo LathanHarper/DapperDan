@@ -43,6 +43,11 @@
 		<MtouchInterpreter>-all</MtouchInterpreter>
 	</PropertyGroup>
 
+	<!-- Opt-in public simulator proof starts at the complete workbench. -->
+	<PropertyGroup Condition="'$(FlexlerShowcaseProof)' == 'true'">
+		<DefineConstants>$(DefineConstants);FLEXLER_SHOWCASE_PROOF</DefineConstants>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<!-- App Icon -->
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
@@ -55,6 +60,9 @@
 
 		<!-- Public canary images -->
 		<MauiImage Include="Resources\Images\*" />
+		<MauiImage Update="Resources\Images\fl_mark_dark.png" Resize="True" BaseSize="128,128" />
+		<MauiImage Update="Resources\Images\flexler_spring_dark.png" Resize="True" BaseSize="128,192" />
+		<MauiImage Update="Resources\Images\flexler_wordmark_dark.png" Resize="True" BaseSize="360,120" />
 
 		<!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
 		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />

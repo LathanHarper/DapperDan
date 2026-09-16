@@ -14,9 +14,10 @@ The app deliberately exercises a useful native cross-section:
 - a dependency-free, durable iOS launch journal that brackets MAUI, Prism, XAML, the compiled model, SQLite, and the first responsive UI dispatch;
 - a physical-iOS native voice A/B/C that isolates language-default selection, arbitrary installed-voice ranking, and Apple-managed speech-session ownership without transmitting diagnostics;
 - a product-neutral native MAUI rotation lab with direct `Rotation`, `RotationX`, and `RotationY` sliders plus independently switchable layer-composition ingredients;
+- the owner-authorized FleXler layout-recipe workbench, with its full XAML interface, semantic values, mineral materials, approved branding, recipe export and local favorites;
 - iPhone and iPad packaging from the same project that supplies the Android baseline.
 
-It does **not** contain customer code, private routes, accounts, endpoints, credentials, company assets, production configuration, or copied bug implementations. Public iOS quirks belong here only as small, independently authored reproductions.
+CodeCrafty explicitly authorized the full FleXler showcase source, look and feel, semantic resources and approved brand images for this public app on September 15, 2026. That scope lives under `src/DapperDan/Features/Flexler` and its required app resources. The standalone Flexler repository remains private. Unrelated private code and history, customer data, private accounts/endpoints, credentials, signing material and personal diagnostic logs remain excluded. Other private-app quirks belong here as small, independently authored reproductions; see [the precise provenance boundary](PROVENANCE.md).
 
 CodeCrafty-authored source is released under the [MIT License](LICENSE): copy it, adapt it, teach from it, and ship with it—just preserve the copyright and license notice. The runnable app also depends on Prism 9, which is **not covered by Dapper Dan's MIT license**. Before restoring, building, testing, or reusing the Prism-backed source, each developer must qualify for and accept the Prism Community License or obtain a Prism Commercial License. Ordinary users of a compiled Dapper Dan app do not need a Prism developer license. See [Prism licensing for this repository](docs/PRISM-LICENSING.md) and the [third-party notices](THIRD-PARTY-NOTICES.md).
 
@@ -25,10 +26,13 @@ CodeCrafty-authored source is released under the [MIT License](LICENSE): copy it
 | Path | Purpose |
 | --- | --- |
 | `src/DapperDan` | .NET 10 MAUI app targeting Android and iOS |
+| `src/DapperDan/Features/Flexler` | Faithful FleXler showcase source, XAML workbench and semantic resources |
 | `tests/DapperDan.Tests` | persistence, layout, and regression contracts |
 | `.github/workflows/ios-unsigned.yml` | secret-free Apple compilation and unsigned proof binaries |
 | `.github/workflows/testflight.yml` | manual, protected signing and TestFlight upload |
 | `docs/IOS-CANARY.md` | operating model and Apple/GitHub setup |
+
+See the [FleXler showcase guide](docs/FLEXLER-SHOWCASE.md) for feature ownership, isolated resources and favorites, local unit/Appium commands, and the remaining native verification gates.
 
 The app display name is `Dapper Dan`; its bundle/application identifier is `net.codecrafty.dapperdan`. That identifier is only the app's technical identity. Apple account ownership is established by the CodeCrafty.net developer team, certificates, provisioning profile, and App Store Connect record.
 
@@ -65,7 +69,9 @@ dotnet build src/DapperDan/DapperDan.csproj \
 
 ## Two Apple lanes
 
-The public workflow is automatic and has no secrets. A cheap Linux gate regenerates the compiled model and SQLite seed, rejects drift, and runs the data tests before macOS minutes begin. The Apple job creates unsigned simulator and device `.app` bundles with the build-only display name `Dapper Dan - UNSIGNED PROOF`, verifies the packaged seed inside both bundles, records hashes and sizes, and uploads the complete application builds with binary logs, license notices, and a `RETURN-TO-SENDER.txt` warning for 14 days. These are app products, not Prism packages, loose framework binaries, SDKs, wrappers, or development tooling.
+The public workflow is automatic and has no secrets. A cheap Linux gate regenerates the compiled model and SQLite seed, rejects drift, and runs the data tests before macOS minutes begin. The Apple job creates unsigned simulator and device `.app` bundles with the build-only display name `Dapper Dan - UNSIGNED PROOF`, verifies the packaged seed inside both bundles, and reports hashes, sizes and toolchain details. Pushes, pull requests and default manual runs retain no artifacts.
+
+To retain the complete unsigned builds, binary logs, license notices and `RETURN-TO-SENDER.txt` warning, manually select `proof_scope: full` and explicitly enable `retain_unsigned_artifacts`. That opt-in retains files for 14 days; it may incur storage charges even though standard public-runner compute is free. Before enabling it, the owner must verify available free storage or authorize the storage expense. The focused Flexler proof never uploads artifacts. These are app products, not Prism packages, loose framework binaries, SDKs, wrappers, or development tooling.
 
 The TestFlight workflow is manual, rebuilds trusted `main` from source, waits behind a protected GitHub environment, signs with CodeCrafty.net's Apple material, and uploads directly to App Store Connect. It never publishes the signed IPA as a GitHub artifact.
 

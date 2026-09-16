@@ -33,11 +33,18 @@ public static class MauiProgram
                 .UseMauiApp<App>()
                 .UsePrism(prism => prism
                     .RegisterTypes(RegisterPrismTypes)
-                    .CreateWindow("NavigationPage/DapperDanPage"))
+#if FLEXLER_SHOWCASE_PROOF
+                    .CreateWindow("NavigationPage/FlexlerShowcasePage", ReportStartupFailure))
+#else
+                    .CreateWindow("NavigationPage/DapperDanPage", ReportStartupFailure))
+#endif
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+                    fonts.AddFont("InstrumentSans-Regular.ttf", "InstrumentSans");
+                    fonts.AddFont("InstrumentSans-SemiBold.ttf", "InstrumentSansSemibold");
+                    fonts.AddFont("GeistMono-Medium.ttf", "GeistMono");
                 });
 
             builder.Services.AddSingleton<IDatabasePathProvider, MauiDatabasePathProvider>();
@@ -66,6 +73,21 @@ public static class MauiProgram
             builder.Services.AddSingleton<IVoiceCanaryService, UnsupportedVoiceCanaryService>();
 #endif
             builder.Services.AddTransient<PanelBoss>();
+
+            builder.ConfigureMauiHandlers(handlers =>
+            {
+                handlers.AddHandler<PrimoMaterial.CrossFade_RadoDots, PrimoMaterial.CrossFadeRadoDotsHandler>();
+#if IOS || WINDOWS
+                handlers.AddHandler<Flexler.Controls.RichButton, Flexler.Controls.NativePrimaryTapViewHandler>();
+#endif
+            });
+
+            Flexler.Controls.RichButtonDiagnostics.CommandExceptionReporter = context =>
+            {
+                CrashJournal.Capture(CrashSource.RichButtonCommand,
+                    CrashPoint.RichButtonCommandException, context.Exception, terminating: false);
+                return Task.CompletedTask;
+            };
 
             RichButtonDiagnostics.CommandExceptionReporter = context =>
             {
@@ -106,8 +128,23 @@ public static class MauiProgram
         }
     }
 
+    private static void ReportStartupFailure(Exception exception)
+    {
+        CrashJournal.Capture(CrashSource.HandledStartupFailure,
+            CrashPoint.GuardedFailure, exception, terminating: false);
+#if DEBUG
+        Console.Error.WriteLine($"Dapper startup navigation failed: {exception}");
+#endif
+    }
+
     private static void RegisterPrismTypes(IContainerRegistry containerRegistry)
     {
+        containerRegistry.Register<Flexler.PanelBossKit.PanelBoss>();
+        containerRegistry.RegisterInstance<IClipboard>(Clipboard.Default);
+        containerRegistry.RegisterSingleton<Flexler.Services.IFlexRecipeExporter, Flexler.Services.FlexRecipeExporter>();
+        containerRegistry.RegisterInstance<Flexler.Services.IFavoriteRecipeStore>(
+            new Flexler.Services.FileFavoriteRecipeStore(Path.Combine(FileSystem.AppDataDirectory, "FlexlerShowcase")));
+        containerRegistry.RegisterForNavigation<Flexler.Views.MainPage, Flexler.ViewModels.MainPageViewModel>("FlexlerShowcasePage");
         containerRegistry.RegisterForNavigation<BillboardCanaryPage, BillboardCanaryViewModel>();
         containerRegistry.RegisterForNavigation<DapperDanPage, DapperDanViewModel>();
         containerRegistry.RegisterForNavigation<RotationCanaryPage, RotationCanaryViewModel>();
