@@ -2,13 +2,13 @@
 
 Load [MAUI iOS Build Lanes](../developer-kit/skills/maui-ios-build-lanes/SKILL.md) before workflow changes or dispatch. The full unsigned lane uses **Debug Simulator and Release device** builds. Historical Release Simulator evidence is not a routine validation requirement; any exceptional repeat requires Crafty's explicit request for that experiment.
 
-The two build lanes share source but never share trust.
+The two build lanes share source but never share trust. Both are manual: native builds do not run on push or pull requests and are not required just to merge. Build the signed candidate directly when that is the intended proof; use an unsigned experiment only for a separate diagnostic question.
 
 Both lanes restore Prism 9. The maintainer and every developer whose work is built must first be covered by a valid Prism Community or Commercial license. The workflow does not grant or silently accept a license; see [`PRISM-LICENSING.md`](PRISM-LICENSING.md).
 
 ## Secret-free public lane
 
-`.github/workflows/ios-unsigned.yml` runs on pushes and pull requests and supports manual dispatch. It has read-only repository permission, no environment, no `secrets.*` references, and no signing material. The full scope's Linux prerequisite regenerates the EF compiled model and deterministic SQLite seed, rejects drift, checks the database, and runs the regression tests. One macOS job then builds both simulator and unsigned device bundles with the build-only display name `Dapper Dan - UNSIGNED PROOF`, verifies that each contains the exact healthy seed without WAL/SHM sidecars, and reports archive checksums, sizes and toolchain details in the job summary.
+`.github/workflows/ios-unsigned.yml` supports manual dispatch only. It has read-only repository permission, no environment, no `secrets.*` references, and no signing material. The full scope's Linux prerequisite regenerates the EF compiled model and deterministic SQLite seed, rejects drift, checks the database, and runs the regression tests. One macOS job then builds Debug simulator and Release unsigned device bundles with the build-only display name `Dapper Dan - UNSIGNED PROOF`, verifies that each contains the exact healthy seed without WAL/SHM sidecars, and reports archive checksums, sizes and toolchain details in the job summary.
 
 Artifact retention defaults to off, including push/PR runs and manual dispatch. Builds, package verification and summary reporting still run; their local files disappear with the runner. Uploads require all three conditions: `workflow_dispatch`, `proof_scope: full`, and `retain_unsigned_artifacts: true`. That explicit opt-in retains complete unsigned builds, binary logs, license notices and the `RETURN-TO-SENDER.txt` warning for 14 days. The owner must first verify sufficient free artifact storage or authorize its expense: free standard public-runner compute does not make retained storage automatically free. The focused Flexler startup proof never uploads artifacts, even if the retention input is selected.
 
