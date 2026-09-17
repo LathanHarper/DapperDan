@@ -18,6 +18,8 @@ The approved spring, FleXler wordmark, standalone Fl mark and two labradorite te
 
 The feature adds a Back command in both orientations. It returns through Prism navigation; a proof build that starts directly at the showcase can fall back to Dapper Dan's root page. Editing and export remain in the production view model and services.
 
+The protected TestFlight workflow can also select `startup_target=flexler` to test the complete workbench as Dapper Dan's first page on a physical device. Use `runtime_profile=host` for that cold-start comparison; the separate `aot-only` choice disables interpreter fallback and its related SDK behavior. Both inputs default to `host`. See the [signed diagnostic controls](IOS-CANARY.md#protected-testflight-lane) for the exact property choices and evidence boundaries.
+
 Favorites use `FlexlerShowcase/favorites.json` under the host's app-data directory, isolated from Dapper Dan's database and other feature storage. There is no recipe network transport. Optional mechanical feedback uses `Flexler/rich_touch.wav`, `Flexler/rich_long_touch.wav` and `Flexler/rich_negative_feedback.wav`. No clips are packaged at those paths, preserving the workbench's silent fallback and avoiding unrelated host sounds.
 
 ## Portable functional tests

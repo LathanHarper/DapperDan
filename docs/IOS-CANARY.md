@@ -77,6 +77,17 @@ Those bundles are complete Dapper Dan application products with substantial Code
 
 `.github/workflows/testflight.yml` is manual, accepts a numeric Apple build number, and runs only from `main`. It rebuilds source rather than consuming a pull-request artifact, verifies the provisioning profile against `net.codecrafty.dapperdan`, signs the IPA, validates its signature and bundle identifier, then uploads directly to App Store Connect. The signed IPA is never published as a GitHub artifact.
 
+The manual diagnostic choices default to the existing host behavior:
+
+| Input | Values | Effect |
+| --- | --- | --- |
+| `startup_target` | `host` (default), `flexler` | `host` opens Dapper Dan; `flexler` sets the existing `FlexlerShowcaseProof=true` switch and opens the complete workbench directly. |
+| `runtime_profile` | `host` (default), `aot-only` | `host` preserves the project's runtime defaults; `aot-only` sets only `UseInterpreter=false` and an empty `MtouchInterpreter`. |
+
+For a physical-device cold-start comparison, select `startup_target=flexler` with `runtime_profile=host`. Keep that startup target fixed if a later comparison selects `aot-only`; the workflow rejects `aot-only` with normal host startup to avoid mixing the feature test with database initialization. The runtime diagnostic does not set `TrimMode` or change packages or the toolchain; disabling the interpreter also changes SDK-derived behavior such as IL stripping. Both choices retain Dapper Dan's identity, protected signing, main-only upload, one 90-minute job and no retained GitHub artifacts. The same non-secret property array is reused for package restore, device-property evaluation and publish; evaluated startup and runtime settings are printed before credentials are loaded. Properties calculated later during build may still be empty in that early evaluation. Actual startup checkpoints and dynamic-code flags still require inspection on the installed device.
+
+Simulator trimming defaults do not establish the signed `ios-arm64` setting. In particular, `TrimMode=copy` in an interpreter-enabled Simulator receipt must not be presented as the normal signed Release profile; use the device workflow's evaluated `TrimMode` value.
+
 The IPA verification also locates exactly one packaged `dapper-dan-seed-v1.db3`, byte-compares it with the reviewed source asset, verifies its identity/schema/integrity/foreign keys, and rejects SQLite sidecars. The writable destination is `dapper-dan-canary-v1.db3`; that new versioned name ensures build 10 exercises first-install copy even over an older Dapper Dan TestFlight installation.
 
 Before enabling it:
