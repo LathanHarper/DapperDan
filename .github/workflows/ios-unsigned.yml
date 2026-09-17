@@ -111,8 +111,7 @@ jobs:
     if: ${{ inputs.proof_scope != 'flexler' }}
     needs: data-canary
     runs-on: macos-26
-    # This proof lane AOT-compiles both simulator and device bundles. The first
-    # interpreter canary measured 64 minutes for the simulator bundle alone.
+    # Simulator checks use Debug; Release/AOT validation targets the device.
     timeout-minutes: 180
 
     steps:
@@ -160,7 +159,7 @@ jobs:
           mkdir -p artifacts
           dotnet build "$PROJECT_PATH" \
             -f net10.0-ios \
-            -c Release \
+            -c Debug \
             -r iossimulator-arm64 \
             --no-restore \
             -p:ApplicationId="$BUNDLE_ID" \
@@ -193,7 +192,7 @@ jobs:
           shopt -s nullglob
 
           project_dir="$(dirname "$PROJECT_PATH")"
-          simulator_root="$project_dir/bin/Release/net10.0-ios/iossimulator-arm64"
+          simulator_root="$project_dir/bin/Debug/net10.0-ios/iossimulator-arm64"
           device_root="$project_dir/bin/Release/net10.0-ios/ios-arm64"
           simulator_apps=("$simulator_root"/*.app)
           device_apps=("$device_root"/*.app)

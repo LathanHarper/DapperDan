@@ -1,5 +1,7 @@
 # iOS canary operating guide
 
+Load [MAUI iOS Build Lanes](../developer-kit/skills/maui-ios-build-lanes/SKILL.md) before workflow changes or dispatch. The full unsigned lane uses **Debug Simulator and Release device** builds. Historical Release Simulator evidence is not a routine validation requirement; any exceptional repeat requires Crafty's explicit request for that experiment.
+
 The two build lanes share source but never share trust.
 
 Both lanes restore Prism 9. The maintainer and every developer whose work is built must first be covered by a valid Prism Community or Commercial license. The workflow does not grant or silently accept a license; see [`PRISM-LICENSING.md`](PRISM-LICENSING.md).
