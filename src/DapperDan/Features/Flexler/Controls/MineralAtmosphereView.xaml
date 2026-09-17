@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Grid x:Name="AtmosphereRoot"
+    x:Class="Flexler.Controls.MineralAtmosphereView"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    IsClippedToBounds="True"
+    SafeAreaEdges="None"
+    InputTransparent="True"
+    >
+    <Grid.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary
+                    Source="../Resources/Labradorite.xaml"
+                    />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Grid.Resources>
+    <Grid.Background>
+        <StaticResource Key="Flexler.VoidBrush"
+            />
+    </Grid.Background>
+
+    <Image x:Name="RawStoneLayer"
+        Source="labradorite_raw.jpg"
+        Aspect="AspectFill"
+        Opacity="0.22"
+        Scale="1.06"
+        />
+
+    <Image x:Name="PolishedStoneLayer"
+        Source="labradorite_polished.jpg"
+        Aspect="AspectFill"
+        Opacity="0.14"
+        Scale="1.10"
+        />
+
+    <BoxView
+        Opacity="0.72"
+        >
+        <BoxView.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Offset="0" Color="#B3070A0E" />
+                <GradientStop Offset="0.46" Color="#85102B35" />
+                <GradientStop Offset="1" Color="#CC120D1A" />
+            </LinearGradientBrush>
+        </BoxView.Background>
+    </BoxView>
+
+    <Border x:Name="SpectralPlane"
+        Opacity="0.18"
+        Scale="1.14"
+        StrokeThickness="0"
+        InputTransparent="True"
+        >
+        <Border.Background>
+            <LinearGradientBrush StartPoint="0,0.2" EndPoint="1,0.8">
+                <GradientStop Offset="0" Color="#0063E6D0" />
+                <GradientStop Offset="0.46" Color="#6655A7FF" />
+                <GradientStop Offset="0.76" Color="#33A482FF" />
+                <GradientStop Offset="1" Color="#00A482FF" />
+            </LinearGradientBrush>
+        </Border.Background>
+    </Border>
+
+    <BoxView Background="{StaticResource Flexler.RawReadabilityVeilBrush}"
+        />
+</Grid>

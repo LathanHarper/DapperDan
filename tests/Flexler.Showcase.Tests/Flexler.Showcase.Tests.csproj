@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Maui.Controls" />
+    <PackageReference Include="Prism.DryIoc.Maui" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Exercise the feature's production source with real MAUI and Prism types;
+         these portable checks do not require a mobile workload or host navigation. -->
+    <Compile Include="../../src/DapperDan/Features/Flexler/Services/*.cs" Link="Production/Services/%(Filename)%(Extension)" />
+    <Compile Include="../../src/DapperDan/Features/Flexler/Models/*.cs" Link="Production/Models/%(Filename)%(Extension)" />
+    <Compile Include="../../src/DapperDan/Features/Flexler/ViewModels/*.cs" Link="Production/ViewModels/%(Filename)%(Extension)" />
+    <Compile Include="../../src/DapperDan/Features/Flexler/MainPageViewModel*.cs" Link="Production/%(Filename)%(Extension)" />
+    <Compile Include="../../src/DapperDan/Features/Flexler/Behaviors/FlexLayoutRefreshBehavior.cs" Link="Production/Behaviors/FlexLayoutRefreshBehavior.cs" />
+    <Compile Include="../../src/DapperDan/Features/Flexler/Controls/TapViewBase.cs" Link="Production/Controls/TapViewBase.cs" />
+    <Compile Include="../../src/DapperDan/Features/Flexler/Controls/ITapViewBase.cs" Link="Production/Controls/ITapViewBase.cs" />
+    <Compile Include="../../src/DapperDan/Features/Flexler/Controls/RichButtonSoundPlayer.cs" Link="Production/Controls/RichButtonSoundPlayer.cs" />
+    <Compile Include="../../src/DapperDan/Features/Flexler/Controls/RichButtonDiagnostics.cs" Link="Production/Controls/RichButtonDiagnostics.cs" />
+    <Compile Include="../../src/DapperDan/Features/Flexler/PanelBossKit/**/*.cs" Link="Production/PanelBossKit/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../../src/DapperDan/Diagnostics/CrashJournal.cs" Link="Production/Diagnostics/CrashJournal.cs" />
+    <Compile Include="../../src/DapperDan/Diagnostics/DurableCrashJournal.cs" Link="Production/Diagnostics/DurableCrashJournal.cs" />
+    <Using Include="Microsoft.Maui" />
+    <Using Include="Microsoft.Maui.Controls" />
+    <Using Include="Microsoft.Maui.Graphics" />
+    <Using Include="Microsoft.Maui.ApplicationModel.DataTransfer" />
+    <Using Include="Prism.Navigation" />
+    <Using Include="Xunit" />
+  </ItemGroup>
+</Project>

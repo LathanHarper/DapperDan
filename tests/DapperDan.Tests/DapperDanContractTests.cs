@@ -46,7 +46,7 @@ public sealed class DapperDanContractTests
         var source = File.ReadAllText(sourcePath);
 
         Assert.Contains(
-            ".CreateWindow(\"NavigationPage/DapperDanPage\")",
+            ".CreateWindow(\"NavigationPage/DapperDanPage\", ReportStartupFailure)",
             source,
             StringComparison.Ordinal);
         Assert.DoesNotContain(

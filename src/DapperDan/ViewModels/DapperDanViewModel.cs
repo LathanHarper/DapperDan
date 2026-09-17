@@ -38,6 +38,7 @@ public partial class DapperDanViewModel : BindableBase
     private bool _isAsyncSpecimenBusy;
     private bool _isKeikiBusy;
     private bool _isLoadingPanelBusy;
+    private bool _isOpeningFlexler;
     private bool _isVoiceCanaryBusy;
     private string _keikiCountText = "No saved Keiki yet";
     private string _keikiMemory = "Remember the clean little win.";
@@ -126,6 +127,12 @@ public partial class DapperDanViewModel : BindableBase
         set => SetProperty(ref _isLoadingPanelBusy, value);
     }
 
+    public bool IsOpeningFlexler
+    {
+        get => _isOpeningFlexler;
+        set => SetProperty(ref _isOpeningFlexler, value);
+    }
+
     public bool IsVoiceCanaryBusy
     {
         get => _isVoiceCanaryBusy;
@@ -180,6 +187,27 @@ public partial class DapperDanViewModel : BindableBase
     {
         get => _voiceCanaryReport;
         private set => SetProperty(ref _voiceCanaryReport, value);
+    }
+
+    private async Task OpenFlexlerShowcaseAsync()
+    {
+        IsOpeningFlexler = true;
+        try
+        {
+            CrashJournal.Checkpoint(CrashPoint.FlexlerNavigationEnter);
+            var result = await _navigationService.NavigateAsync("FlexlerShowcasePage");
+            if (!result.Success)
+            {
+                if (result.Exception is { } exception)
+                    CrashJournal.Capture(CrashSource.GuardedSeam,
+                        CrashPoint.FlexlerNavigationFailed, exception, terminating: false);
+                StatusMessage = $"FleXler navigation failed: {result.Exception?.Message ?? "unknown navigation error"}";
+            }
+        }
+        finally
+        {
+            IsOpeningFlexler = false;
+        }
     }
 
     private async Task OpenRotationCanaryAsync()

@@ -1,0 +1,26 @@
+Flexler showcase assets
+
+This public Dapper Dan feature includes the owner-approved Flexler workbench,
+its native material layers, and its semantic resource values.
+
+The paired header uses the six-ring spring artwork beside the FleXler wordmark.
+The standalone Fl mark is used in the workbench drawers. The capital X in the
+wordmark joins a straight and a flexed metal bar. These original Flexler brand
+exports and the raw/polished labradorite textures were created with ImageGen
+and are included unchanged with the owner's approval.
+
+Imported image inventory:
+- fl_mark_dark.png
+- flexler_spring_dark.png
+- flexler_wordmark_dark.png
+- labradorite_polished.jpg
+- labradorite_raw.jpg
+
+Instrument Sans Regular/SemiBold and Geist Mono Medium accompany their OFL
+license texts. Microsoft-MIT.txt preserves the notice for the adapted MAUI
+native input code. OpenSans-Apache-2.0.txt accompanies Dapper Dan's existing
+Open Sans fonts. Optional mechanical feedback paths are scoped to this feature;
+no sound clips are packaged, preserving the source workbench's silent fallback.
+
+This showcase does not replace Dapper Dan's app icon, splash, bundle identity,
+platform entry points, signing configuration, or local Keiki database.
