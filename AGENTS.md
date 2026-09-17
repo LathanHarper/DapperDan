@@ -1,5 +1,7 @@
 # Dapper Dan working contract
 
+- Native iOS builds are manual, purposeful experiments or signed delivery attempts. Do not add push/PR native builds or require native compilation merely to merge; do not duplicate an imminent signed candidate with an unsigned merge-gate build. Free compute still consumes owner time. Keep other PR protections intact.
+
 - Before editing or dispatching iOS workflows, load [MAUI iOS Build Lanes](developer-kit/skills/maui-ios-build-lanes/SKILL.md), backed by the BrainSwapLite kit of the same name. Simulator checks use Debug; Release validation targets physical devices. Inspect automatic push/PR triggers before publishing.
 - When extracting an app or moving a proof to another repository, carry applicable functional kits plus their AGENTS load pointers, read them in the destination and verify workflow conformance. Preserve destination instructions when composing BrainSwapLite output. Save reusable lessons in the kit and refresh copies; receipts alone are not a handoff.
 
