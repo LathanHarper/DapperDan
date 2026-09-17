@@ -1,12 +1,14 @@
 # iOS canary operating guide
 
-The two build lanes share source but never share trust.
+Load [MAUI iOS Build Lanes](../developer-kit/skills/maui-ios-build-lanes/SKILL.md) before workflow changes or dispatch. The full unsigned lane uses **Debug Simulator and Release device** builds. Historical Release Simulator evidence is not a routine validation requirement; any exceptional repeat requires Crafty's explicit request for that experiment.
+
+The two build lanes share source but never share trust. Both are manual: native builds do not run on push or pull requests and are not required just to merge. Build the signed candidate directly when that is the intended proof; use an unsigned experiment only for a separate diagnostic question.
 
 Both lanes restore Prism 9. The maintainer and every developer whose work is built must first be covered by a valid Prism Community or Commercial license. The workflow does not grant or silently accept a license; see [`PRISM-LICENSING.md`](PRISM-LICENSING.md).
 
 ## Secret-free public lane
 
-`.github/workflows/ios-unsigned.yml` runs on pushes and pull requests and supports manual dispatch. It has read-only repository permission, no environment, no `secrets.*` references, and no signing material. The full scope's Linux prerequisite regenerates the EF compiled model and deterministic SQLite seed, rejects drift, checks the database, and runs the regression tests. One macOS job then builds both simulator and unsigned device bundles with the build-only display name `Dapper Dan - UNSIGNED PROOF`, verifies that each contains the exact healthy seed without WAL/SHM sidecars, and reports archive checksums, sizes and toolchain details in the job summary.
+`.github/workflows/ios-unsigned.yml` supports manual dispatch only. It has read-only repository permission, no environment, no `secrets.*` references, and no signing material. The full scope's Linux prerequisite regenerates the EF compiled model and deterministic SQLite seed, rejects drift, checks the database, and runs the regression tests. One macOS job then builds Debug simulator and Release unsigned device bundles with the build-only display name `Dapper Dan - UNSIGNED PROOF`, verifies that each contains the exact healthy seed without WAL/SHM sidecars, and reports archive checksums, sizes and toolchain details in the job summary.
 
 Artifact retention defaults to off, including push/PR runs and manual dispatch. Builds, package verification and summary reporting still run; their local files disappear with the runner. Uploads require all three conditions: `workflow_dispatch`, `proof_scope: full`, and `retain_unsigned_artifacts: true`. That explicit opt-in retains complete unsigned builds, binary logs, license notices and the `RETURN-TO-SENDER.txt` warning for 14 days. The owner must first verify sufficient free artifact storage or authorize its expense: free standard public-runner compute does not make retained storage automatically free. The focused Flexler startup proof never uploads artifacts, even if the retention input is selected.
 
@@ -76,6 +78,17 @@ Those bundles are complete Dapper Dan application products with substantial Code
 ## Protected TestFlight lane
 
 `.github/workflows/testflight.yml` is manual, accepts a numeric Apple build number, and runs only from `main`. It rebuilds source rather than consuming a pull-request artifact, verifies the provisioning profile against `net.codecrafty.dapperdan`, signs the IPA, validates its signature and bundle identifier, then uploads directly to App Store Connect. The signed IPA is never published as a GitHub artifact.
+
+The manual diagnostic choices default to the existing host behavior:
+
+| Input | Values | Effect |
+| --- | --- | --- |
+| `startup_target` | `host` (default), `flexler` | `host` opens Dapper Dan; `flexler` sets the existing `FlexlerShowcaseProof=true` switch and opens the complete workbench directly. |
+| `runtime_profile` | `host` (default), `aot-only` | `host` preserves the project's runtime defaults; `aot-only` sets only `UseInterpreter=false` and an empty `MtouchInterpreter`. |
+
+For a physical-device cold-start comparison, select `startup_target=flexler` with `runtime_profile=host`. Keep that startup target fixed if a later comparison selects `aot-only`; the workflow rejects `aot-only` with normal host startup to avoid mixing the feature test with database initialization. The runtime diagnostic does not set `TrimMode` or change packages or the toolchain; disabling the interpreter also changes SDK-derived behavior such as IL stripping. Both choices retain Dapper Dan's identity, protected signing, main-only upload, one 90-minute job and no retained GitHub artifacts. The same non-secret property array is reused for package restore, device-property evaluation and publish; evaluated startup and runtime settings are printed before credentials are loaded. Properties calculated later during build may still be empty in that early evaluation. Actual startup checkpoints and dynamic-code flags still require inspection on the installed device.
+
+Simulator trimming defaults do not establish the signed `ios-arm64` setting. In particular, `TrimMode=copy` in an interpreter-enabled Simulator receipt must not be presented as the normal signed Release profile; use the device workflow's evaluated `TrimMode` value.
 
 The IPA verification also locates exactly one packaged `dapper-dan-seed-v1.db3`, byte-compares it with the reviewed source asset, verifies its identity/schema/integrity/foreign keys, and rejects SQLite sidecars. The writable destination is `dapper-dan-canary-v1.db3`; that new versioned name ensures build 10 exercises first-install copy even over an older Dapper Dan TestFlight installation.
 

@@ -7,6 +7,22 @@ on:
         description: Unique numeric CFBundleVersion for this upload
         required: true
         type: string
+      startup_target:
+        description: First page after launch; flexler tests workbench cold startup
+        required: true
+        default: host
+        type: choice
+        options:
+          - host
+          - flexler
+      runtime_profile:
+        description: Keep the host runtime or disable interpreter fallback
+        required: true
+        default: host
+        type: choice
+        options:
+          - host
+          - aot-only
       confirm_upload:
         description: Confirm that this trusted main-branch build should be uploaded
         required: true
@@ -57,12 +73,39 @@ jobs:
         shell: bash
         env:
           REQUESTED_BUILD_NUMBER: ${{ inputs.build_number }}
+          REQUESTED_STARTUP_TARGET: ${{ inputs.startup_target }}
+          REQUESTED_RUNTIME_PROFILE: ${{ inputs.runtime_profile }}
         run: |
           set -euo pipefail
           if [[ ! "$REQUESTED_BUILD_NUMBER" =~ ^[1-9][0-9]*$ ]] || [[ ${#REQUESTED_BUILD_NUMBER} -gt 18 ]]; then
             echo "build_number must be a positive integer of at most 18 digits." >&2
             exit 1
           fi
+          testflight_msbuild_args=(
+            -p:Configuration=Release
+            "-p:ApplicationId=$BUNDLE_ID"
+            "-p:ApplicationVersion=$REQUESTED_BUILD_NUMBER"
+            -p:ContinuousIntegrationBuild=true
+          )
+          case "$REQUESTED_STARTUP_TARGET" in
+            host) testflight_msbuild_args+=(-p:FlexlerShowcaseProof=false) ;;
+            flexler) testflight_msbuild_args+=(-p:FlexlerShowcaseProof=true) ;;
+            *) echo 'startup_target must be host or flexler.' >&2; exit 1 ;;
+          esac
+          case "$REQUESTED_RUNTIME_PROFILE" in
+            host) ;;
+            aot-only)
+              if [[ "$REQUESTED_STARTUP_TARGET" != flexler ]]; then
+                echo 'aot-only requires direct flexler startup to isolate the feature.' >&2
+                exit 1
+              fi
+              testflight_msbuild_args+=(-p:UseInterpreter=false -p:MtouchInterpreter=)
+              ;;
+            *) echo 'runtime_profile must be host or aot-only.' >&2; exit 1 ;;
+          esac
+          # Reuse these exact non-secret properties in restore, evaluation and publish.
+          declare -p testflight_msbuild_args > "$RUNNER_TEMP/testflight-build-args.sh"
+          printf 'Startup target: %s; runtime profile: %s\n' "$REQUESTED_STARTUP_TARGET" "$REQUESTED_RUNTIME_PROFILE"
           test "$GITHUB_REF" = "refs/heads/main"
           test "$(uname -m)" = "arm64"
           test -d "$DEVELOPER_DIR"
@@ -84,7 +127,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          dotnet restore "$PROJECT_PATH" --locked-mode
+          source "$RUNNER_TEMP/testflight-build-args.sh"
+          dotnet restore "$PROJECT_PATH" --locked-mode "${testflight_msbuild_args[@]}"
+
+      - name: Evaluate device runtime and startup settings before loading credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          source "$RUNNER_TEMP/testflight-build-args.sh"
+          dotnet msbuild "$PROJECT_PATH" "${testflight_msbuild_args[@]}" \
+            -p:TargetFramework=net10.0-ios \
+            -p:RuntimeIdentifier=ios-arm64 \
+            -getProperty:Configuration,TargetFramework,RuntimeIdentifier,ApplicationId,ApplicationVersion,FlexlerShowcaseProof,DefineConstants,UseInterpreter,MtouchInterpreter,TrimMode,MtouchUseLlvm,Registrar,UseMonoRuntime,PublishAot,MauiXamlInflator
 
       - name: Regenerate public database artifacts before loading credentials
         shell: pwsh
@@ -163,17 +217,15 @@ jobs:
           PROFILE_NAME: ${{ steps.profile.outputs.profile_name }}
         run: |
           set -euo pipefail
+          source "$RUNNER_TEMP/testflight-build-args.sh"
           dotnet publish "$PROJECT_PATH" \
             -f net10.0-ios \
-            -c Release \
             -r ios-arm64 \
             --no-restore \
-            -p:ApplicationId="$BUNDLE_ID" \
-            -p:ApplicationVersion="$BUILD_NUMBER" \
+            "${testflight_msbuild_args[@]}" \
             -p:ArchiveOnBuild=true \
             -p:CodesignKey="$IOS_CODESIGN_IDENTITY" \
             -p:CodesignProvision="$PROFILE_NAME" \
-            -p:ContinuousIntegrationBuild=true \
             -p:EnableCodeSigning=true
 
       - name: Verify signed IPA
